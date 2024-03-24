@@ -1,0 +1,20 @@
+"alaln"
+{
+	"base"		 "base"
+	"title"		 "[DEV] Forsakened Alpha"
+	"category"	 "pve"
+	"menusystem" "1"
+	"version"	 "0.1"
+
+	"settings"
+	{
+		1
+		{
+			"name"		"alaln_sboxmode"
+			"text"		"Sandbox Mode"
+			"help"		"Enable sandbox mode?"
+			"type"		"CheckBox"
+			"default"	"0"
+		}
+	}
+}

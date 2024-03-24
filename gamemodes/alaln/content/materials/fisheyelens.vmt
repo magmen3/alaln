@@ -1,0 +1,11 @@
+"Refract"
+{
+ 	"$model" 1
+	"$nodecal" 1
+//	"$bluramount" 1
+ 	"$refractamount" "-.04"
+	"$REFRACTTINT" "{246 250 255}"
+	"$scale" "[1 1]"
+ 	"$dudvmap" "fisheyelens_dudv"
+	"$normalmap" "fisheyelens_normal"
+}
