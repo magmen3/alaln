@@ -11,7 +11,7 @@ SBOXMode = CreateConVar("alaln_sboxmode", 0, FCVAR_NOTIFY, "Enable sandbox mode?
 	4. Add post-rock soundtrack
 	5. Add some kind of inventory (0%)
 	6. Find good npcs on vj base (done? maybe)
-	7. Add more weapons (added revolver, need more)
+	7. Add more weapons (90%, need more melees)
 	8. реализовать все идеи которые ракман кидал в виде txt
 ]]
 local color_yellow = Color(255, 170, 0)
@@ -135,7 +135,8 @@ timer.Create("alaln-globalenttimer", 1, 0, function()
 					ply:AddHunger(-0.3)
 					ply:AddCrazyness(-0.01)
 				elseif ply:GetHunger() <= 0 then
-					ply:TakeDamage(10)
+					ply:TakeDamage(math.random(3, 6))
+					ply:AddCrazyness(0.5)
 					ply:EmitSound("player/pl_pain" .. math.random(5, 7) .. ".wav", 50, math.random(90, 110), 0.5)
 				elseif ply:GetHunger() >= 0 then
 					ply:AddHunger(-0.15)
@@ -390,3 +391,8 @@ hook.Add("PlayerDeathSound", "alaln-deathsound", function(ply)
 end)
 
 hook.Add("PlayerSpray", "alaln-sprays", function() return true end)
+net.Receive("alaln-setclass", function(len, ply)
+	local netply = net.ReadPlayer()
+	local class = net.ReadString()
+	netply:SetNWString("alaln-class", class)
+end)

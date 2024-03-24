@@ -1,10 +1,10 @@
 "alaln"
 {
 	"base"		 "base"
-	"title"		 "[DEV] Forsakened Alpha"
+	"title"		 "Forsakened BETA"
 	"category"	 "pve"
 	"menusystem" "1"
-	"version"	 "0.1"
+	"version"	 "0.5"
 
 	"settings"
 	{

@@ -9,6 +9,7 @@ resource.AddFile("resource/fonts/SMODGUI.ttf")
 local color_red = Color(180, 0, 0)
 local color_red2 = Color(165, 0, 0)
 util.AddNetworkString("alaln-navmeshnotfound")
+util.AddNetworkString("alaln-setclass")
 function GM:Initialize()
 	if not navmesh.IsLoaded() then
 		MsgC(color_red, " [ALALN] Navmesh not found! This maps not support Forsakened gamemode.\n")
@@ -118,12 +119,12 @@ function GM:PlayerLoadout(ply)
 		ply:Give("alaln_lighter")
 	end
 
-	if ply:GetNWString("Class", "Standard") == "Cannibal" then
-		ply:ChatPrint("[ALALN] Your class is now cannibal. You дАУН.")
-		ply:Give("weapon_crowbar")
+	if ply:GetNWString("alaln-class", "Standard") == "Berserker" then
+		ply:Give("alaln_fists")
 		ply:SetHunger(60)
 	end
 
+	if ply:GetNWString("alaln-class", "Standard") ~= "Standard" then BetterChatPrint(ply, "You are " .. ply:GetNWString("alaln-class", "Standard") .. ".", color_red2) end
 	local size = 12
 	local DEFAULT_VIEW_OFFSET = Vector(0, 0, 64)
 	local DEFAULT_VIEW_OFFSET_DUCKED = Vector(0, 0, 42)
@@ -147,7 +148,7 @@ end
 
 local nextheadshot = 0
 hook.Add("EntityTakeDamage", "alaln-enttakedamage", function(target, dmginfo)
-	if not target:IsPlayer() then return end
+	if not target:IsPlayer() or (target:IsPlayer() and target:HasGodMode()) then return end
 	if dmginfo:GetDamageType() == DMG_BURN or target:IsOnFire() then
 		if SERVER then util.ScreenShake(target:GetPos(), 0.3, 3, 5, 0) end
 		target:ViewPunch(AngleRand(-5, 5))
@@ -199,6 +200,7 @@ hook.Add("EntityTakeDamage", "alaln-enttakedamage", function(target, dmginfo)
 		if IsValid(wep) and wep.isInBlockDam then dmginfo:ScaleDamage(0.45) end
 	end
 
+	target:AddCrazyness(dmginfo:GetDamage() * 0.1)
 	target:SetArmor(target:Armor() - dmginfo:GetDamage() * 0.1)
 end)
 

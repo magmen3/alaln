@@ -33,8 +33,10 @@ SWEP.DrawAmmo = false
 SWEP.DrawCrosshair = false
 SWEP.BounceWeaponIcon = false
 SWEP.AllowViewAttachment = true
-SWEP.HitDistance = 70
-SWEP.Range = 80
+SWEP.HitDistance = 75
+SWEP.Range = 85
+SWEP.DeathDroppable = false
+SWEP.CommandDroppable = false
 local HitSound = Sound("Flesh.ImpactHard")
 function SWEP:Initialize()
 	self:SetHoldType("fist")
@@ -409,7 +411,7 @@ function SWEP:Think()
 
 	if selftable.Drag and owner:GetPos():DistToSqr(selftable.Drag.Entity:GetPos()) > 9500 then selftable.Drag = nil end
 	if self.Drag then
-		self:SetHoldType("magic")
+		self:SetHoldType("duel")
 	elseif self.fistsOut == true then
 		if self.isInBlockDam == false then
 			self:SetHoldType("fist")

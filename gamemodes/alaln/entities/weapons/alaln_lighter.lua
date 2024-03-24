@@ -78,6 +78,8 @@ SWEP.Secondary.Automatic = false
 SWEP.Secondary.Ammo = "none"
 SWEP.WorldModelPosition = Vector(3.5, -2, -2)
 SWEP.WorldModelAngle = Angle(180)
+SWEP.DeathDroppable = false
+SWEP.CommandDroppable = false
 game.AddParticles("particles/lighter.pcf")
 PrecacheParticleSystem("lighter_flame")
 function SWEP:Initialize()

@@ -79,8 +79,10 @@ function DrawCA(rx, gx, bx, ry, gy, by)
 	render.DrawScreenQuadEx(-bx / 2, -by / 2, ScrW() + bx, ScrH() + by)
 end
 
--- effect hud
-hook.Add("HUDPaint", "alaln-screffects", function()
+-- screen effects
+local NoiseTexture = Material("filmgrain/noise")
+local NoiseTexture2 = Material("filmgrain/noiseadd")
+hook.Add("RenderScreenspaceEffects", "alaln-screffects", function()
 	local ply = LocalPlayer()
 	if not (IsValid(ply) or ply:Alive()) or ply:GetMoveType() == MOVETYPE_NOCLIP then return end
 	local frac = 1 - ply:Health() / ply:GetMaxHealth()
@@ -94,7 +96,7 @@ hook.Add("HUDPaint", "alaln-screffects", function()
 		["$pp_colour_colour"] = 0.85 - 0.15 * frac,
 		["$pp_colour_mulr"] = 0,
 		["$pp_colour_mulg"] = 0,
-		["$pp_colour_mulb"] = -0.5
+		["$pp_colour_mulb"] = -0.45
 	}
 
 	if ply:Alive() then
@@ -102,17 +104,23 @@ hook.Add("HUDPaint", "alaln-screffects", function()
 		DrawBloom(0.8, 2, 4, 2, 5, 1, 1, 1, 3)
 		DrawToyTown(1, ScrH() / 4 * frac)
 		DrawSharpen(0.75, 0.75)
-		DrawMaterialOverlay("fisheyelens", -0.04)
+		DrawMaterialOverlay("fisheyelens", -0.045)
 		if ply:Health() <= 40 then DrawMotionBlur(0.6 - 0.2 * frac, 0.8, 0.01) end
 		local hp = frac * 8
 		DrawCA(15 * hp + 5, 7 * hp + 5, 25, 9 * hp + 5, 6 * hp + 5, -5)
+		surface.SetMaterial(NoiseTexture)
+		surface.SetDrawColor(165, 0, 0, 25 * frac)
+		surface.DrawTexturedRect(0, 0, ScrW(), ScrH())
+		surface.SetMaterial(NoiseTexture2)
+		surface.SetDrawColor(165, 0, 0, 25 * frac)
+		surface.DrawTexturedRect(0, 0, ScrW(), ScrH())
 	end
 end)
 
 local alpha_black = Color(20, 0, 0, 75)
 local hudfontbig = "alaln-hudfontbig"
 local hudfontsmall = "alaln-hudfontsmall"
--- the REAL hud
+-- hud
 hook.Add("PostDrawHUD", "alaln-realhud", function()
 	local ply = LocalPlayer()
 	if not (IsValid(ply) or ply:Alive()) then return end
@@ -192,6 +200,7 @@ function GetScrShake(ply)
 end
 
 ThirdPerson = CreateClientConVar("alaln_thirdperson", 0, false, false, "Enable thirdperson?", 0, 1)
+local eyevecsuperpuper = Vector(0, 0, 1)
 hook.Add("CalcView", "alaln-calcview", function(ply, vec, ang, fov, znear, zfar)
 	if not (ply or IsValid(ply)) or ply:GetMoveType() == MOVETYPE_NOCLIP or ply:GetNoDraw() then return end
 	if not ply:Alive() then return end
@@ -210,7 +219,7 @@ hook.Add("CalcView", "alaln-calcview", function(ply, vec, ang, fov, znear, zfar)
 		start = eye.Pos,
 		endpos = eye.Pos + angol:Up() * 1 + angol:Right() * 15 + angol:Forward() * -45,
 		filter = ply,
-	}).HitPos or vec
+	}).HitPos or vec + eyevecsuperpuper
 
 	local view = {
 		origin = pozishon,
@@ -307,16 +316,6 @@ end)
 local color_ui = Color(20, 0, 0, 100)
 local color_button = Color(20, 0, 0, 150)
 local color_text = Color(150, 0, 0)
-local function SetClass(ply, class)
-	if not (ply or class) then
-		DebugPrint("Error! Calling SetClass() without args")
-		return
-	end
-
-	ply:SetNWString("Class", class)
-	ply:SetNWBool("NeedToKillNow", true)
-end
-
 concommand.Add("checkammo", function()
 	local ply = LocalPlayer()
 	local wep = ply:GetActiveWeapon()
@@ -345,7 +344,7 @@ end, nil, "Check your current gun ammo", FCVAR_NONE)
 net.Receive("alaln-classmenu", function()
 	--------------------------------------------------- Class Menu
 	local frame = vgui.Create("DFrame")
-	frame:SetSize(500, 500)
+	frame:SetSize(500, 700)
 	frame:Center()
 	frame:SetTitle("")
 	frame:SetDraggable(false)
@@ -392,8 +391,10 @@ net.Receive("alaln-classmenu", function()
 
 	button1.DoClick = function()
 		DebugPrint("Selected Standard class")
-		SetClass(LocalPlayer(), "Standard")
-		print(LocalPlayer():GetNWString("Class"))
+		net.Start("alaln-setclass")
+		net.WritePlayer(LocalPlayer())
+		net.WriteString("Standard")
+		net.SendToServer()
 		frame:Close()
 	end
 
@@ -409,8 +410,29 @@ net.Receive("alaln-classmenu", function()
 
 	button2.DoClick = function()
 		DebugPrint("Selected Cannibal class")
-		SetClass(LocalPlayer(), "Cannibal")
-		print(LocalPlayer():GetNWString("Class"))
+		net.Start("alaln-setclass")
+		net.WritePlayer(LocalPlayer())
+		net.WriteString("Cannibal")
+		net.SendToServer()
+		frame:Close()
+	end
+
+	--------------------------------------------------- Berserker
+	local button3 = vgui.Create("DButton", frame)
+	button3:SetText("")
+	button3:SetPos(170, 400)
+	button3:SetSize(150, 100)
+	button3.Paint = function(self, w, h)
+		draw.RoundedBox(5, 0, 0, w, h, color_button)
+		draw.SimpleText("Berserker", hudfontsmall, 75, 50, color_text, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
+	end
+
+	button3.DoClick = function()
+		DebugPrint("Selected Berserker class")
+		net.Start("alaln-setclass")
+		net.WritePlayer(LocalPlayer())
+		net.WriteString("Berserker")
+		net.SendToServer()
 		frame:Close()
 	end
 end)
