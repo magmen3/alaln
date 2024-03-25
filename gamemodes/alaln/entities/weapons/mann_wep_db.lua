@@ -1,7 +1,7 @@
 if SERVER then AddCSLuaFile() end
 SWEP.Base = "mann_wep_base"
-SWEP.PrintName = "Double Barrel Shotgun"
-SWEP.Purpose = "An old time-honoured double-barrel, though it holds 2 rounds, its power is the envy of any shotgun.... (no)"
+SWEP.PrintName = "Double-Barrel Shotgun"
+SWEP.Purpose = "An old time-honoured double-barrel shotgun, though it holds 2 rounds, its power is the envy of any shotgun... (No)"
 SWEP.Instructions = "LMB to fire,\nRMB to aim sights."
 SWEP.Category = "Forsakened"
 SWEP.Spawnable = true

@@ -16,5 +16,14 @@
 			"type"		"CheckBox"
 			"default"	"0"
 		}
+
+		2
+		{
+			"name"		"alaln_dark_light"
+			"text"		"Dark Lighting"
+			"help"		"Enable dark lighting? (experimental)"
+			"type"		"CheckBox"
+			"default"	"0"
+		}
 	}
 }

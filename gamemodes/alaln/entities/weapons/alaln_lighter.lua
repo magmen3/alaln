@@ -232,7 +232,7 @@ if CLIENT then
 				dlight.b = b
 				dlight.brightness = 3
 				dlight.size = 320
-				-- dlight.decay = 128
+				dlight.decay = 128
 				dlight.dietime = CurTime() + .1
 				dlight.style = 1
 			end

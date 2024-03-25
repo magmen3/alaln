@@ -1,10 +1,11 @@
 AddCSLuaFile("cl_init.lua")
+AddCSLuaFile("cl_hud.lua")
+AddCSLuaFile("cl_classmenu.lua")
+AddCSLuaFile("cl_mainmenu.lua")
 AddCSLuaFile("shared.lua")
-AddCSLuaFile("sh_rounds.lua")
 include("shared.lua")
 include("sv_spawns.lua")
 include("sv_ragdolls.lua")
-include("sh_rounds.lua")
 resource.AddFile("resource/fonts/SMODGUI.ttf")
 local color_red = Color(180, 0, 0)
 local color_red2 = Color(165, 0, 0)
@@ -30,7 +31,8 @@ local NPCNames = {
 	npc_zombie = "Zombie",
 	npc_headcrab = "Headcrab",
 	npc_metropolice = "Metrocop",
-	npc_combine_s = "Combine"
+	npc_combine_s = "Combine",
+	entityflame = "magic of fire"
 }
 
 hook.Add("PlayerDeath", "alaln-plydeath", function(victim, inflictor, attacker)
@@ -45,7 +47,7 @@ hook.Add("PlayerDeath", "alaln-plydeath", function(victim, inflictor, attacker)
 		end
 	end
 
-	RoundEndCheck()
+	victim.NextSpawnTime = CurTime() + 15
 end)
 
 hook.Add("UpdateAnimation", "alaln-fixanims", function(ply, event, data) ply:RemoveGesture(ACT_GMOD_NOCLIP_LAYER) end)
@@ -57,26 +59,15 @@ hook.Add("PlayerConnect", "alaln-joinmessage", function(name, ip)
 end)
 
 function GM:PlayerDeathThink(ply)
-	ply:ScreenFade(SCREENFADE.OUT, color_black, 2, 0.5)
-	if ply.NextSpawnTime and ply.NextSpawnTime > CurTime() then return end
-	if roundActive == false then
-		if ply:IsBot() or ply:KeyPressed(IN_ATTACK) or ply:KeyPressed(IN_ATTACK2) or ply:KeyPressed(IN_JUMP) then ply:Spawn() end
-		return true
+	ply:ScreenFade(SCREENFADE.OUT, color_black, 2.5, 0.5)
+	if ply.NextSpawnTime and ply.NextSpawnTime > CurTime() then
+		return
 	else
-		return false
+		if ply:IsBot() or ply:KeyPressed(IN_ATTACK) or ply:KeyPressed(IN_ATTACK2) or ply:KeyPressed(IN_JUMP) then ply:Spawn() end
 	end
 end
 
-hook.Add("PlayerSpawn", function(ply)
-	if roundActive == true then
-		ply:KillSilent()
-		return
-	else
-		RoundStart()
-	end
-end)
-
-hook.Add("PlayerInitialSpawn", function(ply)
+hook.Add("PlayerInitialSpawn", "alaln-initialspawn", function(ply)
 	if not navmesh.IsLoaded() then
 		MsgC(color_red, " [ALALN] Navmesh not found! This maps not support Forsakened gamemode.\n")
 		BetterChatPrint(ply, "Navmesh not found! This maps not support Forsakened gamemode.", color_red)
@@ -86,7 +77,7 @@ hook.Add("PlayerInitialSpawn", function(ply)
 		end
 	end
 
-	ply:SetNWString("Class", "Standard")
+	ply:SetNWString("alaln-class", "Standard")
 end)
 
 function GM:PlayerLoadout(ply)
@@ -105,13 +96,14 @@ function GM:PlayerLoadout(ply)
 	ply:SetCanZoom(false)
 	ply:StopZooming()
 	ply:SetNWVector("ScrShake", vector_origin)
-	ply:SetNWBool("NeedToKillNow", false)
+	--ply:SetNWBool("NeedToKillNow", false)
 	ply:SetSubMaterial()
 	ply:CrosshairDisable()
 	ply:GodDisable()
 	ply:SetTeam(1)
 	ply:SetMaterial()
 	ply:SetNWBool("HasArmor", false)
+	ply.NextSpawnTime = CurTime() + 15
 	if SBOXMode:GetInt() == 1 then
 		ply:Give("weapon_physgun")
 		ply:Give("gmod_tool")
@@ -138,7 +130,7 @@ function GM:PlayerLoadout(ply)
 	ply.SetHull = true
 	local phys = ply:GetPhysicsObject()
 	if phys:IsValid() then phys:SetMass(80) end
-	ply:ScreenFade(SCREENFADE.IN, color_black, 2, 0)
+	ply:ScreenFade(SCREENFADE.IN, color_black, 3, 0)
 end
 
 function GM:PlayerSetModel(ply)
@@ -205,10 +197,10 @@ hook.Add("EntityTakeDamage", "alaln-enttakedamage", function(target, dmginfo)
 end)
 
 -- needful commands
-RunConsoleCommand("sv_defaultdeployspeed", 1)
-RunConsoleCommand("sv_rollangle", 2)
-RunConsoleCommand("sbox_maxnpcs", 128)
-RunConsoleCommand("sv_drc_disable_thirdperson", 1)
+RunConsoleCommand("sv_defaultdeployspeed", "1")
+RunConsoleCommand("sv_rollangle", "-4")
+RunConsoleCommand("sbox_maxnpcs", "128")
+RunConsoleCommand("mp_show_voice_icons", "0")
 local usecd = 0
 hook.Add("KeyPress", "alaln-keypress", function(ply, key)
 	if key == IN_ZOOM and usecd < CurTime() then

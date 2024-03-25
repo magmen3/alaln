@@ -34,6 +34,7 @@ SWEP.HoldType = "melee"
 SWEP.AutoSwitchTo = false
 SWEP.AutoSwitchFrom = false
 SWEP.MeleeHolsterSlot = 1
+SWEP.SoundCL = false
 SWEP.Primary.Sound = "weapons/slam/throw.wav"
 SWEP.Primary.Damage = 20
 SWEP.Primary.Ammo = "none"
@@ -108,7 +109,7 @@ function SWEP:Deploy()
 		self:SetNextSecondaryFire(CurTime() + self:GetOwner():GetViewModel():SequenceDuration())
 		self:SetHoldType(self.HoldType)
 		self:DoBFSAnimation(self.DeployAnim)
-		self:GetOwner():EmitSound(self.DeploySound)
+		self:GetOwner():EmitSound(self.DeploySound, 75, math.random(95, 105))
 		self:UpdateNextIdle()
 		self:EnforceMeleeHolsterRules(self)
 		return true
@@ -122,7 +123,12 @@ function SWEP:PrimaryAttack()
 		return
 	end
 
-	if CLIENT and self:GetOwner() ~= LocalPlayer() then self:GetOwner():EmitSound(self.Primary.Sound) end
+	if self.SoundCL and CLIENT and self:GetOwner() ~= LocalPlayer() then
+		self:GetOwner():EmitSound(self.Primary.Sound, 75, math.random(95, 105))
+	elseif not self.SoundCL then
+		self:GetOwner():EmitSound(self.Primary.Sound, 75, math.random(95, 105))
+	end
+
 	self:GetOwner():ViewPunch(self.PrimaryPunch)
 	self:DoBFSAnimation(self.PrimaryAnim)
 	self:GetOwner():GetViewModel():SetPlaybackRate(self.PrimaryAnimRate or 1)
@@ -149,14 +155,23 @@ function SWEP:SecondaryAttack()
 		return
 	end
 
-	if CLIENT and self:GetOwner() ~= LocalPlayer() then self:GetOwner():EmitSound(self.Secondary.Sound) end
+	if self.SoundCL and CLIENT and self:GetOwner() ~= LocalPlayer() then
+		self:GetOwner():EmitSound(self.Secondary.Sound, 75, math.random(95, 105))
+	elseif not self.SoundCL then
+		self:GetOwner():EmitSound(self.Secondary.Sound, 75, math.random(95, 105))
+	end
+
 	self:GetOwner():ViewPunch(self.SecondaryPunch)
 	self:DoBFSAnimation(self.SecondaryAnim)
 	if self.SecondaryAnim2 then
 		timer.Simple(self.SecAnimTwoDelay, function()
 			if IsValid(self) then
 				self:DoBFSAnimation(self.SecondaryAnim2)
-				if CLIENT and self:GetOwner() ~= LocalPlayer() then self:GetOwner():EmitSound(self.Secondary2Sound) end
+				if self.SoundCL and CLIENT and self:GetOwner() ~= LocalPlayer() then
+					self:GetOwner():EmitSound(self.Secondary2Sound, 75, math.random(95, 105))
+				else
+					self:GetOwner():EmitSound(self.Secondary2Sound, 75, math.random(95, 105))
+				end
 			end
 		end)
 	end
@@ -189,7 +204,7 @@ function SWEP:SlashAttack()
 	local pos1 = tr.HitPos + tr.HitNormal
 	local pos2 = tr.HitPos - tr.HitNormal
 	if (tr.HitPos - ply:GetShootPos()):Length() < 80 then
-		if SERVER and tr.HitWorld then ply:EmitSound(self.HitWorldSound) end
+		if SERVER and tr.HitWorld then ply:EmitSound(self.HitWorldSound, 75, math.random(95, 105)) end
 		if self.DmgType == DMG_SLASH then
 			if IsValid(tr.Entity) and tr.Entity:GetClass() == "prop_ragdoll" then
 				local vPoint = tr.HitPos
@@ -225,7 +240,7 @@ function SWEP:SlashAttack()
 			end
 
 			if tr.Entity:IsNPC() or tr.Entity:IsPlayer() then
-				ply:EmitSound(self.SlashSound)
+				ply:EmitSound(self.SlashSound, 75, math.random(95, 105))
 			else
 				if IsValid(tr.Entity:GetPhysicsObject()) then
 					local dmginfo2 = DamageInfo()
@@ -237,9 +252,9 @@ function SWEP:SlashAttack()
 					dmginfo2:SetDamage(self.Primary.Damage / 4)
 					tr.Entity:TakeDamageInfo(dmginfo2)
 					if tr.Entity:GetClass() == "prop_ragdoll" then
-						ply:EmitSound(self.SlashSound)
+						ply:EmitSound(self.SlashSound, 75, math.random(95, 105))
 					else
-						ply:EmitSound(self.HitWorldSound)
+						ply:EmitSound(self.HitWorldSound, 75, math.random(95, 105))
 					end
 				end
 			end
@@ -262,7 +277,7 @@ function SWEP:StabAttack()
 	local pos1 = tr.HitPos + tr.HitNormal
 	local pos2 = tr.HitPos - tr.HitNormal
 	if (tr.HitPos - ply:GetShootPos()):Length() < 80 then
-		if SERVER and tr.HitWorld then ply:EmitSound(self.HitWorldSound) end
+		if SERVER and tr.HitWorld then ply:EmitSound(self.HitWorldSound, 75, math.random(95, 105)) end
 		if self.DmgType == DMG_SLASH then
 			if IsValid(tr.Entity) and tr.Entity:GetClass() == "prop_ragdoll" then
 				local vPoint = tr.HitPos
@@ -298,7 +313,7 @@ function SWEP:StabAttack()
 			end
 
 			if tr.Entity:IsNPC() or tr.Entity:IsPlayer() then
-				ply:EmitSound(self.StabSound)
+				ply:EmitSound(self.StabSound, 75, math.random(95, 105))
 			else
 				if IsValid(tr.Entity:GetPhysicsObject()) then
 					local secdmginfo2 = DamageInfo()
@@ -310,9 +325,9 @@ function SWEP:StabAttack()
 					secdmginfo2:SetDamage(self.Secondary.Damage / 4)
 					tr.Entity:TakeDamageInfo(secdmginfo2)
 					if tr.Entity:GetClass() == "prop_ragdoll" then
-						ply:EmitSound(self.StabSound)
+						ply:EmitSound(self.StabSound, 75, math.random(95, 105))
 					else
-						ply:EmitSound(self.HitWorldSound)
+						ply:EmitSound(self.HitWorldSound, 75, math.random(95, 105))
 					end
 				end
 			end

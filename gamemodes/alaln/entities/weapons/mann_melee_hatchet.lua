@@ -10,6 +10,7 @@ SWEP.ViewModelFOV = 65
 SWEP.UseHands = true
 SWEP.HoldType = "melee"
 SWEP.MeleeHolsterSlot = 1
+SWEP.SoundCL = true
 SWEP.Primary.Sound = "weapons/slam/throw.wav"
 SWEP.Primary.Damage = 80
 SWEP.Primary.Delay = 0.7

@@ -598,7 +598,7 @@ function SWEP:BallisticSnap(traj)
 		for i = 1, math.floor(Dist / 500) do
 			local SoundSrc = Src + traj * i * 500
 			local plys = player.GetAll()
-			for key, ply in pairs(plys) do
+			for key, ply in ipairs(plys) do
 				if ply ~= self:GetOwner() then
 					local PlyPos = ply:GetPos()
 					if (PlyPos - SoundSrc):Length() < 500 then

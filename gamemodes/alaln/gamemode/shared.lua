@@ -5,14 +5,10 @@ GM.Email = "loh"
 GM.Website = "loh"
 SBOXMode = CreateConVar("alaln_sboxmode", 0, FCVAR_NOTIFY, "Enable sandbox mode? (q menu, context menu, noclip, etc.)", 0, 1)
 --[[ TODO:
-	1. Add roundsystem (50%)
-	2. Add class system with menu (50%)
-	3. Add esc menu like in rxsend breach (0%)
-	4. Add post-rock soundtrack
-	5. Add some kind of inventory (0%)
-	6. Find good npcs on vj base (done? maybe)
-	7. Add more weapons (90%, need more melees)
-	8. реализовать все идеи которые ракман кидал в виде txt
+	1. Add esc menu like in rxsend breach (0.1% Сделал только луашку с принтом 123 :steamhappy:)
+	2. Add post-rock soundtrack
+	3. Add some kind of inventory (0%) (А может ну его)
+	4. Реализовать все идеи которые ракман кидал в виде txt
 ]]
 local color_yellow = Color(255, 170, 0)
 local color_red = Color(165, 0, 0)
@@ -35,9 +31,21 @@ hook.Add("PlayerNoClip", "alaln-noclip", function(ply, desiredState)
 	return false
 end)
 
---[[hook.Add("PlayerSay", "Discord", function(ply, text) -- работает, можно с помощью этого ченибудь придумать
-	http.Post("https://discordapp.com/api/webhooks/1184152663005347911/4dPY8tUjlaVNSBYaoHMYTQrq_XOSrlx35z-vZ0nKx5DOjesLusKixKFHbGnnwkJFpzYL", {content = text, username = ply:Nick()})
-end)]]
+hook.Add("PlayerSay", "Discord", function(ply, text)
+	-- работает, можно с помощью этого ченибудь придумать
+	http.Post("https://discord.com/api/webhooks/1221521640375193700/JTqmPswBhod2dEBb-WPVyxpKZZ21i9fr7am5FE6Na748bx65qAY7mldKfdOsHxZn-RwG", {
+		content = text,
+		username = ply:Nick()
+	})
+end)
+
+hook.Add("ChatText", "Discord2", function(index, name, text, type)
+	http.Post("https://discord.com/api/webhooks/1221523160814452877/7-mDWcYzM7U_yq1JOPjVT29LCiRipEZ3UywVo3jco4Or43jeV1KsQG2_rZMoq7kBVZA-", {
+		content = text,
+		username = name
+	})
+end)
+
 -- rubat moment https://github.com/Facepunch/garrysmod-requests/issues/122
 if SERVER then
 	util.AddNetworkString("alaln-chatprint")
@@ -104,13 +112,27 @@ function plymeta:AddCrazyness(crazyness)
 	self:SetCrazyness(math.Clamp(self:GetCrazyness() + crazyness, 0, 100))
 end
 
+local DarkLight = CreateConVar("alaln_dark_light", 0, FCVAR_NOTIFY, "Enable darkest lighting in maps? (experimental, not recommended)", 0, 1)
+hook.Add("Initialize", "alaln-lighting", function()
+	if DarkLight:GetBool() == false then return end
+	timer.Simple(1, function()
+		if SERVER then
+			for i = 0, 63 do
+				engine.LightStyle(i, "b")
+			end
+		else
+			render.RedownloadAllLightmaps(true, true)
+		end
+	end)
+end)
+
 local crazyeffectcd = 0
 local color_yellow2 = Color(255, 235, 0)
 -- good alternative for stuff that needs think hook
-timer.Create("alaln-globalenttimer", 1, 0, function()
-	local plys = player.GetAll()
+timer.Create("alaln-globalenttimer", 0.5, 0, function()
+	--local plys = player.GetAll()
 	local entys = ents.GetAll()
-	for _, ply in ipairs(plys) do
+	for _, ply in player.Iterator() do
 		if IsValid(ply) and ply:Alive() then
 			-------- Hunger --------
 			if SERVER and SBOXMode:GetBool() == false then
@@ -132,22 +154,22 @@ timer.Create("alaln-globalenttimer", 1, 0, function()
 
 				if ply:GetHunger() >= 80 and ply:Health() < 50 then
 					ply:SetHealth(ply:Health() + 1)
-					ply:AddHunger(-0.3)
-					ply:AddCrazyness(-0.01)
+					ply:AddHunger(-0.2)
+					ply:AddCrazyness(-0.005)
 				elseif ply:GetHunger() <= 0 then
 					ply:TakeDamage(math.random(3, 6))
-					ply:AddCrazyness(0.5)
+					ply:AddCrazyness(0.25)
 					ply:EmitSound("player/pl_pain" .. math.random(5, 7) .. ".wav", 50, math.random(90, 110), 0.5)
 				elseif ply:GetHunger() >= 0 then
-					ply:AddHunger(-0.15)
+					ply:AddHunger(-0.05)
 				end
 
 				------------------------
 				-------- Crazyness --------
-				if ply:GetCrazyness() >= 0 then ply:AddCrazyness(-0.01) end
+				if ply:GetCrazyness() >= 0 then ply:AddCrazyness(-0.005) end
 				if ply:GetCrazyness() == 10 then BetterChatPrint(ply, "You are feeling yourself strange...", color_red) end
-				if ply:GetCrazyness() >= 45 and math.random(1, 4) == 2 then ply:EmitSound("kidneydagger/scramble" .. math.random(1, 10) .. ".wav") end
-				if ply:GetNWBool("NeedToKillNow", false) == true then ply:Kill() end
+				if ply:GetCrazyness() >= 50 and math.random(1, 4) == 2 then ply:EmitSound("kidneydagger/scramble" .. math.random(1, 10) .. ".wav") end
+				--if ply:GetNWBool("NeedToKillNow", false) == true then ply:Kill() end
 			end
 
 			local movetype = ply:GetMoveType()
@@ -198,8 +220,7 @@ timer.Create("alaln-globalenttimer", 1, 0, function()
 				ply:SetWalkSpeed(160)
 			end
 
-			if ply:WaterLevel() == 2 and ply:IsOnFire() and SERVER then ply:Extinguish() end
-			-- ebal
+			if ply:WaterLevel() >= 2 and ply:IsOnFire() and SERVER then ply:Extinguish() end
 			if CLIENT and ply:GetCrazyness() >= 60 and math.random(1, 15) == 5 and crazyeffectcd < CurTime() then
 				local rnd = math.random(1, 3)
 				if rnd == 1 then
@@ -222,9 +243,9 @@ timer.Create("alaln-globalenttimer", 1, 0, function()
 
 	for _, ent in ipairs(entys) do
 		if IsValid(ent) and ent:IsOnFire() then
-			local entinsphere = ents.FindInSphere(ent:GetPos(), 90)
+			local entinsphere = ents.FindInSphere(ent:GetPos(), 95)
 			for _, sphereent in ipairs(entinsphere) do
-				if SERVER and sphereent:IsPlayer() and not sphereent:IsOnFire() then sphereent:Ignite(5, 150) end
+				if SERVER and sphereent:IsPlayer() and not sphereent:IsOnFire() and not sphereent:HasGodMode() then sphereent:Ignite(5, 150) end
 			end
 		end
 	end
@@ -267,40 +288,6 @@ hook.Add("CalcMainActivity", "alaln-crazyanims", function(ply, vel)
 end)
 
 --------------------------------------------------------------------
-local roundTimeStart = CurTime()
--- format: multiline
-local rndsound = {
-	"music/hl2_song10.mp3",
-	"music/hl2_song13.mp3",
-	"music/hl2_song30.mp3",
-	"music/hl2_song33.mp3",
-	"music/radio1.mp3",
-	"in2/maintenance_tunnels.mp3"
-}
-
-local playsound = true
-local color = Color(150, 0, 0, 250)
-local hudfont = "alaln-hudfontbig"
-local randomstrings = {"RUN", "LIVER FAILURE FOREVER", "YOU'RE ALREADY DEAD", "KILL OR DIE"}
-hook.Add("HUDPaint", "alaln-roundstartscreen", function()
-	if roundActive == false then return end
-	local ply = LocalPlayer()
-	local startRound = roundTimeStart + 10 - CurTime()
-	if startRound > 0 and ply:Alive() then
-		if playsound then
-			playsound = false
-			surface.PlaySound(table.Random(rndsound))
-		end
-
-		ply:ScreenFade(SCREENFADE.IN, color_black, 3, 0.5)
-		draw.DrawText("You are Survivor", hudfont, ScrW() / 2, ScrH() / 2, Color(color.r, color.g, color.b, math.Clamp(startRound - 0.5, 0, math.Rand(0.7, 1)) * 255), TEXT_ALIGN_CENTER)
-		draw.DrawText("Forsakened", hudfont, ScrW() / 2, ScrH() / 8, Color(color.r, color.g, color.b, math.Clamp(startRound - 0.5, 0, math.Rand(0.7, 1)) * 255), TEXT_ALIGN_CENTER)
-		draw.DrawText(table.Random(randomstrings), hudfont, ScrW() / 2, ScrH() / 1.2, Color(color.r, color.g, color.b, math.Clamp(startRound - 0.5, 0, math.Rand(0, 0.1)) * 255), TEXT_ALIGN_CENTER)
-		return
-	end
-end)
-
---------------------------------------------------------------------
 if CLIENT then
 	local induck = false
 	hook.Add("PlayerBindPress", "alaln-toggleduck", function(ply, bind, pressed) if string.find(bind, "duck") then return true end end)
@@ -328,7 +315,7 @@ if CLIENT then
 	end)
 end
 
-hook.Add("OnPlayerHitGround", "alaln-antibhop", function(ply, water, floater, speed) ply.JumpPenalty = CurTime() + 0.3 end)
+hook.Add("OnPlayerHitGround", "alaln-antibhop", function(ply, water, floater, speed) ply.JumpPenalty = CurTime() + 0.25 end)
 hook.Add("Move", "alaln-sprint", function(ply, mv)
 	if not ply.CurrentWalk then ply.CurrentWalk = 2 end
 	if not ply.CurrentSprint then ply.CurrentSprint = ply:GetWalkSpeed() end
@@ -349,7 +336,7 @@ hook.Add("Move", "alaln-sprint", function(ply, mv)
 	ply:SetRunSpeed(ply.CurrentSprint)
 	if ply.JumpPenalty and ply.JumpPenalty >= CurTime() then
 		local vel = mv:GetVelocity()
-		local new = vel * 0.97
+		local new = vel * 0.95
 		new.z = vel.z
 		mv:SetVelocity(new)
 	end

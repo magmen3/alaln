@@ -1,5 +1,7 @@
 include("shared.lua")
-include("sh_rounds.lua")
+include("cl_hud.lua")
+include("cl_classmenu.lua")
+include("cl_mainmenu.lua")
 hook.Add("SpawnMenuOpen", "alaln-spawnmenu", function() if SBOXMode:GetInt() == 0 then return false end end)
 hook.Add("ContextMenuOpen", "alaln-contextmenu", function() if SBOXMode:GetInt() == 0 then return false end end)
 local function CreateFonts()
@@ -59,92 +61,6 @@ local function CreateFonts()
 end
 
 CreateFonts()
-local addmat_r = Material("ca/add_r")
-local addmat_g = Material("ca/add_g")
-local addmat_b = Material("ca/add_b")
-local vgbm = Material("vgui/black")
--- credits to Mr. Point
-function DrawCA(rx, gx, bx, ry, gy, by)
-	render.UpdateScreenEffectTexture()
-	addmat_r:SetTexture("$basetexture", render.GetScreenEffectTexture())
-	addmat_g:SetTexture("$basetexture", render.GetScreenEffectTexture())
-	addmat_b:SetTexture("$basetexture", render.GetScreenEffectTexture())
-	render.SetMaterial(vgbm)
-	render.DrawScreenQuad()
-	render.SetMaterial(addmat_r)
-	render.DrawScreenQuadEx(-rx / 2, -ry / 2, ScrW() + rx, ScrH() + ry)
-	render.SetMaterial(addmat_g)
-	render.DrawScreenQuadEx(-gx / 2, -gy / 2, ScrW() + gx, ScrH() + gy)
-	render.SetMaterial(addmat_b)
-	render.DrawScreenQuadEx(-bx / 2, -by / 2, ScrW() + bx, ScrH() + by)
-end
-
--- screen effects
-local NoiseTexture = Material("filmgrain/noise")
-local NoiseTexture2 = Material("filmgrain/noiseadd")
-hook.Add("RenderScreenspaceEffects", "alaln-screffects", function()
-	local ply = LocalPlayer()
-	if not (IsValid(ply) or ply:Alive()) or ply:GetMoveType() == MOVETYPE_NOCLIP then return end
-	local frac = 1 - ply:Health() / ply:GetMaxHealth()
-	local crazy = ply:GetCrazyness() / 7
-	local clrmod = {
-		["$pp_colour_addr"] = 0.05 + 0.01 * crazy,
-		["$pp_colour_addg"] = 0,
-		["$pp_colour_addb"] = 0.01,
-		["$pp_colour_brightness"] = -0.01 - 0.05 * frac,
-		["$pp_colour_contrast"] = 0.95 - 0.15 * frac,
-		["$pp_colour_colour"] = 0.85 - 0.15 * frac,
-		["$pp_colour_mulr"] = 0,
-		["$pp_colour_mulg"] = 0,
-		["$pp_colour_mulb"] = -0.45
-	}
-
-	if ply:Alive() then
-		DrawColorModify(clrmod)
-		DrawBloom(0.8, 2, 4, 2, 5, 1, 1, 1, 3)
-		DrawToyTown(1, ScrH() / 4 * frac)
-		DrawSharpen(0.75, 0.75)
-		DrawMaterialOverlay("fisheyelens", -0.045)
-		if ply:Health() <= 40 then DrawMotionBlur(0.6 - 0.2 * frac, 0.8, 0.01) end
-		local hp = frac * 8
-		DrawCA(15 * hp + 5, 7 * hp + 5, 25, 9 * hp + 5, 6 * hp + 5, -5)
-		surface.SetMaterial(NoiseTexture)
-		surface.SetDrawColor(165, 0, 0, 25 * frac)
-		surface.DrawTexturedRect(0, 0, ScrW(), ScrH())
-		surface.SetMaterial(NoiseTexture2)
-		surface.SetDrawColor(165, 0, 0, 25 * frac)
-		surface.DrawTexturedRect(0, 0, ScrW(), ScrH())
-	end
-end)
-
-local alpha_black = Color(20, 0, 0, 75)
-local hudfontbig = "alaln-hudfontbig"
-local hudfontsmall = "alaln-hudfontsmall"
--- hud
-hook.Add("PostDrawHUD", "alaln-realhud", function()
-	local ply = LocalPlayer()
-	if not (IsValid(ply) or ply:Alive()) then return end
-	local hudcolor = Color(150, 0, 0, math.Rand(ply:Health() / ply:GetMaxHealth(), 1) * 255)
-	draw.RoundedBox(5, ScrW() / 50, ScrH() - 110, 228, 85, alpha_black)
-	draw.SimpleText(ply:Health(), hudfontbig, 153, ScrH() - 64, hudcolor, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
-	if SBOXMode:GetBool() == false then
-		draw.SimpleText("Hunger: " .. math.Round(ply:GetHunger(), 0), hudfontsmall, ScrW() * 0.02, ScrH() * 0.88, hudcolor, TEXT_ALIGN_LEFT, TEXT_ALIGN_CENTER)
-		if ply:GetCrazyness() >= 10 then draw.SimpleText("Crazyness: " .. math.Round(ply:GetCrazyness(), 0), hudfontsmall, ScrW() * 0.02, ScrH() * 0.82, hudcolor, TEXT_ALIGN_LEFT, TEXT_ALIGN_CENTER) end
-	end
-
-	if ply:Armor() > 0 then draw.SimpleText("Armor: " .. ply:Armor(), hudfontsmall, ScrW() * 0.02, ScrH() * 0.85, hudcolor, TEXT_ALIGN_LEFT, TEXT_ALIGN_CENTER) end
-end)
-
-hook.Add("HUDPaintBackground", "alaln-healthvignette", function()
-	local ply = LocalPlayer()
-	local frac = ply:GetMaxHealth() - ply:Health()
-	if not IsValid(ply) or ply:GetMoveType() == MOVETYPE_NOCLIP then return end
-	alpha = math.Approach(frac or 200, 0, FrameTime() * 30)
-	surface.SetDrawColor(0, 0, 0, 150 + alpha)
-	surface.SetMaterial(Material("illuvignet.png"))
-	surface.DrawTexturedRect(0, 0, ScrW(), ScrH())
-end)
-
 hook.Add("AdjustMouseSensitivity", "alaln-sprintsensivity", function()
 	local ply = LocalPlayer()
 	if not IsValid(ply) or ply:GetMoveType() == MOVETYPE_NOCLIP then return end
@@ -169,7 +85,7 @@ hook.Add("HUDShouldDraw", "alaln-hidedefaulthud", function(name) return BadNames
 local BadType = {
 	["joinleave"] = true,
 	["namechange"] = true,
-	["servermsg"] = true,
+	["servermsg"] = false,
 	["teamchange"] = true
 }
 
@@ -202,7 +118,7 @@ end
 ThirdPerson = CreateClientConVar("alaln_thirdperson", 0, false, false, "Enable thirdperson?", 0, 1)
 local eyevecsuperpuper = Vector(0, 0, 1)
 hook.Add("CalcView", "alaln-calcview", function(ply, vec, ang, fov, znear, zfar)
-	if not (ply or IsValid(ply)) or ply:GetMoveType() == MOVETYPE_NOCLIP or ply:GetNoDraw() then return end
+	if not (ply or IsValid(ply)) or ply:GetMoveType() == MOVETYPE_NOCLIP or ply:GetNoDraw() or ply:GetViewEntity() ~= ply then return end
 	if not ply:Alive() then return end
 	--[[local plyrag
 	local plyrageye
@@ -214,7 +130,7 @@ hook.Add("CalcView", "alaln-calcview", function(ply, vec, ang, fov, znear, zfar)
 	local ang1 = LerpAngle(0.15, LocalPlayer():EyeAngles(), eye.Ang)
 	local MyLerp = Lerp(FrameTime(), -5, 0.1)
 	local anglerp = LerpAngle(MyLerp / 4, ang1, ang)
-	local angol = LerpAngle(0.01, anglerp, ang1)
+	local angol = LerpAngle(FrameTime(), anglerp, ang1)
 	local pozishon = ThirdPerson:GetBool() and util.TraceLine({
 		start = eye.Pos,
 		endpos = eye.Pos + angol:Up() * 1 + angol:Right() * 15 + angol:Forward() * -45,
@@ -291,31 +207,7 @@ hook.Add("CreateMove", "alaln-weaponshake", function(cmd)
 	end
 end)
 
-local color_loot = Color(0, 200, 0)
-local color_wep = Color(220, 0, 0)
-hook.Add("PostDrawEffects", "alaln-loothalo", function()
-	local pos = LocalPlayer():GetPos()
-	local entsInRange = ents.FindInSphere(pos, 384)
-	local lootEnt, wepEnt = {}, {}
-	for i = 1, #entsInRange do
-		local ent = entsInRange[i]
-		if not IsValid(ent) then return end
-		if (string.match(ent:GetClass(), "mann_") or string.match(ent:GetClass(), "alaln_")) and not IsValid(ent:GetOwner()) and not ent:GetNoDraw() then
-			if (ent:IsWeapon() and ent:GetMaxClip1() > 0) or ent.Base == "mann_ent_base" then
-				table.insert(wepEnt, ent)
-			else
-				table.insert(lootEnt, ent)
-			end
-		end
-	end
-
-	outline.Add(lootEnt, color_loot, OUTLINE_MODE_VISIBLE)
-	outline.Add(wepEnt, color_wep, OUTLINE_MODE_VISIBLE)
-end)
-
-local color_ui = Color(20, 0, 0, 100)
-local color_button = Color(20, 0, 0, 150)
-local color_text = Color(150, 0, 0)
+local color_yellow = Color(255, 235, 0)
 concommand.Add("checkammo", function()
 	local ply = LocalPlayer()
 	local wep = ply:GetActiveWeapon()
@@ -338,104 +230,8 @@ concommand.Add("checkammo", function()
 		text = "Empty magazine."
 	end
 
-	chat.AddText(Color(255, 235, 0), text)
+	chat.AddText(color_yellow, text)
 end, nil, "Check your current gun ammo", FCVAR_NONE)
-
-net.Receive("alaln-classmenu", function()
-	--------------------------------------------------- Class Menu
-	local frame = vgui.Create("DFrame")
-	frame:SetSize(500, 700)
-	frame:Center()
-	frame:SetTitle("")
-	frame:SetDraggable(false)
-	frame:MakePopup()
-	frame.Paint = function(self, w, h)
-		draw.RoundedBox(5, 0, 0, w, h, color_ui)
-		draw.SimpleText("Select Class", hudfontsmall, 245, 30, color_text, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
-	end
-
-	--------------------------------------------------- Model viewer
-	--[[local model = vgui.Create("DModelPanel", frame)
-	model:SetSize(300, 300)
-	model:SetPos(-80, 100)
-	model:SetModel("models/player/corpse1.mdl")
-
-	function model:LayoutEntity(ent)
-		ent:SetSequence(ent:LookupSequence("idle_all_angry"))
-		ent:SetAngles(Angle(0, 60, 0))
-
-		if IsValid(model.Entity) then
-			local mn, mx = model.Entity:GetRenderBounds()
-			local size = 0
-			size = math.max(size, math.abs(mn.x) + math.abs(mx.x))
-			size = math.max(size, math.abs(mn.y) + math.abs(mx.y))
-			size = math.max(size, math.abs(mn.z) + math.abs(mx.z))
-			model:SetFOV(85)
-			model:SetCamPos(Vector(size / 2, size / 2, size / 2))
-			model:SetLookAt((mn + mx) * 0.5)
-		end
-	end
-
-	function model.Entity:GetPlayerColor()
-		return LocalPlayer():GetPlayerColor()
-	end]]
-	--------------------------------------------------- Standard
-	local button1 = vgui.Create("DButton", frame)
-	button1:SetText("")
-	button1:SetPos(170, 100)
-	button1:SetSize(150, 100)
-	button1.Paint = function(self, w, h)
-		draw.RoundedBox(5, 0, 0, w, h, color_button)
-		draw.SimpleText("Standard", hudfontsmall, 75, 50, color_text, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
-	end
-
-	button1.DoClick = function()
-		DebugPrint("Selected Standard class")
-		net.Start("alaln-setclass")
-		net.WritePlayer(LocalPlayer())
-		net.WriteString("Standard")
-		net.SendToServer()
-		frame:Close()
-	end
-
-	--------------------------------------------------- Cannibal
-	local button2 = vgui.Create("DButton", frame)
-	button2:SetText("")
-	button2:SetPos(170, 250)
-	button2:SetSize(150, 100)
-	button2.Paint = function(self, w, h)
-		draw.RoundedBox(5, 0, 0, w, h, color_button)
-		draw.SimpleText("Cannibal", hudfontsmall, 75, 50, color_text, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
-	end
-
-	button2.DoClick = function()
-		DebugPrint("Selected Cannibal class")
-		net.Start("alaln-setclass")
-		net.WritePlayer(LocalPlayer())
-		net.WriteString("Cannibal")
-		net.SendToServer()
-		frame:Close()
-	end
-
-	--------------------------------------------------- Berserker
-	local button3 = vgui.Create("DButton", frame)
-	button3:SetText("")
-	button3:SetPos(170, 400)
-	button3:SetSize(150, 100)
-	button3.Paint = function(self, w, h)
-		draw.RoundedBox(5, 0, 0, w, h, color_button)
-		draw.SimpleText("Berserker", hudfontsmall, 75, 50, color_text, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
-	end
-
-	button3.DoClick = function()
-		DebugPrint("Selected Berserker class")
-		net.Start("alaln-setclass")
-		net.WritePlayer(LocalPlayer())
-		net.WriteString("Berserker")
-		net.SendToServer()
-		frame:Close()
-	end
-end)
 
 net.Receive("alaln-navmeshnotfound", function()
 	local navframe = vgui.Create("DFrame")
@@ -546,30 +342,73 @@ function GM:HUDDrawTargetID()
 	return false
 end
 
+local PIClr = {
+	nick = Color(220, 220, 220, 200),
+	healthy = Color(15, 220, 15, 200),
+	wounded = Color(200, 200, 15, 200),
+	sevwounded = Color(200, 125, 15, 200),
+	barely = Color(165, 15, 15, 200)
+}
+
 hook.Add("HUDPaint", "PlayerInfo", function()
 	local target = LocalPlayer():GetEyeTrace().Entity
 	if IsValid(target) and target:IsPlayer() and target:GetPos():Distance(LocalPlayer():GetPos()) <= 400 then
 		if target:GetNoDraw() then return end
 		local pos = (target:GetPos() + Vector(0, 0, 75)):ToScreen()
 		local health = target:Health()
-		draw.SimpleText(target:Nick(), "alaln-hudfontvsmall", pos.x, pos.y, color_white, TEXT_ALIGN_CENTER)
+		draw.SimpleText(target:Nick(), "alaln-hudfontvsmall", pos.x, pos.y, PIClr.nick, TEXT_ALIGN_CENTER)
 		local healthStatus = "Healthy"
-		local healthColor = Color(0, 255, 0)
+		local healthColor = PIClr.healthy
 		if health <= 75 then
 			healthStatus = "Wounded"
-			healthColor = Color(255, 255, 0)
+			healthColor = PIClr.wounded
 		end
 
 		if health <= 50 then
 			healthStatus = "Severely Wounded"
-			healthColor = Color(255, 165, 0)
+			healthColor = PIClr.sevwounded
 		end
 
 		if health <= 25 then
 			healthStatus = "Barely Standing"
-			healthColor = Color(139, 0, 0)
+			healthColor = PIClr.barely
 		end
 
 		draw.SimpleText(healthStatus, "alaln-hudfontvsmall", pos.x, pos.y + 18, healthColor, TEXT_ALIGN_CENTER)
+	end
+end)
+
+local roundTimeStart = CurTime()
+-- format: multiline
+local rndsound = {
+	"music/hl2_song10.mp3",
+	"music/hl2_song13.mp3",
+	"music/hl2_song30.mp3",
+	"music/hl2_song33.mp3",
+	"music/radio1.mp3",
+	"in2/maintenance_tunnels.mp3"
+}
+
+local playsound = true
+local color = Color(150, 0, 0, 250)
+local hudfont = "alaln-hudfontbig"
+local randomstrings = {"RUN", "LIVER FAILURE FOREVER", "YOU'RE ALREADY DEAD", "KILL OR DIE"}
+local text
+hook.Add("HUDPaint", "alaln-roundstartscreen", function()
+	if true then return end
+	local ply = LocalPlayer()
+	local startRound = roundTimeStart + 10 - CurTime()
+	if startRound > 0 and ply:Alive() then
+		if playsound then
+			playsound = false
+			surface.PlaySound(table.Random(rndsound))
+			text = table.Random(randomstrings)
+		end
+
+		ply:ScreenFade(SCREENFADE.IN, color_black, 3, 0.5)
+		draw.DrawText("You are Survivor", hudfont, ScrW() / 2, ScrH() / 2, Color(color.r, color.g, color.b, math.Clamp(startRound - 0.5, 0, math.Rand(0.7, 1)) * 255), TEXT_ALIGN_CENTER)
+		draw.DrawText("Forsakened", hudfont, ScrW() / 2, ScrH() / 8, Color(color.r, color.g, color.b, math.Clamp(startRound - 0.5, 0, math.Rand(0.7, 1)) * 255), TEXT_ALIGN_CENTER)
+		draw.DrawText(text, hudfont, ScrW() / 2, ScrH() / 1.2, Color(color.r, color.g, color.b, math.Clamp(startRound - 0.5, 0, math.Rand(0, 0.1)) * 255), TEXT_ALIGN_CENTER)
+		return
 	end
 end)

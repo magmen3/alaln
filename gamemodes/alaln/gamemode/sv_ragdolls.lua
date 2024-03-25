@@ -20,7 +20,7 @@ end
 function meta:CreateRagdoll()
 	if not (self or self:IsValid() or self:IsPlayer()) then return end
 	self.DeathRagdoll = self.DeathRagdoll or false
-	local ply_pos = self:GetPos()
+	local ply_pos = self:GetPos() + Vector(0, 0, 10) -- чтоб в воздухе не появлялся 
 	local ply_ang = self:GetAngles()
 	local ply_mdl = self:GetModel()
 	local ply_skn = self:GetSkin()
@@ -46,7 +46,7 @@ function meta:CreateRagdoll()
 	ent:SetSubMaterial(2, ply_submat2)
 	ent:SetCreator(self)
 	ent:BetterSetPlayerColor(self:GetPlayerColor())
-	self:Spectate(OBS_MODE_CHASE) -- OBS_MODE_FREEZECAM
+	self:Spectate(OBS_MODE_CHASE)
 	self:SpectateEntity(ent)
 	for _, bg in ipairs(self:GetBodyGroups()) do
 		ent:SetBodygroup(bg.id, self:GetBodygroup(bg.id))
@@ -59,7 +59,6 @@ function meta:CreateRagdoll()
 	self.DeathRagdoll = ent
 	local plyvel = self:GetVelocity()
 	if playerModelIsRagdoll then
-		-- Position and rotate the ragdoll's limbs, set their velocity
 		for i = 0, ent:GetPhysicsObjectCount() - 1 do
 			local bone = ent:GetPhysicsObjectNum(i)
 			if bone and bone:IsValid() then
@@ -70,7 +69,6 @@ function meta:CreateRagdoll()
 			end
 		end
 
-		-- Pose the ragdoll's face
 		ent:SetFlexScale(self:GetFlexScale())
 		for i = 1, ent:GetFlexNum() do
 			ent:SetFlexWeight(i, self:GetFlexWeight(i))
