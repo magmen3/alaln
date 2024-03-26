@@ -28,36 +28,45 @@ ALALN_LootTable = {
 }
 
 local lootCount = 0
+
 local function spawnLoot()
-	if lootCount >= 30 then return end
-	local loot = table.Random(ALALN_LootTable)
-	if math.random(100) <= loot[2] then
-		local item = ents.Create(loot[1])
-		if not IsValid(item) then return end
-		local navAreas = navmesh.GetAllNavAreas()
-		local area = table.Random(navAreas)
-		local pos = area:GetRandomPoint() + Vector(math.random(-5, 5), math.random(-5, 5), 10)
-		item:SetPos(pos)
-		--item:SetAngles(Angle(0, 0, math.random(-360, 360)))
-		item:Spawn()
-		print(item.PrintName or "none", item:GetClass() or "none")
-		lootCount = lootCount + 1
-	end
+    if lootCount >= 30 then return end
+    local loot = table.Random(ALALN_LootTable)
+    if math.random(100) <= loot[2] then
+        local item = ents.Create(loot[1])
+        if not IsValid(item) then return end
+        local navAreas = navmesh.GetAllNavAreas()
+        local area = table.Random(navAreas)
+        local pos = area:GetRandomPoint() + Vector(math.random(-5, 5), math.random(-5, 5), 10)
+        -- Если точечка наша в воде тогда бла бла бла блаааа
+        local tr = util.TraceLine({
+            start = pos,
+            endpos = pos + Vector(0, 0, -10000),
+            mask = MASK_WATER
+        })
+        -- ретурн эээнд
+        if tr.Hit then return end
+        item:SetPos(pos)
+        item:Spawn()
+        print(item.PrintName or "none", item:GetClass() or "none")
+        lootCount = lootCount + 1
+    end
 end
 
 local function spawnLootTimer()
-	for i = 1, 20 do
-		spawnLoot()
-	end
+    for i = 1, 20 do
+        spawnLoot()
+    end
 
-	if lootCount >= 54 then
-		timer.Simple(240, spawnLootTimer)
-	else
-		timer.Simple(math.random(16, 85), spawnLootTimer)
-	end
+    if lootCount >= 54 then
+        timer.Simple(240, spawnLootTimer)
+    else
+        timer.Simple(math.random(16, 85), spawnLootTimer)
+    end
 end
 
 spawnLootTimer()
+
 local function RandArea()
 	local navAreas = navmesh.GetAllNavAreas()
 	local indoorAreas = {}
