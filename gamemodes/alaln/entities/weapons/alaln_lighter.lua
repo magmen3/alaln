@@ -86,35 +86,50 @@ function SWEP:Initialize()
 	self:SetHoldType(self.HoldType)
 end
 
+local holcd = 0
+local randholstrings = {
+	"I think it's a bad idea to put an open lighter in your pocket...",
+	"Did you read the engraving?",
+	"I should probably close it before put it in pocket..."
+}
+
+local randfirestrings = {
+	"You've done yourself a little trolling.",
+	"Seems like you should have been more careful to this thing."
+}
+
+local color_red = Color(165, 0, 0)
+local color_yellow = Color(255, 170, 0)
 function SWEP:Holster(wep)
 	local ply = self:GetOwner()
 	if not IsValid(ply) or not ply:Alive() then return end
 	if IsValid(ply:GetViewModel()) then ply:GetViewModel():StopParticles() end
 	-- funnies
-	if wep and wep ~= NULL and ply:Alive() and self:IsLit() then
+	if wep and wep ~= NULL and ply:Alive() and self:IsLit() and holcd < CurTime() then
 		if math.random(1, 6) == 3 then
 			if SERVER then
 				ply:Ignite(5, 180)
-				BetterChatPrint(ply, "You've done yourself a little trolling.", Color(165, 0, 0))
+				BetterChatPrint(ply, table.Random(randfirestrings), color_red)
 			end
 			return true
 		else
 			if SERVER then
-				BetterChatPrint(ply, "I think it's a bad idea to put an open lighter in your pocket...", Color(255, 170, 0))
+				BetterChatPrint(ply, table.Random(randholstrings), color_yellow)
 			elseif CLIENT then
 				surface.PlaySound("common/warning.wav")
 			end
 			return false
 		end
+		holcd = CurTime() + 1
 	end
 
-	self:EmitSound("player/weapon_holster_0" .. math.random(1, 5) .. ".wav", 100, 100)
+	self:EmitSound("player/weapon_holster_0" .. math.random(1, 5) .. ".wav")
 	return true
 end
 
 function SWEP:Deploy()
 	if not IsValid(self:GetOwner()) or not self:GetOwner():Alive() then return end
-	self:EmitSound("player/weapon_draw_0" .. math.random(1, 5) .. ".wav", 100, 100)
+	self:EmitSound("player/weapon_draw_0" .. math.random(1, 5) .. ".wav")
 	self:SetNWBool("Light", true)
 	self:SetHoldType(self.HoldType)
 	timer.Simple(self:SequenceDuration() - 0.8, function() if CLIENT and IsValid(self) then ParticleEffectAttach("lighter_flame", PATTACH_POINT_FOLLOW, self:GetOwner():GetViewModel(), 1) end end)
@@ -147,7 +162,7 @@ function SWEP:SecondaryAttack()
 
 	local allowedmats = {MAT_ANTLION, MAT_BLOODYFLESH, MAT_FLESH, MAT_ALIENFLESH, MAT_FOLIAGE, MAT_GRASS, MAT_WOOD}
 	-- ignite props/npcs
-	if trace.Hit and IsValid(trace.Entity) and not trace.Entity:IsWorld() and table.HasValue(allowedmats, trace.MatType) and not trace.Entity:IsOnFire() then
+	if trace.Hit and IsValid(trace.Entity) and not trace.Entity:IsWorld() and table.HasValue(allowedmats, trace.MatType) and not trace.Entity:IsOnFire() and trace.Entity:WaterLevel() < 1 then
 		local vm = ply:GetViewModel()
 		vm:SendViewModelMatchingSequence(vm:LookupSequence("reach_out_start"))
 		self:SetHoldType(self.IgniteHoldType)

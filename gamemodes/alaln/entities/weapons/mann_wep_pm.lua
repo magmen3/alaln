@@ -1,4 +1,4 @@
-if SERVER then AddCSLuaFile() end
+AddCSLuaFile()
 SWEP.Base = "mann_wep_base"
 SWEP.PrintName = "Makarov PM"
 SWEP.Purpose = "An old Makarov pistol from 1951 used by the soviet militia. Can still kick the ass of various not-so-living bastards."

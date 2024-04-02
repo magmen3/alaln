@@ -85,7 +85,6 @@ function SWEP:NPCShoot_Primary(shootPos, shootDir)
 	self:PrimaryAttack()
 end
 
--- These tell the NPC how to use the weapon
 AccessorFunc(SWEP, "fNPCMinBurst", "NPCMinBurst")
 AccessorFunc(SWEP, "fNPCMaxBurst", "NPCMaxBurst")
 AccessorFunc(SWEP, "fNPCFireRate", "NPCFireRate")

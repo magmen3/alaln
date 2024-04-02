@@ -2,7 +2,7 @@ AddCSLuaFile()
 AddCSLuaFile("shared.lua")
 if CLIENT then
 	SWEP.DrawAmmo = true
-	SWEP.DrawCrosshair = false
+	SWEP.DrawCrosshair = true
 	SWEP.ViewModelFOV = 80
 	SWEP.Slot = 2
 	SWEP.SlotPos = 0

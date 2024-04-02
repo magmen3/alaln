@@ -1,10 +1,3 @@
---[[---------------------------------------------------------
-	Name: SetupWeaponHoldTypeForAI
-	Desc: Sets up ACT translations from generic activities to NPC specific activies. In a seperate file to clean up the init.lua
-		Not all NPCs have support for all animations (for example Citizens don't have pistol animations)
-		This only supports the holdtypes the default NPC models can support
-		All of these are taken directly from IMPLEMENT_ACTTABLE() macro of the C++ weapons
------------------------------------------------------------]]
 function SWEP:SetupWeaponHoldTypeForAI(t)
 	self.ActivityTranslateAI = {}
 	-- Default is pistol/revolver for reasons

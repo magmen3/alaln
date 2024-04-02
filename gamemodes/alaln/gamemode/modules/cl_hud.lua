@@ -18,7 +18,7 @@ local function DrawCA(rx, gx, bx, ry, gy, by)
 	render.DrawScreenQuadEx(-bx / 2, -by / 2, ScrW() + bx, ScrH() + by)
 end
 
-local function DrawSunEffect()
+local function DrawSE()
 	local sun = util.GetSunInfo()
 	if not sun then return end
 	if not sun.obstruction == 0 or sun.obstruction == 0 then return end
@@ -33,35 +33,25 @@ end
 local NoiseTexture = Material("filmgrain/noise")
 local NoiseTexture2 = Material("filmgrain/noiseadd")
 local deathclrmod = {
-	["$pp_colour_addr"] = 0,
-	["$pp_colour_addg"] = 0,
-	["$pp_colour_addb"] = 0,
-	["$pp_colour_brightness"] = 0,
-	["$pp_colour_contrast"] = 1,
 	["$pp_colour_colour"] = 0,
 	["$pp_colour_mulr"] = 1,
-	["$pp_colour_mulg"] = 0,
-	["$pp_colour_mulb"] = 0
 }
 
 hook.Add("RenderScreenspaceEffects", "alaln-screffects", function()
 	local ply = LocalPlayer()
 	if not (IsValid(ply) or ply:Alive()) or ply:GetMoveType() == MOVETYPE_NOCLIP then return end
 	local frac = 1 - ply:Health() / ply:GetMaxHealth()
-	local crazy = ply:GetCrazyness() / 7
+	local crazy = ply:GetCrazyness() >= 10 and ply:GetCrazyness() / 7 or 1
 	local clrmod = {
 		["$pp_colour_addr"] = 0.05 + 0.01 * crazy,
-		["$pp_colour_addg"] = 0,
 		["$pp_colour_addb"] = 0.01,
 		["$pp_colour_brightness"] = -0.01 - 0.05 * frac,
 		["$pp_colour_contrast"] = 0.95 - 0.15 * frac,
 		["$pp_colour_colour"] = 0.85 - 0.15 * frac,
-		["$pp_colour_mulr"] = 0,
-		["$pp_colour_mulg"] = 0,
 		["$pp_colour_mulb"] = -0.45
 	}
 
-	DrawSunEffect()
+	DrawSE()
 	DrawBloom(0.8, 2, 4, 2, 5, 1, 1, 1, 3)
 	DrawSharpen(0.75, 0.75)
 	DrawMaterialOverlay("fisheyelens", -0.045)
@@ -111,15 +101,52 @@ hook.Add("HUDPaintBackground", "alaln-healthvignette", function()
 	surface.DrawTexturedRect(0, 0, ScrW(), ScrH())
 end)
 
+-- player info hud
+local PIClr = {
+	nick = Color(220, 220, 220, 200),
+	healthy = Color(15, 220, 15, 200),
+	wounded = Color(200, 200, 15, 200),
+	sevwounded = Color(200, 125, 15, 200),
+	barely = Color(165, 15, 15, 200)
+}
+
+function GM:HUDDrawTargetID()
+	return false
+end
+
+hook.Add("HUDPaint", "alaln-playerinfo", function()
+	local target = LocalPlayer():GetEyeTrace().Entity
+	if IsValid(target) and target:IsPlayer() and target:GetPos():Distance(LocalPlayer():GetPos()) <= 400 then
+		if target:GetNoDraw() then return end
+		local pos = (target:GetPos() + Vector(0, 0, 75)):ToScreen()
+		local health = target:Health()
+		draw.SimpleText(target:Nick(), "alaln-hudfontvsmall", pos.x, pos.y, PIClr.nick, TEXT_ALIGN_CENTER)
+		local healthStatus = "Healthy"
+		local healthColor = PIClr.healthy
+		if health <= 75 then
+			healthStatus = "Wounded"
+			healthColor = PIClr.wounded
+		elseif health <= 50 then
+			healthStatus = "Severely Wounded"
+			healthColor = PIClr.sevwounded
+		elseif health <= 25 then
+			healthStatus = "Barely Standing"
+			healthColor = PIClr.barely
+		end
+
+		draw.SimpleText(healthStatus, "alaln-hudfontvsmall", pos.x, pos.y + 18, healthColor, TEXT_ALIGN_CENTER)
+	end
+end)
+
+-- loot outline
 local color_loot = Color(0, 255, 0)
 local color_wep = Color(220, 0, 0)
 hook.Add("PreDrawHalos", "alaln-loothalo", function()
 	if not LocalPlayer():Alive() then return end
 	local pos = LocalPlayer():GetPos()
-	local entsInRange = ents.FindInSphere(pos, 384)
+	local entsInRange = ents.FindInSphere(pos, 256)
 	local lootEnt, wepEnt = {}, {}
-	for i = 1, #entsInRange do
-		local ent = entsInRange[i]
+	for _, ent in ipairs(entsInRange) do
 		if not IsValid(ent) then return end
 		if (string.match(ent:GetClass(), "mann_") or string.match(ent:GetClass(), "alaln_")) and not IsValid(ent:GetOwner()) and not ent:GetNoDraw() then
 			if (ent:IsWeapon() and ent:GetMaxClip1() > 0) or ent.Base == "mann_ent_base" then
@@ -130,6 +157,24 @@ hook.Add("PreDrawHalos", "alaln-loothalo", function()
 		end
 	end
 
+	outline.SetRenderType(OUTLINE_RENDERTYPE_AFTER_EF)
 	outline.Add(lootEnt, color_loot, OUTLINE_MODE_BOTH)
 	outline.Add(wepEnt, color_wep, OUTLINE_MODE_BOTH)
+end)
+
+-- disable default hud
+local BadNames = {
+	["CHudHealth"] = false,
+	["CHudBattery"] = false,
+	["CHudAmmo"] = false,
+	["CHudSecondaryAmmo"] = false,
+	["CHudCrosshair"] = false,
+	["CHudDamageIndicator"] = false,
+	["CHudGeiger"] = false
+}
+
+hook.Add("HUDShouldDraw", "alaln-hidedefaulthud", function(name) return BadNames[name] end)
+hook.Add("ScoreboardShow", "alaln-scoreboard", function()
+	if SBOXMode:GetBool() == true or not LocalPlayer():Alive() then return end
+	return true
 end)

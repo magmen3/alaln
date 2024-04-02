@@ -1,4 +1,4 @@
-if SERVER then AddCSLuaFile() end
+AddCSLuaFile()
 SWEP.Base = "mann_melee_base"
 SWEP.PrintName = "Metal Baseball Bat"
 SWEP.Instructions = "This is your trusty metallic baseball bat. Use it as you see fit.\n\nLMB to slash.\nRMB to stab.\nBackstabs do more damage."

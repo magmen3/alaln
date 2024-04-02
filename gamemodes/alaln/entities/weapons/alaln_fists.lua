@@ -1,5 +1,5 @@
 -- Original by WebKnight, modified code by Mannytko
-if SERVER then AddCSLuaFile() end
+AddCSLuaFile()
 SWEP.Base = "alaln_base"
 SWEP.Spawnable = true
 SWEP.UseHands = true
@@ -427,11 +427,9 @@ function SWEP:Think()
 		vm:SetWeaponModel("models/weapons/c_arms_wbk_unarmed.mdl", self)
 		vm:SendViewModelMatchingSequence(vm:LookupSequence("WbkCrouch"))
 	else
-		if self.fistsOut and not self.isInBlockDam then
-			if vm:GetModel() == "models/weapons/c_arms_wbk_unarmed.mdl" then
-				vm:SetWeaponModel("models/weapons/v_fist.mdl", self)
-				vm:SendViewModelMatchingSequence(vm:LookupSequence("draw"))
-			end
+		if self.fistsOut and not self.isInBlockDam and vm:GetModel() == "models/weapons/c_arms_wbk_unarmed.mdl" then
+			vm:SetWeaponModel("models/weapons/v_fist.mdl", self)
+			vm:SendViewModelMatchingSequence(vm:LookupSequence("draw"))
 		end
 	end
 
@@ -447,11 +445,9 @@ function SWEP:Think()
 	end
 
 	if owner:OnGround() and self.canWbkUseJumpAnim == false then self.canWbkUseJumpAnim = true end
-	if not owner:OnGround() and owner:WaterLevel() == 0 then
-		if self.fistsOut == false and idletime > 0 and CurTime() > idletime then
-			vm:SendViewModelMatchingSequence(vm:LookupSequence("WbKInAir"))
-			self:UpdateNextIdle()
-		end
+	if not owner:OnGround() and owner:WaterLevel() == 0 and self.fistsOut == false and idletime > 0 and CurTime() > idletime then
+		vm:SendViewModelMatchingSequence(vm:LookupSequence("WbKInAir"))
+		self:UpdateNextIdle()
 	end
 
 	if owner:IsSprinting() and self.fistsOut == true then

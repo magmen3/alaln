@@ -1,4 +1,4 @@
-if SERVER then AddCSLuaFile() end
+AddCSLuaFile()
 SWEP.Base = "mann_melee_base"
 SWEP.PrintName = "KM-2000"
 SWEP.Instructions = "This is your trusty survivor knife. Use it as you see fit.\n\nLMB to slash.\nRMB to stab.\nBackstabs do more damage."

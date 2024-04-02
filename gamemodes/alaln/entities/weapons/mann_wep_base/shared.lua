@@ -18,7 +18,7 @@ N::::::N        N::::::N a::::::::::aa:::ab:::::::::::::::b
 NNNNNNNN         NNNNNNN  aaaaaaaaaa  aaaabbbbbbbbbbbbbbbb   
 
 ]]
-if SERVER then AddCSLuaFile() end
+AddCSLuaFile()
 AddCSLuaFile("client.lua")
 include("client.lua")
 game.AddParticles("particles/pcfs_jack_muzzleflashes.pcf")
@@ -188,8 +188,8 @@ function SWEP:PrimaryAttack()
 	self.ReloadInterrupted = true
 	if not self:GetReady() then return end
 	if self:GetSprinting() > 10 then return end
-	if not (self:Clip1() > 0) then
-		self:EmitSound("weapons/firearms/hndg_glock17/glock17_dryfire.wav", 55, 100)
+	if self:Clip1() <= 0 then
+		self:EmitSound("weapons/firearms/hndg_glock17/glock17_dryfire.wav")
 		self:SetNextPrimaryFire(CurTime() + (self.Primary.Automatic and .35 or .25))
 		if self.DryFireAnim then self:DoBFSAnimation(self.DryFireAnim) end
 		return
@@ -208,7 +208,7 @@ function SWEP:PrimaryAttack()
 	local WaterMul = 1
 	if self:GetOwner():WaterLevel() >= 3 then WaterMul = .5 end
 	local dmgAmt, InAcc = self.Primary.Damage * math.Rand(.9, 1.1) * WaterMul, 1 - self.Accuracy
-	if not (self:GetAiming() > 99) then InAcc = InAcc + self.HipFireInaccuracy end
+	if self:GetAiming() <= 99 then InAcc = InAcc + self.HipFireInaccuracy end
 	local BulletTraj = (self:GetOwner():GetAimVector() + VectorRand() * InAcc):GetNormalized()
 	local bullet = {}
 	bullet.Num = self.Primary.NumShots
@@ -291,20 +291,18 @@ end
 -- wat
 function SWEP:Think()
 	if SERVER then
-		if (self.ReloadType == "individual") and self:GetReloading() then
-			if self.VReloadTime < CurTime() then
-				if (self:Clip1() < self.Primary.ClipSize) and (self:GetOwner():GetAmmoCount(self.Primary.Ammo) > 0) and not self.ReloadInterrupted then
-					self:SetClip1(self:Clip1() + 1)
-					self:GetOwner():RemoveAmmo(1, self.Primary.Ammo)
-					self:StallAnimation(self.ReloadAnim, 1)
-					timer.Simple(.01, function() self:ReadyAfterAnim(self.InsertAnim) end)
-					sound.Play(self.ReloadSound, self:GetOwner():GetShootPos(), 55, 100)
-				else
-					self:SetReloading(false)
-					self:ReadyAfterAnim(self.AfterReloadAnim)
-					timer.Simple(.25, function() if IsValid(self) and IsValid(self:GetOwner()) then self:EmitSound(self.CycleSound, 55, 90) end end)
-					timer.Simple(.5, function() if IsValid(self) and IsValid(self:GetOwner()) then self:SetReady(true) end end)
-				end
+		if (self.ReloadType == "individual") and self:GetReloading() and self.VReloadTime < CurTime() then
+			if (self:Clip1() < self.Primary.ClipSize) and (self:GetOwner():GetAmmoCount(self.Primary.Ammo) > 0) and not self.ReloadInterrupted then
+				self:SetClip1(self:Clip1() + 1)
+				self:GetOwner():RemoveAmmo(1, self.Primary.Ammo)
+				self:StallAnimation(self.ReloadAnim, 1)
+				timer.Simple(.01, function() self:ReadyAfterAnim(self.InsertAnim) end)
+				sound.Play(self.ReloadSound, self:GetOwner():GetShootPos(), 55, 100)
+			else
+				self:SetReloading(false)
+				self:ReadyAfterAnim(self.AfterReloadAnim)
+				timer.Simple(.25, function() if IsValid(self) and IsValid(self:GetOwner()) then self:EmitSound(self.CycleSound, 55, 90) end end)
+				timer.Simple(.5, function() if IsValid(self) and IsValid(self:GetOwner()) then self:SetReady(true) end end)
 			end
 		end
 
@@ -351,7 +349,7 @@ function SWEP:Reload()
 			end
 
 			self:GetOwner():GetViewModel():SetPlaybackRate(self.ReloadRate)
-			self.Weapon:EmitSound(self.ReloadSound, 65, 100)
+			self:EmitSound(self.ReloadSound, 65, 100)
 			if SERVER then
 				if self.CycleType == "revolving" then
 					timer.Simple(self.ReloadTime / 3, function()
@@ -409,7 +407,7 @@ function SWEP:Deploy()
 		self:GetOwner():GetViewModel():SetPlaybackRate(.5)
 		self:SetReady(false)
 		self:GetOwner():DoAnimationEvent(ACT_GMOD_GESTURE_ITEM_PLACE)
-		self:EmitSound("weapons/firearms/holster_out" .. math.random(1, 5) .. ".wav", 70, self.HandlingPitch)
+		self:EmitSound("weapons/firearms/holster_out" .. math.random(1, 5) .. ".wav", 70, self.HandlingPitch or 100)
 		self:EnforceHolsterRules(self)
 		self:GetOwner():GetViewModel():StopParticles()
 		timer.Simple(1.5, function() if IsValid(self) then self:SetReady(true) end end)
@@ -425,7 +423,7 @@ function SWEP:EnforceHolsterRules(newWep)
 
 	for key, wep in pairs(self:GetOwner():GetWeapons()) do
 		-- conflict
-		if wep.HolsterSlot and self.HolsterSlot and (wep.HolsterSlot == self.HolsterSlot) and not (wep == self) then self:GetOwner():DropWeapon(wep) end
+		if wep.HolsterSlot and self.HolsterSlot and (wep.HolsterSlot == self.HolsterSlot) and (wep ~= self) then self:GetOwner():DropWeapon(wep) end
 	end
 end
 
@@ -507,7 +505,7 @@ end
 function SWEP:RicochetOrPenetrate(initialTrace)
 	local AVec, IPos, TNorm, SMul = initialTrace.Normal, initialTrace.HitPos, initialTrace.HitNormal, SurfaceHardness[initialTrace.MatType]
 	if not SMul then SMul = .5 end
-	local ApproachAngle = -math.deg(math.asin(TNorm:DotProduct(AVec)))
+	local ApproachAngle = -math.deg(math.asin(TNorm:Dot(AVec)))
 	local MaxRicAngle = 60 * SMul
 	-- all the way through
 	if ApproachAngle > (MaxRicAngle * 1.25) then
@@ -681,8 +679,6 @@ if CLIENT then
 			else
 				self:DrawModel()
 			end
-
-			local pos, ang = self:GetOwner():GetBonePosition(self:GetOwner():LookupBone("ValveBiped.Bip01_R_Hand"))
 		end
 	end
 

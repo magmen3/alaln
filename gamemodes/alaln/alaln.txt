@@ -12,7 +12,7 @@
 		{
 			"name"		"alaln_sboxmode"
 			"text"		"Sandbox Mode"
-			"help"		"Enable sandbox mode?"
+			"help"		"Enable sandbox mode? (q menu, context menu, noclip, etc.)"
 			"type"		"CheckBox"
 			"default"	"0"
 		}
@@ -21,7 +21,7 @@
 		{
 			"name"		"alaln_dark_light"
 			"text"		"Dark Lighting"
-			"help"		"Enable dark lighting? (experimental)"
+			"help"		"Enable darkest lighting in maps? (experimental, not recommended)"
 			"type"		"CheckBox"
 			"default"	"0"
 		}

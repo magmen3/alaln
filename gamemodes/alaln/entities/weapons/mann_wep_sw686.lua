@@ -1,4 +1,4 @@
-if SERVER then AddCSLuaFile() end
+AddCSLuaFile()
 SWEP.Base = "mann_wep_base"
 SWEP.PrintName = "S&W-686"
 SWEP.Purpose = "PLACEHOLDER"

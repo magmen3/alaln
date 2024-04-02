@@ -12,31 +12,16 @@ SWEP.BobScale = 2 -- The scale of the viewmodel bob
 SWEP.RenderGroup = RENDERGROUP_OPAQUE
 SWEP.WepSelectIcon = surface.GetTextureID("vgui/entities/drc_default")
 SWEP.IconOverride = "vgui/entities/drc_default"
---[[---------------------------------------------------------
-	You can draw to the HUD here - it will only draw when
-	the client has the weapon deployed..
------------------------------------------------------------]]
 function SWEP:DrawHUD()
 end
 
---[[---------------------------------------------------------
-	Checks the objects before any action is taken
-	This is to make sure that the entities haven't been removed
------------------------------------------------------------]]
 function SWEP:DrawWeaponSelection(x, y, wide, tall, alpha)
-	-- Set us up the texture
-	surface.SetDrawColor(255, 255, 255, alpha)
+	surface.SetDrawColor(255, 255, 255, alpha or 255)
 	surface.SetTexture(self.WepSelectIcon)
-	-- Lets get a sin wave to make it bounce
-	local fsin = 0
-	if self.BounceWeaponIcon == true then fsin = math.sin(CurTime() * 10) * 5 end
-	-- Borders
 	y = y + 10
 	x = x + 10
 	wide = wide - 20
-	-- Draw that mother
-	surface.DrawTexturedRect(x + fsin, y - fsin, wide - fsin * 2, (wide / 2) + fsin)
-	-- Draw weapon info box
+	surface.DrawTexturedRect(x, y, wide, wide / 2)
 	self:PrintWeaponInfo(x + wide + 20, y + tall * 0.95, alpha)
 end
 
@@ -71,9 +56,6 @@ function Circle(x, y, radius, seg)
 	surface.DrawPoly(cir)
 end
 
---[[---------------------------------------------------------
-	This draws the weapon info box
------------------------------------------------------------]]
 local alpha_black = Color(20, 0, 0, 75)
 function SWEP:PrintWeaponInfo(x, y, alpha)
 	if self.DrawWeaponInfoBox == false then return end
@@ -169,11 +151,6 @@ end
 function SWEP:GetTracerOrigin()
 end
 
---[[
-	local ply = self:GetOwner()
-	local pos = ply:EyePos() + ply:EyeAngles():Right() * -5
-	return pos
---]]
 --[[---------------------------------------------------------
 	Name: FireAnimationEvent
 	Desc: Allows you to override weapon animation events

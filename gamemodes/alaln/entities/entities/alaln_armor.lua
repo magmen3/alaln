@@ -36,12 +36,14 @@ function ENT:PhysicsCollide(data, ent)
 	end
 end
 
+local color_green = Color(25, 225, 25)
+local color_yellow = Color(255, 235, 0)
 function ENT:Use(ply)
 	if CLIENT or self.UseCD > CurTime() then return end
 	self.UseCD = CurTime() + 1
 	if ply:Armor() < 1 then
 		ply:SetArmor(100)
-		BetterChatPrint(ply, "You wear armor.", Color(25, 225, 25))
+		BetterChatPrint(ply, "You wear armor.", color_green)
 		ply:EmitSound("npc/combine_soldier/gear" .. math.random(1, 6) .. ".wav", 55, math.random(90, 110))
 		ply:SetModel("models/sgg/hev_corpse.mdl")
 		ply:SetSubMaterial(0, "phoenix_storms/dome")
@@ -59,11 +61,11 @@ function ENT:Use(ply)
 		ply:SetModel("models/sgg/hev_corpse.mdl")
 		ply:SetSubMaterial(0, "phoenix_storms/dome")
 		ply:SetSubMaterial(2, "phoenix_storms/torpedo")
-		BetterChatPrint(ply, "You repaired your armor.", Color(25, 225, 25))
+		BetterChatPrint(ply, "You repaired your armor.", color_green)
 		ply:SetNWBool("HasArmor", true)
 		self:Remove()
 	elseif ply:Armor() >= 95 then
-		BetterChatPrint(ply, "You already have armor.", Color(255, 235, 0))
+		BetterChatPrint(ply, "You already have armor.", color_yellow)
 	end
 end
 

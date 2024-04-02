@@ -1,4 +1,4 @@
-if SERVER then AddCSLuaFile() end
+AddCSLuaFile()
 SWEP.Base = "mann_wep_base"
 SWEP.PrintName = "Glock-17"
 SWEP.Purpose = "A gun that has survived many gangster shootouts and more. Despite this, it is still an excellent tool for cleansing the world of evil."

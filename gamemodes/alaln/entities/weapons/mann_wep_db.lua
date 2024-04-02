@@ -1,4 +1,4 @@
-if SERVER then AddCSLuaFile() end
+AddCSLuaFile()
 SWEP.Base = "mann_wep_base"
 SWEP.PrintName = "Double-Barrel Shotgun"
 SWEP.Purpose = "An old time-honoured double-barrel shotgun, though it holds 2 rounds, its power is the envy of any shotgun... (No)"

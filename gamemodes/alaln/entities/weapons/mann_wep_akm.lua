@@ -1,4 +1,4 @@
-if SERVER then AddCSLuaFile() end
+AddCSLuaFile()
 SWEP.Base = "mann_wep_base"
 SWEP.PrintName = "Izmash AKM"
 SWEP.Purpose = "Unlike the Glock, this gun hasn't fully survived the hardships. But in spite of that, somehow it still shoots."

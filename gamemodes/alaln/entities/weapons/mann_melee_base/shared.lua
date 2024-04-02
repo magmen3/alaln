@@ -18,7 +18,7 @@ B::::::::::::::::B  E::::::::::::::::::::E      T:::::::::T A:::::A             
 BBBBBBBBBBBBBBBBB   EEEEEEEEEEEEEEEEEEEEEE      TTTTTTTTTTTAAAAAAA                   AAAAAAA
 
 ]]
-if SERVER then AddCSLuaFile() end
+AddCSLuaFile()
 AddCSLuaFile("client.lua")
 include("client.lua")
 SWEP.Base = "alaln_base"
@@ -109,7 +109,7 @@ function SWEP:Deploy()
 		self:SetNextSecondaryFire(CurTime() + self:GetOwner():GetViewModel():SequenceDuration())
 		self:SetHoldType(self.HoldType)
 		self:DoBFSAnimation(self.DeployAnim)
-		self:GetOwner():EmitSound(self.DeploySound, 75, math.random(95, 105))
+		self:GetOwner():EmitSound(self.DeploySound)
 		self:UpdateNextIdle()
 		self:EnforceMeleeHolsterRules(self)
 		return true
