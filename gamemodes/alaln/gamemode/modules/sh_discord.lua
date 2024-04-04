@@ -17,8 +17,9 @@ hook.Add("PlayerDeath", "alaln-dmgtodiscord", function(victim, inflictor, attack
 	local att = attacker:IsPlayer() and attacker:Nick() or attacker.PrintName or attacker:GetClass()
 	local vic = victim:IsPlayer() and victim:Nick() or victim.PrintName or victim:GetClass()
 	local inf = inflictor:IsPlayer() and inflictor:Nick() or inflictor.PrintName or inflictor:GetClass()
+	local txt = att .. " killed " .. vic .. (inf ~= att and (" with help of " .. inf .. ".") or ".") -- govno
 	http.Post("https://discord.com/api/webhooks/1221521640375193700/JTqmPswBhod2dEBb-WPVyxpKZZ21i9fr7am5FE6Na748bx65qAY7mldKfdOsHxZn-RwG", {
-		content = att .. " killed " .. vic .. " with help of " .. inf .. ".",
+		content = txt,
 		username = att
 	})
 end)

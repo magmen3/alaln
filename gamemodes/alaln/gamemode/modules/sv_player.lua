@@ -11,6 +11,7 @@ hook.Add("PlayerInitialSpawn", "alaln-initialspawn", function(ply)
 	end
 
 	ply:SetNWString("alaln-class", "Standard")
+	ply:SetScore(0)
 end)
 
 function GM:PlayerLoadout(ply)
@@ -30,12 +31,11 @@ function GM:PlayerLoadout(ply)
 	ply:StopZooming()
 	--ply:SetNWVector("ScrShake", vector_origin)
 	ply:SetSubMaterial()
-	ply:CrosshairDisable()
 	ply:GodDisable()
 	ply:SetTeam(1)
 	ply:SetMaterial()
 	ply:SetNWBool("HasArmor", false)
-	ply.NextSpawnTime = CurTime() + 15
+	ply.NextSpawnTime = CurTime() + 5
 	if SBOXMode:GetInt() == 1 then
 		ply:Give("weapon_physgun")
 		ply:Give("gmod_tool")
@@ -50,11 +50,11 @@ function GM:PlayerLoadout(ply)
 	end
 
 	if ply:GetNWString("alaln-class", "Standard") == "Cannibal" then
-		ply:SetMaterial("models/screamer/corpse9")
 		ply:SetMaxHealth(100)
 		ply:SetHealth(100)
 		ply:SetCrazyness(math.random(6, 18))
 		ply:SetHunger(math.random(55, 75))
+		ply:SetMaterial("models/screamer/corpse9")
 	end
 
 	if ply:GetNWString("alaln-class", "Standard") ~= "Standard" then BetterChatPrint(ply, "You are " .. ply:GetNWString("alaln-class", "Standard") .. ".", color_red2) end
@@ -100,6 +100,7 @@ hook.Add("PlayerDeath", "alaln-plydeath", function(victim, inflictor, attacker)
 	end
 
 	if IsValid(attacker) and attacker:IsPlayer() then
+		attacker:AddScore(math.random(3, 8))
 		attacker:AddCrazyness(math.random(8, 24))
 		if attacker:GetCrazyness() >= 20 and attacker:GetCrazyness() <= 40 and math.random(2, 4) == 2 then
 			BetterChatPrint(attacker, "You feel terrible...", color_red)
@@ -110,7 +111,7 @@ hook.Add("PlayerDeath", "alaln-plydeath", function(victim, inflictor, attacker)
 		end
 	end
 
-	victim.NextSpawnTime = CurTime() + 15
+	victim.NextSpawnTime = CurTime() + 5
 end)
 
 hook.Add("PlayerConnect", "alaln-joinmessage", function(name, ip)
@@ -128,13 +129,7 @@ function GM:PlayerDeathThink(ply)
 	end
 end
 
-local randkillstrings = {
-	"You already dead.",
-	"Suicide is not escape.",
-	"This does not help you",
-	"You can't escape from this",
-	"NO"
-}
+local randkillstrings = {"You already dead.", "Suicide is not escape.", "This does not help you", "You can't escape from this", "NO"}
 local usecd = 0
 function GM:CanPlayerSuicide(ply)
 	if usecd > CurTime() then return false end
@@ -143,14 +138,7 @@ function GM:CanPlayerSuicide(ply)
 	return false
 end
 
-local randvehstrings = {
-	"It seems that you don't know how to use this thing.",
-	"You don't really know how to use that thing.",
-	"Do you really expect something from this garbage?",
-	"You can't escape anyway. Even on this thing.",
-	"There's not even gasoline in this thing."
-}
-
+local randvehstrings = {"It seems that you don't know how to use this thing.", "You don't really know how to use that thing.", "Do you really expect something from this garbage?", "You can't escape anyway. Even on this thing.", "There's not even gasoline in this thing."}
 function GM:CanPlayerEnterVehicle(ply, vehicle, role)
 	if usecd > CurTime() then return false end
 	BetterChatPrint(ply, table.Random(randvehstrings), color_red)

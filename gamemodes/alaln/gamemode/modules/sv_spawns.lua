@@ -35,7 +35,7 @@ local SBOXMode = GetConVar("alaln_sboxmode")
 local lootCount = 0
 local function spawnLoot()
 	if SBOXMode:GetBool() then return end
-	if lootCount >= 60 then return end
+	if lootCount >= 45 then return end
 	local loot = table.Random(ALALN_LootTable)
 	if math.random(100) <= loot[2] then
 		local item = ents.Create(loot[1])
@@ -43,14 +43,12 @@ local function spawnLoot()
 		local navAreas = navmesh.GetAllNavAreas()
 		local area = table.Random(navAreas)
 		local pos = area:GetRandomPoint() + Vector(math.random(-5, 5), math.random(-5, 5), 10)
-		-- Если точечка наша в воде тогда бла бла бла блаааа
 		local tr = util.TraceLine({
 			start = pos,
 			endpos = pos + Vector(0, 0, -10000),
 			mask = MASK_WATER
 		})
 
-		-- ретурн эээнд
 		if tr.Hit then return end
 		item:SetPos(pos)
 		item:Spawn()
@@ -60,14 +58,14 @@ local function spawnLoot()
 end
 
 local function spawnLootTimer()
-	for i = 1, 30 do
+	for i = 1, 25 do
 		spawnLoot()
 	end
 
-	if lootCount >= 60 then
-		timer.Simple(200, spawnLootTimer)
+	if lootCount >= 45 then
+		timer.Simple(250, spawnLootTimer)
 	else
-		timer.Simple(math.random(16, 85), spawnLootTimer)
+		timer.Simple(math.random(24, 95), spawnLootTimer)
 	end
 end
 

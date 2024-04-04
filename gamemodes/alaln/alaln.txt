@@ -20,7 +20,7 @@
 		2
 		{
 			"name"		"alaln_dark_light"
-			"text"		"Dark Lighting"
+			"text"		"Dark Lighting (experimental)"
 			"help"		"Enable darkest lighting in maps? (experimental, not recommended)"
 			"type"		"CheckBox"
 			"default"	"0"

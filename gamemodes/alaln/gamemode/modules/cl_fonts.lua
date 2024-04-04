@@ -7,9 +7,27 @@ function ScrHeight(h)
 end
 
 local function CreateFonts()
+	surface.CreateFont("alaln-hudfontvbig", {
+		font = "SMODGUI",
+		extended = true,
+		size = ScrHeight(84),
+		weight = 500,
+		blursize = 0,
+		scanlines = 4,
+		antialias = false,
+		underline = false,
+		italic = false,
+		strikeout = false,
+		symbol = false,
+		rotary = false,
+		shadow = true,
+		additive = false,
+		outline = false,
+	})
+
 	surface.CreateFont("alaln-hudfontbig", {
-		font = "SMODGUI", --  Use the font-name which is shown to you by your operating system Font Viewer, not the file name
-		extended = false,
+		font = "SMODGUI",
+		extended = true,
 		size = ScrHeight(64),
 		weight = 500,
 		blursize = 0,
@@ -26,8 +44,8 @@ local function CreateFonts()
 	})
 
 	surface.CreateFont("alaln-hudfontsmall", {
-		font = "SMODGUI", --  Use the font-name which is shown to you by your operating system Font Viewer, not the file name
-		extended = false,
+		font = "SMODGUI",
+		extended = true,
 		size = ScrHeight(32),
 		weight = 500,
 		blursize = 0,
@@ -44,8 +62,8 @@ local function CreateFonts()
 	})
 
 	surface.CreateFont("alaln-hudfontvsmall", {
-		font = "SMODGUI", --  Use the font-name which is shown to you by your operating system Font Viewer, not the file name
-		extended = false,
+		font = "SMODGUI",
+		extended = true,
 		size = ScrHeight(18),
 		weight = 500,
 		blursize = 0,

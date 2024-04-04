@@ -80,21 +80,21 @@ end)
 
 local WDir = VectorRand():GetNormalized()
 hook.Add("CreateMove", "alaln-weaponshake", function(cmd)
-	local ply, Amt, Sporadicness = LocalPlayer(), 30, 20
-	local Wep = ply:GetActiveWeapon()
-	if ply:KeyDown(IN_DUCK) then Amt = Amt / 2 end
-	if IsValid(Wep) and Wep.GetAiming and (Wep:GetAiming() >= 99) then
-		if Wep.Scoped and (ply:KeyDown(IN_FORWARD) or ply:KeyDown(IN_BACK) or ply:KeyDown(IN_MOVELEFT) or ply:KeyDown(IN_MOVERIGHT)) then
-			Sporadicness = Sporadicness * 2
-			Amt = Amt * 2
+	local ply, amt, spr = LocalPlayer(), 30, 20
+	local wep = ply:GetActiveWeapon()
+	if ply:KeyDown(IN_DUCK) then amt = amt / 2 end
+	if IsValid(wep) and wep.GetAiming and (wep:GetAiming() >= 99) then
+		if wep.Scoped and (ply:KeyDown(IN_FORWARD) or ply:KeyDown(IN_BACK) or ply:KeyDown(IN_MOVELEFT) or ply:KeyDown(IN_MOVERIGHT)) then
+			spr = spr * 2
+			amt = amt * 2
 		end
 
 		local S = .05
 		local EAng = cmd:GetViewAngles()
 		local FT = FrameTime()
-		WDir = (WDir + FT * VectorRand() * Sporadicness):GetNormalized()
-		EAng.pitch = math.NormalizeAngle(EAng.pitch + WDir.z * FT * Amt * S)
-		EAng.yaw = math.NormalizeAngle(EAng.yaw + WDir.x * FT * Amt * S)
+		WDir = (WDir + FT * VectorRand() * spr):GetNormalized()
+		EAng.pitch = math.NormalizeAngle(EAng.pitch + WDir.z * FT * amt * S)
+		EAng.yaw = math.NormalizeAngle(EAng.yaw + WDir.x * FT * amt * S)
 		cmd:SetViewAngles(EAng)
 	end
 end)

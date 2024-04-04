@@ -17,10 +17,11 @@ function metaent:BetterSetPlayerColor(col)
 	end)
 end
 
+local vecgovno = Vector(0, 0, 10)
 function meta:CreateRagdoll()
 	if not (self or self:IsValid() or self:IsPlayer()) then return end
 	self.DeathRagdoll = self.DeathRagdoll or false
-	local ply_pos = self:GetPos() + Vector(0, 0, 10) -- чтоб в воздухе не появлялся 
+	local ply_pos = self:GetPos() - vecgovno
 	local ply_ang = self:GetAngles()
 	local ply_mdl = self:GetModel()
 	local ply_skn = self:GetSkin()

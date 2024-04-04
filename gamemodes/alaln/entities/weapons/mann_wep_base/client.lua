@@ -14,7 +14,7 @@ if CLIENT then
 		local owner = self:GetOwner()
 		if not IsValid(owner) then return end
 		local Wep = owner:GetActiveWeapon()
-		if ThirdPerson:GetBool() and IsValid(Wep) and Wep.GetAiming and self:GetReady() then
+		if IsValid(Wep) and Wep.GetAiming and self:GetReady() then -- ThirdPerson:GetBool()
 			local tr = {}
 			tr.start = owner:GetShootPos()
 			local dir = Vector(1, 0, 0)

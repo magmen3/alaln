@@ -26,11 +26,6 @@ hook.Add("player_spawn", "alaln-networkplyhull", function(data)
 		end
 	end
 
-	--ply:SetNWBool("Zastavka", true)
-	--timer.Simple(5, function()
-	--	if not IsValid(ply) then return end
-	--	ply:SetNWBool("Zastavka", false)
-	--end)
 	--hook.Run("Player Spawn",ply)
 	if ply.SetHull then
 		ply:SetHull(ply:GetNWVector("HullMin"), ply:GetNWVector("Hull"))
@@ -63,6 +58,7 @@ concommand.Add("checkammo", function()
 
 	chat.AddText(color_yellow, text)
 end, nil, "Check your current gun ammo", FCVAR_NONE)
+
 local color_button = Color(165, 0, 0)
 net.Receive("alaln-navmeshnotfound", function()
 	local navframe = vgui.Create("DFrame")
@@ -108,7 +104,7 @@ net.Receive("alaln-flinch", function(len)
 	if not IsValid(ply) then return end
 	ply:AnimRestartGesture(GESTURE_SLOT_FLINCH, gest, true)
 end)
-
+--[[
 local roundTimeStart = CurTime()
 -- format: multiline
 local rndsound = {
@@ -125,11 +121,7 @@ local hudfont = "alaln-hudfontbig"
 local randomstrings = {"RUN", "LIVER FAILURE FOREVER", "YOU'RE ALREADY DEAD", "KILL OR DIE"}
 local text
 hook.Add("HUDPaint", "alaln-roundstartscreen", function()
-	--if MenuActive then return end
 	local ply = LocalPlayer()
-	--if not ply:GetNWBool("Zastavka", false) then --!! СДЕЛАТЬ ЧТОБЫ ЭЭЭ ПРИ СПАВНЕ ГОВНО ЭТО БЫЛО
-	--	return
-	--end
 	local startRound = roundTimeStart + 10 - CurTime()
 	if startRound > 0 and ply:Alive() then
 		if playsound then
@@ -144,4 +136,4 @@ hook.Add("HUDPaint", "alaln-roundstartscreen", function()
 		draw.DrawText(text, hudfont, ScrW() / 2, ScrH() / 1.2, Color(color.r, color.g, color.b, math.Clamp(startRound - 0.5, 0, math.Rand(0, 0.1)) * 255), TEXT_ALIGN_CENTER)
 		return
 	end
-end)
+end)]]

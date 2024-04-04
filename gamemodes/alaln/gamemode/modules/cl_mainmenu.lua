@@ -4,9 +4,9 @@ local MenuSnds = {
 }
 
 local MenuFonts = {
-	small = "alaln-hudfontvsmall",
-	button = "alaln-hudfontsmall",
-	big = "alaln-hudfontbig"
+	small = "alaln-hudfontsmall",
+	button = "alaln-hudfontbig",
+	big = "alaln-hudfontvbig"
 }
 
 -- format: multiline
@@ -14,14 +14,17 @@ local MenuMusic = {
 	"in2/victorian_meltdown.mp3",
 	"in2/carnophage.mp3",
 	"in2/identity_theft.mp3",
-	"in2/maintenance_tunnels.mp3"
+	"in2/maintenance_tunnels.mp3",
+	"in2/waking.mp3"
 }
 
+local noisetex = Material("filmgrain/noise")
+local noisetex2 = Material("filmgrain/noiseadd")
 local muzon
 local Menu
 local function DrawMenu()
 	local MenuClrs = {
-		bg = Color(10, 0, 0, 255),
+		bg = Color(10, 0, 0, 200),
 		white = Color(165, 5, 5, 0)
 	}
 
@@ -37,29 +40,37 @@ local function DrawMenu()
 	DFrame.Paint = function(self, w, h)
 		draw.RoundedBox(0, 0, 0, w, h, MenuClrs.bg)
 		if DFrame.GoClose then
-			MenuClrs.bg.a = math.Clamp(655 * ((closetime - CurTime()) / 2), 0, 255)
+			MenuClrs.bg.a = math.Clamp(655 * ((closetime - CurTime()) / 2), 0, 200)
 			MenuClrs.white.a = math.Clamp(655 * ((closetime - CurTime()) / 2), 0, 255)
 			if MenuClrs.white.a <= 0 then self:Close() end
 		else
 			MenuClrs.white.a = math.Clamp(655 * (1 - (opentime - CurTime()) / 4), 0, 255)
 		end
 
-		draw.SimpleText("Forsakened", MenuFonts.big, w / 2, h / 3, MenuClrs.white, TEXT_ALIGN_CENTER, TEXT_ALIGN_TOP)
-		MenuClrs.white.a = MenuClrs.white.a / 6
-		draw.SimpleText("By Mannytko and Deka", MenuFonts.small, w / 2, h / 2.4, MenuClrs.white, TEXT_ALIGN_CENTER, TEXT_ALIGN_TOP)
+		surface.SetMaterial(noisetex)
+		surface.SetDrawColor(165, 0, 0, 15)
+		surface.DrawTexturedRect(0, 0, ScrW(), ScrH())
+		surface.SetMaterial(noisetex2)
+		surface.SetDrawColor(165, 0, 0, 15)
+		surface.DrawTexturedRect(0, 0, ScrW(), ScrH())
+		draw.SimpleText("Forsakened", MenuFonts.big, w / 4.5, h / 3, MenuClrs.white, TEXT_ALIGN_CENTER, TEXT_ALIGN_TOP)
+		MenuClrs.white.a = MenuClrs.white.a / 3
+		draw.SimpleText("By Mannytko, Deka, and patrickkane1997.", MenuFonts.small, w / 4.5, h / 2.4, MenuClrs.white, TEXT_ALIGN_CENTER, TEXT_ALIGN_TOP)
 	end
 
-	if IsValid(LocalPlayer()) then
+	timer.Simple(.5, function()
+		if not IsValid(LocalPlayer()) then return end
+		if not IsValid(DFrame) or DFrame == nil or DFrame.GoClose then return end
 		local track = table.Random(MenuMusic)
 		muzon = CreateSound(LocalPlayer(), track)
 		muzon:Play()
-	end
+	end)
 
 	Menu = DFrame
 	---------------------------- Play
 	local PlayButton = vgui.Create("DButton", DFrame)
-	PlayButton:SetPos(ScrW() / 2 - 150, ScrH() / 1.8 - 25)
-	PlayButton:SetSize(300, 50)
+	PlayButton:SetPos(ScrW() / 4.5 - 150, ScrH() / 1.8 - 25)
+	PlayButton:SetSize(300, 70)
 	PlayButton:SetText("")
 	PlayButton.DoClick = function()
 		if DFrame.GoClose then return end
@@ -82,9 +93,9 @@ local function DrawMenu()
 		end
 
 		if DFrame.GoClose then
-			color.a = math.Clamp(655 * ((closetime - CurTime()) / 2), 0, 255)
+			color.a = math.Clamp(655 * ((closetime - CurTime()) / 2), 0, 150)
 		else
-			color.a = math.Clamp(655 * (1 - (opentime - CurTime()) / 4), 0, 255)
+			color.a = math.Clamp(655 * (1 - (opentime - CurTime()) / 4), 0, 150)
 		end
 
 		draw.RoundedBox(5, 0, 0, w, h, Color(20, 0, 0, color.a))
@@ -94,8 +105,8 @@ local function DrawMenu()
 
 	---------------------------- Options
 	local OptionsButton = vgui.Create("DButton", DFrame)
-	OptionsButton:SetPos(ScrW() / 2 - 150, ScrH() / 1.6 - 25)
-	OptionsButton:SetSize(300, 50)
+	OptionsButton:SetPos(ScrW() / 4.5 - 150, ScrH() / 1.6 - 15)
+	OptionsButton:SetSize(300, 70)
 	OptionsButton:SetText("")
 	OptionsButton.DoClick = function()
 		if DFrame.GoClose then return end
@@ -118,9 +129,9 @@ local function DrawMenu()
 		end
 
 		if DFrame.GoClose then
-			color.a = math.Clamp(655 * ((closetime - CurTime()) / 2), 0, 255)
+			color.a = math.Clamp(655 * ((closetime - CurTime()) / 2), 0, 150)
 		else
-			color.a = math.Clamp(655 * (1 - (opentime - CurTime()) / 4), 0, 255)
+			color.a = math.Clamp(655 * (1 - (opentime - CurTime()) / 4), 0, 150)
 		end
 
 		draw.RoundedBox(5, 0, 0, w, h, Color(20, 0, 0, color.a))
@@ -129,8 +140,8 @@ local function DrawMenu()
 
 	---------------------------- Exit
 	local ExitButton = vgui.Create("DButton", DFrame)
-	ExitButton:SetPos(ScrW() / 2 - 150, ScrH() / 1.4 - 25)
-	ExitButton:SetSize(300, 50)
+	ExitButton:SetPos(ScrW() / 4.5 - 150, ScrH() / 1.4 - 25)
+	ExitButton:SetSize(300, 70)
 	ExitButton:SetText("")
 	ExitButton.DoClick = function()
 		if muzon and muzon:IsPlaying() then muzon:Stop() end
@@ -150,9 +161,9 @@ local function DrawMenu()
 		end
 
 		if DFrame.GoClose then
-			color.a = math.Clamp(655 * ((closetime - CurTime()) / 2), 0, 255)
+			color.a = math.Clamp(655 * ((closetime - CurTime()) / 2), 0, 150)
 		else
-			color.a = math.Clamp(655 * (1 - (opentime - CurTime()) / 4), 0, 255)
+			color.a = math.Clamp(655 * (1 - (opentime - CurTime()) / 4), 0, 150)
 		end
 
 		draw.RoundedBox(5, 0, 0, w, h, Color(20, 0, 0, color.a))

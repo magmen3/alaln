@@ -2,21 +2,8 @@ local crazyeffectcd = 0
 local color_red = Color(165, 0, 0)
 local color_yellow = Color(255, 170, 0)
 local color_yellow2 = Color(255, 235, 0)
-
-local agonysounds = {
-	"vo/npc/male01/runforyourlife02.wav",
-	"vo/npc/male01/pain07.wav",
-	"vo/npc/male01/pain09.wav",
-	"vo/npc/male01/no02.wav"
-}
-
-local randagonystrings = {
-	"OH SHIT",
-	"FUUUUUCK",
-	"HOLY SHIT",
-	"SOMEONE HELP ME",
-	"PLEASE HELP ME"
-}
+local agonysounds = {"vo/npc/male01/runforyourlife02.wav", "vo/npc/male01/pain07.wav", "vo/npc/male01/pain09.wav", "vo/npc/male01/no02.wav"}
+local randagonystrings = {"OH SHIT", "IM HURT", "FUUUUUCK", "SOMEONE HELP ME", "PLEASE HELP ME"}
 -- good alternative for stuff that needs think hook
 timer.Create("alaln-globalenttimer", 0.5, 0, function()
 	local entys = ents.GetAll()
@@ -91,11 +78,10 @@ timer.Create("alaln-globalenttimer", 0.5, 0, function()
 			if ply:IsOnFire() and crazyeffectcd < CurTime() then
 				ply:EmitSound(table.Random(agonysounds), 95, math.random(95, 100))
 				crazyeffectcd = CurTime() + 3
-				if SERVER then
-					ply:Say(table.Random(randagonystrings))
-				end
+				if SERVER then ply:Say(table.Random(randagonystrings), false) end
 			end
 
+			ply:AddScore(0.08)
 			if ply:WaterLevel() >= 2 and ply:IsOnFire() and SERVER then ply:Extinguish() end
 			if CLIENT and ply:GetCrazyness() >= 60 and math.random(1, 15) == 5 and crazyeffectcd < CurTime() then
 				local rnd = math.random(1, 3)

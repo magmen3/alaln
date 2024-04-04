@@ -104,7 +104,6 @@ hook.Add("CalcMainActivity", "alaln-playeranims", function(ply, vel)
 end)
 
 hook.Add("PlayerUse", "alaln-useanims", function(ply, ent) if IsValid(ply) and ply:Alive() and ply:IsPlayer() then ply:DoAnimationEvent(ACT_GMOD_GESTURE_ITEM_GIVE) end end)
-
 -- footsteps
 hook.Add("PlayerFootstep", "alaln-plyfootstep", function(ply, pos, foot, sound, volume, rf)
 	if not (IsValid(ply) or ply:Alive()) then return false end

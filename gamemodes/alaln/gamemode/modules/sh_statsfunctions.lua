@@ -52,3 +52,27 @@ net.Receive("alaln-setclass", function(len, ply)
 	netply:SetNWString("alaln-class", class)
 	BetterChatPrint(ply, "You changed your class, you need to respawn to apply it.", color_yellow)
 end)
+
+-- score
+function plyMeta:GetScore()
+	return self:GetNWFloat("alaln-score", 0)
+end
+
+function plyMeta:SetScore(score)
+	if not score then
+		DebugPrint("Error! Calling SetScore() without args")
+		return
+	end
+
+	self:SetNWFloat("alaln-score", score)
+end
+
+-- use negative values to reduce
+function plyMeta:AddScore(score)
+	if not score then
+		DebugPrint("Error! Calling AddScore() without args")
+		return
+	end
+
+	self:SetScore(math.Clamp(self:GetScore() + score, 0, 100))
+end

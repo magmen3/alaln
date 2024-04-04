@@ -87,17 +87,8 @@ function SWEP:Initialize()
 end
 
 local holcd = 0
-local randholstrings = {
-	"I think it's a bad idea to put an open lighter in your pocket...",
-	"Did you read the engraving?",
-	"I should probably close it before put it in pocket..."
-}
-
-local randfirestrings = {
-	"You've done yourself a little trolling.",
-	"Seems like you should have been more careful to this thing."
-}
-
+local randholstrings = {"I think it's a bad idea to put an open lighter in your pocket...", "Did you read the engraving?", "I should probably close it before put it in pocket..."}
+local randfirestrings = {"You've done yourself a little trolling.", "Seems like you should have been more careful to this thing."}
 local color_red = Color(165, 0, 0)
 local color_yellow = Color(255, 170, 0)
 function SWEP:Holster(wep)
@@ -106,6 +97,7 @@ function SWEP:Holster(wep)
 	if IsValid(ply:GetViewModel()) then ply:GetViewModel():StopParticles() end
 	-- funnies
 	if wep and wep ~= NULL and ply:Alive() and self:IsLit() and holcd < CurTime() then
+		if ply:WaterLevel() >= 2 then return true end
 		if math.random(1, 6) == 3 then
 			if SERVER then
 				ply:Ignite(5, 180)
@@ -120,6 +112,7 @@ function SWEP:Holster(wep)
 			end
 			return false
 		end
+
 		holcd = CurTime() + 1
 	end
 
@@ -129,6 +122,7 @@ end
 
 function SWEP:Deploy()
 	if not IsValid(self:GetOwner()) or not self:GetOwner():Alive() then return end
+	if self:GetOwner():WaterLevel() >= 2 then return end
 	self:EmitSound("player/weapon_draw_0" .. math.random(1, 5) .. ".wav")
 	self:SetNWBool("Light", true)
 	self:SetHoldType(self.HoldType)
@@ -138,6 +132,7 @@ end
 
 function SWEP:PrimaryAttack()
 	if not self:CanPrimaryAttack() then return end
+	if self:GetOwner():WaterLevel() >= 2 then return end
 	self:ToggleLighter()
 	self:SetNextPrimaryFire(CurTime() + self:SequenceDuration())
 end
@@ -153,6 +148,7 @@ end
 function SWEP:SecondaryAttack()
 	if not self:CanSecondaryAttack() or not self:IsLit() then return end
 	local ply = self:GetOwner()
+	if ply:WaterLevel() >= 2 then return end
 	local pos = ply:EyePos()
 	local trace = util.TraceLine({
 		start = pos,
@@ -197,6 +193,7 @@ function SWEP:ToggleLighter()
 		self:SetHoldType(self.HoldTypeOff)
 		self:Holster()
 	else
+		if self:GetOwner():WaterLevel() >= 2 then return end
 		-- Take Lighter Out
 		self:SendWeaponAnim(ACT_VM_DRAW)
 		self:SetNWBool("Light", true)
@@ -221,6 +218,7 @@ if CLIENT then
 		if not IsValid(self) or CurTime() < NextThink then return end
 		local ply = self:GetOwner()
 		if self:IsLit() then
+			if ply:WaterLevel() >= 2 then return end
 			local hand = ply:LookupBone("ValveBiped.Bip01_R_Hand")
 			if not hand then return self:GetOwner():EyePos() end
 			local pos = ply:GetBonePosition(hand) -- pos, ang

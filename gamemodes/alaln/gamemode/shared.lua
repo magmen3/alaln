@@ -3,7 +3,9 @@ GM.Name = "Forsakened"
 GM.Author = "Mannytko, Deka, patrickkane1997"
 GM.Email = "loh"
 GM.Website = "loh"
-SBOXMode = GetConVar("alaln_sboxmode") --CreateConVar("alaln_sboxmode", 0, FCVAR_NOTIFY, "Enable sandbox mode? (q menu, context menu, noclip, etc.)", 0, 1)
+if not ConVarExists("alaln_sboxmode") then CreateConVar("alaln_sboxmode", 0, FCVAR_NOTIFY, "Enable sandbox mode? (q menu, context menu, noclip, etc.)", 0, 1) end
+if not ConVarExists("alaln_dark_light") then CreateConVar("alaln_dark_light", 0, FCVAR_NOTIFY, "Enable darkest lighting in maps? (experimental, not recommended)", 0, 1) end
+SBOXMode = GetConVar("alaln_sboxmode")
 --[[ TODO:
 	1. Добавить мусорки в которых типо лутаться можно если Е зажать
 	2. Добавить систему очков и их накопление за убийства
@@ -45,7 +47,7 @@ else
 	net.Receive("alaln-chatprint", function() chat.AddText(net.ReadColor(), net.ReadString()) end)
 end
 
-local DarkLight = GetConVar("alaln_dark_light") --CreateConVar("alaln_dark_light", 0, FCVAR_NOTIFY, "Enable darkest lighting in maps? (experimental, not recommended)", 0, 1)
+local DarkLight = GetConVar("alaln_dark_light")
 hook.Add("Initialize", "alaln-lighting", function()
 	if DarkLight:GetBool() == false then return end
 	timer.Simple(1, function()

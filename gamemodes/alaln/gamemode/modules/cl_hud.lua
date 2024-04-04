@@ -30,8 +30,8 @@ local function DrawSE()
 end
 
 -- screen effects
-local NoiseTexture = Material("filmgrain/noise")
-local NoiseTexture2 = Material("filmgrain/noiseadd")
+local noisetex = Material("filmgrain/noise")
+local noisetex2 = Material("filmgrain/noiseadd")
 local deathclrmod = {
 	["$pp_colour_colour"] = 0,
 	["$pp_colour_mulr"] = 1,
@@ -61,10 +61,10 @@ hook.Add("RenderScreenspaceEffects", "alaln-screffects", function()
 		if ply:Health() <= 40 then DrawMotionBlur(0.6 - 0.2 * frac, 0.8, 0.01) end
 		local hp = frac * 8
 		DrawCA(15 * hp + 5, 7 * hp + 5, 25, 9 * hp + 5, 6 * hp + 5, -5)
-		surface.SetMaterial(NoiseTexture)
+		surface.SetMaterial(noisetex)
 		surface.SetDrawColor(165, 0, 0, 25 * frac)
 		surface.DrawTexturedRect(0, 0, ScrW(), ScrH())
-		surface.SetMaterial(NoiseTexture2)
+		surface.SetMaterial(noisetex2)
 		surface.SetDrawColor(165, 0, 0, 25 * frac)
 		surface.DrawTexturedRect(0, 0, ScrW(), ScrH())
 	else
@@ -83,6 +83,7 @@ hook.Add("PostDrawHUD", "alaln-realhud", function()
 	draw.RoundedBox(5, ScrW() / 50, ScrH() - 110, 228, 85, alpha_black)
 	draw.SimpleText(ply:Health(), hudfontbig, 153, ScrH() - 64, hudcolor, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
 	if SBOXMode:GetBool() == false then
+		draw.SimpleText("Score: " .. math.Round(ply:GetScore(), 0), hudfontsmall, ScrW() * 0.02, ScrH() * 0.79, hudcolor, TEXT_ALIGN_LEFT, TEXT_ALIGN_CENTER)
 		draw.SimpleText("Hunger: " .. math.Round(ply:GetHunger(), 0), hudfontsmall, ScrW() * 0.02, ScrH() * 0.88, hudcolor, TEXT_ALIGN_LEFT, TEXT_ALIGN_CENTER)
 		if ply:GetCrazyness() >= 10 then draw.SimpleText("Crazyness: " .. math.Round(ply:GetCrazyness(), 0), hudfontsmall, ScrW() * 0.02, ScrH() * 0.82, hudcolor, TEXT_ALIGN_LEFT, TEXT_ALIGN_CENTER) end
 	end
@@ -160,6 +161,7 @@ hook.Add("PreDrawHalos", "alaln-loothalo", function()
 	outline.SetRenderType(OUTLINE_RENDERTYPE_AFTER_EF)
 	outline.Add(lootEnt, color_loot, OUTLINE_MODE_BOTH)
 	outline.Add(wepEnt, color_wep, OUTLINE_MODE_BOTH)
+	outline.SetRenderType(OUTLINE_RENDERTYPE_AFTER_EF)
 end)
 
 -- disable default hud
@@ -170,7 +172,10 @@ local BadNames = {
 	["CHudSecondaryAmmo"] = false,
 	["CHudCrosshair"] = false,
 	["CHudDamageIndicator"] = false,
-	["CHudGeiger"] = false
+	["CHudGeiger"] = false,
+	["CHudPoisonDamageIndicator"] = false,
+	["CHudSquadStatus"] = false,
+	["CHudZoom"] = false
 }
 
 hook.Add("HUDShouldDraw", "alaln-hidedefaulthud", function(name) return BadNames[name] end)

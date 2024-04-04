@@ -75,6 +75,7 @@ net.Receive("alaln-classmenu", function()
 
 	button2.DoClick = function()
 		DebugPrint("Selected Cannibal class")
+		if LocalPlayer():GetScore() < 15 then BetterChatPrint(ply, "You need more score to choose this class.", CMClr.text) end
 		net.Start("alaln-setclass")
 		net.WritePlayer(LocalPlayer())
 		net.WriteString("Cannibal")
@@ -94,6 +95,7 @@ net.Receive("alaln-classmenu", function()
 
 	button3.DoClick = function()
 		DebugPrint("Selected Berserker class")
+		if LocalPlayer():GetScore() < 30 then BetterChatPrint(ply, "You need more score to choose this class.", CMClr.text) end
 		net.Start("alaln-setclass")
 		net.WritePlayer(LocalPlayer())
 		net.WriteString("Berserker")
