@@ -14,7 +14,7 @@ function GetScrShake(ply)
 	end
 	return ply:GetNWVector("ScrShake")
 end]]
-ThirdPerson = CreateClientConVar("alaln_thirdperson", 0, false, false, "Enable thirdperson?", 0, 1)
+ThirdPerson = CreateClientConVar("alaln_thirdperson", 1, false, false, "Enable thirdperson?", 0, 1)
 local eyevecsuperpuper = Vector(0, 0, 1)
 hook.Add("CalcView", "alaln-calcview", function(ply, vec, ang, fov, znear, zfar)
 	if not (ply or IsValid(ply)) or ply:GetMoveType() == MOVETYPE_NOCLIP or ply:GetNoDraw() or ply:GetViewEntity() ~= ply then return end

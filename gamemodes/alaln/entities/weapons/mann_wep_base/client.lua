@@ -14,7 +14,7 @@ if CLIENT then
 		local owner = self:GetOwner()
 		if not IsValid(owner) then return end
 		local Wep = owner:GetActiveWeapon()
-		if IsValid(Wep) and Wep.GetAiming and self:GetReady() then -- ThirdPerson:GetBool()
+		if IsValid(Wep) and self:GetReady() then
 			local tr = {}
 			tr.start = owner:GetShootPos()
 			local dir = Vector(1, 0, 0)
@@ -24,9 +24,9 @@ if CLIENT then
 			local traceResult = util.TraceLine(tr)
 			local hitEnt = IsValid(traceResult.Entity) and traceResult.Entity:IsNPC() and color_red or color_white
 			local frac = traceResult.Fraction
-			surface.SetDrawColor(Color(hitEnt.r, hitEnt.g, hitEnt.b, Wep:GetAiming() * 2.2))
+			surface.SetDrawColor(hitEnt)
 			draw.NoTexture()
-			Circle(traceResult.HitPos:ToScreen().x, traceResult.HitPos:ToScreen().y, math.min(10, 6 / frac), 3)
+			Circle(traceResult.HitPos:ToScreen().x, traceResult.HitPos:ToScreen().y, math.min(20, 5 / frac), 3)
 		end
 
 		local ScpMat = surface.GetTextureID("gmod/scope")

@@ -47,6 +47,7 @@ function ENT:Use(ply)
 		--ply:ChatPrint("You eated food, now your hunger is " .. math.Round(ply:GetHunger(), 0) .. ".")
 		BetterChatPrint(ply, "You eated food, now your hunger is " .. math.Round(ply:GetHunger(), 0) .. ".", Color(25, 225, 25))
 		ply:EmitSound("npc/barnacle/barnacle_gulp" .. math.random(1, 2) .. ".wav", 55, math.random(90, 110))
+		ply:AddScore(0.3)
 		self:Remove()
 	else
 		BetterChatPrint(ply, "You are fed.", Color(255, 235, 0))

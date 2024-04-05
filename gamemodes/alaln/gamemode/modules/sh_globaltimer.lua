@@ -94,7 +94,7 @@ timer.Create("alaln-globalenttimer", 0.5, 0, function()
 				end
 
 				local viewang = ply:EyeAngles() + Angle(0, math.random(-180, 180), 0)
-				ply:ViewPunch(Angle(0, 0, math.random(-50, 50)))
+				ply:BetterViewPunch(Angle(0, 0, math.random(-50, 50)))
 				ply:SetEyeAngles(viewang)
 				chat.AddText(color_red, "You hear some strange sound...")
 				if SERVER then util.ScreenShake(ply:GetPos(), 1, 2, 1, 0) end

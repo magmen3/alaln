@@ -84,6 +84,6 @@ if CLIENT then
 		local alpha = -(frac * 255 - 255) / 2
 		surface.SetDrawColor(Color(hitEnt.r, hitEnt.g, hitEnt.b, alpha))
 		draw.NoTexture()
-		Circle(traceResult.HitPos:ToScreen().x, traceResult.HitPos:ToScreen().y, math.min(10, 6 / frac), 3)
+		Circle(traceResult.HitPos:ToScreen().x, traceResult.HitPos:ToScreen().y, math.min(20, 5 / frac), 3)
 	end
 end

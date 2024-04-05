@@ -54,6 +54,7 @@ function ENT:Use(ply)
 		ply:SetSlowWalkSpeed(ply:GetSlowWalkSpeed() * 0.8)
 		ply:SetCrouchedWalkSpeed(ply:GetCrouchedWalkSpeed() * 0.9)
 		ply:SetNWBool("HasArmor", true)
+		ply:AddScore(0.5)
 		self:Remove()
 	elseif ply:Armor() >= 1 and ply:Armor() < 95 then
 		ply:SetArmor(100)

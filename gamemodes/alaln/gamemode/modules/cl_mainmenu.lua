@@ -28,7 +28,7 @@ local function DrawMenu()
 		white = Color(165, 5, 5, 0)
 	}
 
-	local opentime = CurTime() + 5
+	local opentime = CurTime() + 4
 	local closetime = CurTime()
 	local DFrame = vgui.Create("DFrame")
 	DFrame:SetPos(0, 0)
@@ -48,13 +48,13 @@ local function DrawMenu()
 		end
 
 		surface.SetMaterial(noisetex)
-		surface.SetDrawColor(165, 0, 0, 15)
+		surface.SetDrawColor(255, 0, 0, 20)
 		surface.DrawTexturedRect(0, 0, ScrW(), ScrH())
 		surface.SetMaterial(noisetex2)
-		surface.SetDrawColor(165, 0, 0, 15)
+		surface.SetDrawColor(255, 0, 0, 20)
 		surface.DrawTexturedRect(0, 0, ScrW(), ScrH())
 		draw.SimpleText("Forsakened", MenuFonts.big, w / 4.5, h / 3, MenuClrs.white, TEXT_ALIGN_CENTER, TEXT_ALIGN_TOP)
-		MenuClrs.white.a = MenuClrs.white.a / 3
+		MenuClrs.white.a = MenuClrs.white.a / 2
 		draw.SimpleText("By Mannytko, Deka, and patrickkane1997.", MenuFonts.small, w / 4.5, h / 2.4, MenuClrs.white, TEXT_ALIGN_CENTER, TEXT_ALIGN_TOP)
 	end
 
@@ -76,7 +76,7 @@ local function DrawMenu()
 		if DFrame.GoClose then return end
 		if muzon and muzon:IsPlaying() then muzon:Stop() end
 		surface.PlaySound(MenuSnds.click)
-		closetime = CurTime() + 1
+		closetime = CurTime() + .6
 		DFrame.GoClose = true
 	end
 
@@ -93,9 +93,9 @@ local function DrawMenu()
 		end
 
 		if DFrame.GoClose then
-			color.a = math.Clamp(655 * ((closetime - CurTime()) / 2), 0, 150)
+			color.a = math.Clamp(655 * ((closetime - CurTime()) / 2), 0, 100)
 		else
-			color.a = math.Clamp(655 * (1 - (opentime - CurTime()) / 4), 0, 150)
+			color.a = math.Clamp(655 * (1 - (opentime - CurTime()) / 4), 0, 100)
 		end
 
 		draw.RoundedBox(5, 0, 0, w, h, Color(20, 0, 0, color.a))
@@ -129,9 +129,9 @@ local function DrawMenu()
 		end
 
 		if DFrame.GoClose then
-			color.a = math.Clamp(655 * ((closetime - CurTime()) / 2), 0, 150)
+			color.a = math.Clamp(655 * ((closetime - CurTime()) / 2), 0, 100)
 		else
-			color.a = math.Clamp(655 * (1 - (opentime - CurTime()) / 4), 0, 150)
+			color.a = math.Clamp(655 * (1 - (opentime - CurTime()) / 4), 0, 100)
 		end
 
 		draw.RoundedBox(5, 0, 0, w, h, Color(20, 0, 0, color.a))
@@ -161,9 +161,9 @@ local function DrawMenu()
 		end
 
 		if DFrame.GoClose then
-			color.a = math.Clamp(655 * ((closetime - CurTime()) / 2), 0, 150)
+			color.a = math.Clamp(655 * ((closetime - CurTime()) / 2), 0, 100)
 		else
-			color.a = math.Clamp(655 * (1 - (opentime - CurTime()) / 4), 0, 150)
+			color.a = math.Clamp(655 * (1 - (opentime - CurTime()) / 4), 0, 100)
 		end
 
 		draw.RoundedBox(5, 0, 0, w, h, Color(20, 0, 0, color.a))
@@ -175,7 +175,8 @@ concommand.Add("alaln_menu", function() DrawMenu() end)
 local MenuActive = MenuActive or false
 gameevent.Listen("OnRequestFullUpdate")
 hook.Add("OnRequestFullUpdate", "alaln-mainmenu", function(data)
-	if not MenuActive then
+	local ply = Player(data.userid)
+	if ply == LocalPlayer() and not MenuActive then
 		DrawMenu()
 		MenuActive = true
 	end
@@ -187,7 +188,7 @@ hook.Add("PreRender", "alaln-mainmenu", function()
 			if muzon and muzon:IsPlaying() then muzon:Stop() end
 			gui.HideGameUI()
 			Menu:Remove()
-		else
+		elseif not MenuActive then
 			gui.HideGameUI()
 			DrawMenu()
 		end

@@ -112,7 +112,7 @@ hook.Add("PlayerFootstep", "alaln-plyfootstep", function(ply, pos, foot, sound, 
 	if SERVER then util.ScreenShake(ply:GetPos(), 0.1, 0.1, 1, 0) end
 	local vbs = math.Round(ply:GetVelocity():LengthSqr() / 60000, 1) or 0.3 -- returns ~0.3 on walking and ~0.7 on running
 	local punchang = Angle(vbs, math.Rand(-vbs, vbs), math.Rand(-vbs, vbs))
-	ply:ViewPunch(punchang)
+	ply:BetterViewPunch(punchang)
 	if (CLIENT and ply == LocalPlayer()) or not IsValid(ply) then return end
 	-- server only part
 	if ply:Armor() < 1 then ply:EmitSound("npc/footsteps/hardboot_generic" .. math.random(1, 6) .. ".wav", (ply:KeyDown(IN_DUCK) or ply:KeyDown(IN_WALK)) and 40 or 60, math.random(90, 110)) end

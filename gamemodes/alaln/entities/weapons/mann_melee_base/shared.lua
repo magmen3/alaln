@@ -129,7 +129,7 @@ function SWEP:PrimaryAttack()
 		self:GetOwner():EmitSound(self.Primary.Sound, 75, math.random(95, 105))
 	end
 
-	self:GetOwner():ViewPunch(self.PrimaryPunch)
+	self:GetOwner():BetterViewPunch(self.PrimaryPunch)
 	self:DoBFSAnimation(self.PrimaryAnim)
 	self:GetOwner():GetViewModel():SetPlaybackRate(self.PrimaryAnimRate or 1)
 	self:SetNextPrimaryFire(CurTime() + self.Primary.Delay)
@@ -161,7 +161,7 @@ function SWEP:SecondaryAttack()
 		self:GetOwner():EmitSound(self.Secondary.Sound, 75, math.random(95, 105))
 	end
 
-	self:GetOwner():ViewPunch(self.SecondaryPunch)
+	self:GetOwner():BetterViewPunch(self.SecondaryPunch)
 	self:DoBFSAnimation(self.SecondaryAnim)
 	if self.SecondaryAnim2 then
 		timer.Simple(self.SecAnimTwoDelay, function()
@@ -198,7 +198,7 @@ function SWEP:SlashAttack()
 	local ply = self:GetOwner()
 	self:UpdateNextIdle()
 	ply:SetAnimation(PLAYER_ATTACK1)
-	ply:ViewPunch(self.AttPrimaryPunch)
+	ply:BetterViewPunch(self.AttPrimaryPunch)
 	ply:LagCompensation(true)
 	local tr = util.QuickTrace(ply:GetShootPos(), ply:GetAimVector() * self.ReachDistance, {ply})
 	local pos1 = tr.HitPos + tr.HitNormal
@@ -271,7 +271,7 @@ function SWEP:StabAttack()
 	local ply = self:GetOwner()
 	self:UpdateNextIdle()
 	ply:SetAnimation(PLAYER_ATTACK1)
-	ply:ViewPunch(self.AttSecondaryPunch)
+	ply:BetterViewPunch(self.AttSecondaryPunch)
 	ply:LagCompensation(true)
 	local tr = util.QuickTrace(ply:GetShootPos(), ply:GetAimVector() * self.ReachDistance, {ply})
 	local pos1 = tr.HitPos + tr.HitNormal

@@ -9,6 +9,7 @@ SWEP.Purpose = "These are your hands. They're no energy sword, but they still pa
 SWEP.Instructions = "R to upper/lower fists,\nLMB with uppered fists to swing,\nRMB with uppered fists to block,\nRMB with lowered fists to grab"
 SWEP.ViewModel = Model("models/weapons/v_fist.mdl")
 SWEP.WorldModel = ""
+SWEP.DrawWorldModel = false
 SWEP.ViewModelPositionOffset = Vector(0, -1, -1)
 SWEP.ViewModelAngleOffset = Angle(0, 0, -1)
 SWEP.ViewModelFOV = 75
@@ -29,9 +30,6 @@ if CLIENT then SWEP.WepSelectIcon = surface.GetTextureID("vgui/hud/alaln_fists")
 SWEP.IconOverride = "halflife/lab1_cmpm3000"
 SWEP.Slot = 0
 SWEP.SlotPos = 1
-SWEP.DrawAmmo = false
-SWEP.DrawCrosshair = false
-SWEP.BounceWeaponIcon = false
 SWEP.AllowViewAttachment = true
 SWEP.HitDistance = 75
 SWEP.Range = 85
@@ -81,7 +79,7 @@ function SWEP:PrimaryAttack(right)
 		vm:SetWeaponModel("models/weapons/v_fist.mdl", self)
 		vm:SendViewModelMatchingSequence(vm:LookupSequence("draw"))
 		self:EmitSound("weapons/wbk/PF_Osm_3.wav")
-		self:GetOwner():ViewPunch(Angle(-4.4, 0, 1.5))
+		self:GetOwner():BetterViewPunch(Angle(-4.4, 0, 1.5))
 		self:SetNextPrimaryFire(CurTime() + 0.3)
 		self:SetNextSecondaryFire(CurTime() + 0.3)
 		self:UpdateNextIdle()
@@ -95,14 +93,14 @@ function SWEP:PrimaryAttack(right)
 		vm:SendViewModelMatchingSequence(vm:LookupSequence(anim))
 		if anim == "punch_hard" then
 			self:EmitSound("weapons/wbk/PF_Swing_dif_" .. math.random(1, 3) .. ".wav")
-			self:GetOwner():ViewPunch(Angle(-9, -11, 1))
+			self:GetOwner():BetterViewPunch(Angle(-9, -11, 1))
 		else
 			self:EmitSound("weapons/wbk/PF_Attack_" .. math.random(1, 3) .. ".wav")
 		end
 
 		self:UpdateNextIdle()
 		self:SetNextMeleeAttack(CurTime() + 0.14)
-		self:GetOwner():ViewPunch(Angle(0, -8.5, -2.5))
+		self:GetOwner():BetterViewPunch(Angle(0, -8.5, -2.5))
 		self:SetNextPrimaryFire(CurTime() + 0.6)
 		self:SetNextSecondaryFire(CurTime() + 0.6)
 	end
@@ -124,7 +122,7 @@ function SWEP:Reload()
 		vm:SetWeaponModel("models/weapons/v_fist.mdl", self)
 		vm:SendViewModelMatchingSequence(vm:LookupSequence("draw"))
 		self:EmitSound("weapons/wbk/PF_Osm_3.wav")
-		self:GetOwner():ViewPunch(Angle(-2, 0, 1))
+		self:GetOwner():BetterViewPunch(Angle(-2, 0, 1))
 		self:SetNextPrimaryFire(CurTime() + 0.5)
 		self:SetNextSecondaryFire(CurTime() + vm:SequenceDuration())
 		self:UpdateNextIdle()
@@ -134,7 +132,7 @@ function SWEP:Reload()
 		vm:SendViewModelMatchingSequence(vm:LookupSequence("fists_holster"))
 		self.fistsOut = false
 		self:SetHoldType("normal")
-		self:GetOwner():ViewPunch(Angle(2, 0, 1))
+		self:GetOwner():BetterViewPunch(Angle(2, 0, 1))
 		self:SetNextPrimaryFire(CurTime() + 0.5)
 		self:SetNextSecondaryFire(CurTime() + 0.3)
 		self:EmitSound("weapons/wbk/PF_Osm_2.wav")
@@ -201,7 +199,7 @@ function SWEP:DealDamage()
 		elseif anim == "punch_hard" then
 			dmginfo:SetDamageForce(self:GetOwner():GetUp() * 5158 * scale + self:GetOwner():GetForward() * 10012 * scale)
 			dmginfo:SetDamage(math.random(12, 18))
-			timer.Simple(0.1, function() self:GetOwner():ViewPunch(Angle(12.5, 0, 8.5)) end)
+			timer.Simple(0.1, function() self:GetOwner():BetterViewPunch(Angle(12.5, 0, 8.5)) end)
 		end
 
 		SuppressHostEvents(NULL) -- Let the breakable gibs spawn in multiplayer on client
@@ -258,30 +256,30 @@ function SWEP:SecondaryAttack()
 			vm:SendViewModelMatchingSequence(vm:LookupSequence("WbkDefendHimself"))
 			self:SetHoldType("camera")
 			self.isInBlockDam = true
-			self:GetOwner():ViewPunch(Angle(-1.4, 0, 1.5))
+			self:GetOwner():BetterViewPunch(Angle(-1.4, 0, 1.5))
 			timer.Simple(0.2, function()
 				if not self:IsValid() then return end
-				self:GetOwner():ViewPunch(Angle(1.4, 0, 1.5))
+				self:GetOwner():BetterViewPunch(Angle(1.4, 0, 1.5))
 			end)
 
 			timer.Simple(0.4, function()
 				if not self:IsValid() then return end
-				self:GetOwner():ViewPunch(Angle(-1.4, 0, 1.5))
+				self:GetOwner():BetterViewPunch(Angle(-1.4, 0, 1.5))
 			end)
 
 			timer.Simple(0.5, function()
 				if not self:IsValid() then return end
-				self:GetOwner():ViewPunch(Angle(1.4, 0, 1.5))
+				self:GetOwner():BetterViewPunch(Angle(1.4, 0, 1.5))
 			end)
 
 			timer.Simple(0.8, function()
 				if not self:IsValid() then return end
-				self:GetOwner():ViewPunch(Angle(-1.4, 0, 1.5))
+				self:GetOwner():BetterViewPunch(Angle(-1.4, 0, 1.5))
 			end)
 
 			timer.Simple(1, function()
 				if not self:IsValid() then return end
-				self:GetOwner():ViewPunch(Angle(1.4, 0, 1.5))
+				self:GetOwner():BetterViewPunch(Angle(1.4, 0, 1.5))
 			end)
 
 			timer.Simple(1.35, function()

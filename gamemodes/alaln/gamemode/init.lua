@@ -52,12 +52,12 @@ hook.Add("KeyPress", "alaln-keypress", function(ply, key)
 				dmg:SetDamageForce(ply:GetAimVector() * 500)
 				dmg:SetDamagePosition(tr.HitPos)
 				tr.Entity:TakeDamageInfo(dmg)
-				ply:ViewPunch(AngleRand(-15, 15))
+				ply:BetterViewPunch(AngleRand(-15, 15))
 				if math.random(1, 2) == 2 then ply:TakeDamage(math.random(4, 8), ply, tr.Entity) end
 				return
 			elseif tr.Entity:GetClass() == "func_breakable_surf" then
 				tr.Entity:Fire("shatter", "0.5 0.5 4", 0)
-				ply:ViewPunch(AngleRand(-15, 15))
+				ply:BetterViewPunch(AngleRand(-15, 15))
 				if math.random(1, 2) == 2 then ply:TakeDamage(math.random(4, 8), ply, tr.Entity) end
 			end
 

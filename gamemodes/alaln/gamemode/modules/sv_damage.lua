@@ -4,17 +4,17 @@ hook.Add("EntityTakeDamage", "alaln-enttakedamage", function(target, dmginfo)
 	if not target:IsPlayer() or (target:IsPlayer() and target:HasGodMode()) then return end
 	if dmginfo:GetDamageType() == DMG_BURN or target:IsOnFire() then
 		if SERVER then util.ScreenShake(target:GetPos(), 0.3, 3, 5, 0) end
-		target:ViewPunch(AngleRand(-5, 5))
+		target:BetterViewPunch(AngleRand(-5, 5))
 		target:AddCrazyness(0.2)
 	end
 
 	local damag = dmginfo:GetDamage() * 0.6
-	target:ViewPunch(AngleRand(-damag, damag))
+	target:BetterViewPunch(AngleRand(-damag, damag))
 	if dmginfo:GetDamageType() == 4 and dmginfo:GetDamage() >= 20 then dmginfo:ScaleDamage(0.85) end
 	if dmginfo:GetDamage() > 1 and target:LastHitGroup(HITGROUP_HEAD) and dmginfo:IsBulletDamage() and nextheadshot < CurTime() then
 		local headshotsound = CreateSound(target, "player/general/flesh_burn.wav")
 		if SERVER then util.ScreenShake(target:GetPos(), 1, 5, 4, 0) end
-		target:ViewPunch(Angle(-30, 0, 0))
+		target:BetterViewPunch(Angle(-30, 0, 0))
 		target:AddCrazyness(0.5)
 		dmginfo:ScaleDamage(10)
 		if not headshotsound:IsPlaying() then
@@ -37,14 +37,14 @@ hook.Add("EntityTakeDamage", "alaln-enttakedamage", function(target, dmginfo)
 			target:SetArmor(target:Armor() - dmginfo:GetDamage() * 0.6)
 		end
 
-		target:ViewPunch(Angle(-50, 0, 0))
+		target:BetterViewPunch(Angle(-50, 0, 0))
 		target:EmitSound("physics/body/body_medium_break4.wav", 100, math.random(90, 110))
 	end
 
 	if dmginfo:IsExplosionDamage() and dmginfo:GetDamage() > 25 then
 		if SERVER then util.ScreenShake(target:GetPos(), 15, 15, 5, 0) end
 		target:AddCrazyness(1)
-		target:ViewPunch(AngleRand(-90, 90))
+		target:BetterViewPunch(AngleRand(-90, 90))
 		dmginfo:ScaleDamage(2)
 	end
 

@@ -188,6 +188,7 @@ function SWEP:PrimaryAttack()
 	self.ReloadInterrupted = true
 	if not self:GetReady() then return end
 	if self:GetSprinting() > 10 then return end
+	local owner = self:GetOwner()
 	if self:Clip1() <= 0 then
 		self:EmitSound("weapons/firearms/hndg_glock17/glock17_dryfire.wav")
 		self:SetNextPrimaryFire(CurTime() + (self.Primary.Automatic and .35 or .25))
@@ -206,13 +207,15 @@ function SWEP:PrimaryAttack()
 
 	self.LastFire = CurTime()
 	local WaterMul = 1
-	if self:GetOwner():WaterLevel() >= 3 then WaterMul = .5 end
+	if owner:GetAlalnClass() == "Berserker" then WaterMul = .9 end
+	if owner:WaterLevel() >= 3 then WaterMul = .5 end
 	local dmgAmt, InAcc = self.Primary.Damage * math.Rand(.9, 1.1) * WaterMul, 1 - self.Accuracy
+	if owner:GetAlalnClass() == "Berserker" then InAcc = 1.3 - self.Accuracy end
 	if self:GetAiming() <= 99 then InAcc = InAcc + self.HipFireInaccuracy end
-	local BulletTraj = (self:GetOwner():GetAimVector() + VectorRand() * InAcc):GetNormalized()
+	local BulletTraj = (owner:GetAimVector() + VectorRand() * InAcc):GetNormalized()
 	local bullet = {}
 	bullet.Num = self.Primary.NumShots
-	bullet.Src = self:GetOwner():GetShootPos()
+	bullet.Src = owner:GetShootPos()
 	bullet.Dir = BulletTraj
 	bullet.Spread = Vector(self.Spread, self.Spread, 0)
 	bullet.Tracer = 1
@@ -220,26 +223,26 @@ function SWEP:PrimaryAttack()
 	bullet.Force = dmgAmt / 10
 	bullet.Damage = dmgAmt
 	bullet.Callback = function(ply, tr) ply:GetActiveWeapon():BulletCallbackFunc(dmgAmt, ply, tr, dmg, false, true, false) end
-	self:GetOwner():FireBullets(bullet)
+	owner:FireBullets(bullet)
 	if self.Supersonic then self:BallisticSnap(BulletTraj) end
 	if CLIENT then self:Stun() end
 	if (self:Clip1() == 1) and self.LastFireAnim then
 		self:DoBFSAnimation(self.LastFireAnim)
 	elseif self:Clip1() > 0 then
 		self:DoBFSAnimation(self.FireAnim)
-		if self.FireAnimRate then self:GetOwner():GetViewModel():SetPlaybackRate(self.FireAnimRate) end
+		if self.FireAnimRate then owner:GetViewModel():SetPlaybackRate(self.FireAnimRate) end
 	end
 
-	self:GetOwner():SetAnimation(PLAYER_ATTACK1)
+	owner:SetAnimation(PLAYER_ATTACK1)
 	local Pitch = self.ShotPitch * math.Rand(.95, 1)
 	if SERVER then
 		local Dist = 75
-		self:GetOwner():EmitSound(self.CloseFireSound, Dist, Pitch)
-		self:GetOwner():EmitSound(self.FarFireSound, Dist * 2, Pitch)
-		if self.ExtraFireSound then sound.Play(self.ExtraFireSound, self:GetOwner():GetShootPos() + VectorRand(), Dist - 5, Pitch) end
+		owner:EmitSound(self.CloseFireSound, Dist, Pitch)
+		owner:EmitSound(self.FarFireSound, Dist * 2, Pitch)
+		if self.ExtraFireSound then sound.Play(self.ExtraFireSound, owner:GetShootPos() + VectorRand(), Dist - 5, Pitch) end
 		if self.CycleType == "manual" then
 			timer.Simple(.2, function()
-				if IsValid(self) and IsValid(self:GetOwner()) then
+				if IsValid(self) and IsValid(owner) then
 					self:DoBFSAnimation(self.CycleAnim)
 					self:EmitSound(self.CycleSound, 55, 100)
 				end
@@ -253,35 +256,35 @@ function SWEP:PrimaryAttack()
 		Upness = 0
 	end
 
-	ParticleEffect(self.MuzzleEffect, self:GetOwner():GetShootPos() + self:GetOwner():GetAimVector() * 20 + self:GetOwner():EyeAngles():Right() * Rightness - self:GetOwner():EyeAngles():Up() * Upness, self:GetOwner():EyeAngles(), self)
+	ParticleEffect(self.MuzzleEffect, owner:GetShootPos() + owner:GetAimVector() * 20 + owner:EyeAngles():Right() * Rightness - owner:EyeAngles():Up() * Upness, owner:EyeAngles(), self)
 	if SERVER and (self.CycleType == "auto") and self.ShellType and self.ShellType ~= "" then
 		local effectdata = EffectData()
-		effectdata:SetOrigin(self:GetOwner():GetShootPos() + self:GetOwner():GetAimVector() * 15 + self:GetOwner():EyeAngles():Right() * Rightness - self:GetOwner():EyeAngles():Up() * Upness)
-		effectdata:SetAngles(self:GetOwner():GetRight():Angle())
-		effectdata:SetEntity(self:GetOwner())
+		effectdata:SetOrigin(owner:GetShootPos() + owner:GetAimVector() * 15 + owner:EyeAngles():Right() * Rightness - owner:EyeAngles():Up() * Upness)
+		effectdata:SetAngles(owner:GetRight():Angle())
+		effectdata:SetEntity(owner)
 		util.Effect(self.ShellType, effectdata, true, true)
 	elseif SERVER and (self.CycleType == "manual") and self.ShellType and self.ShellType ~= "" then
 		timer.Simple(.4, function()
-			if IsValid(self) and IsValid(self:GetOwner()) then
+			if IsValid(self) and IsValid(owner) then
 				local effectdata = EffectData()
-				effectdata:SetOrigin(self:GetOwner():GetShootPos() + self:GetOwner():GetAimVector() * 15 + self:GetOwner():EyeAngles():Right() * Rightness - self:GetOwner():EyeAngles():Up() * Upness)
-				effectdata:SetAngles(self:GetOwner():GetRight():Angle())
-				effectdata:SetEntity(self:GetOwner())
+				effectdata:SetOrigin(owner:GetShootPos() + owner:GetAimVector() * 15 + owner:EyeAngles():Right() * Rightness - owner:EyeAngles():Up() * Upness)
+				effectdata:SetAngles(owner:GetRight():Angle())
+				effectdata:SetEntity(owner)
 				util.Effect(self.ShellType, effectdata, true, true)
 			end
 		end)
 	end
 
-	local Ang, Rec = self:GetOwner():EyeAngles(), self.Primary.Recoil
+	local Ang, Rec = owner:EyeAngles(), self.Primary.Recoil
 	local RecoilY = math.Rand(.020, .023) * Rec
 	local RecoilX = math.Rand(-.018, .021) * Rec
-	if (SERVER and game.SinglePlayer()) or CLIENT then self:GetOwner():SetEyeAngles((Ang:Forward() + RecoilY * Ang:Up() + Ang:Right() * RecoilX):Angle()) end
-	if not self:GetOwner():OnGround() then self:GetOwner():SetVelocity(-self:GetOwner():GetAimVector() * 10) end
-	self:GetOwner():ViewPunchReset()
-	self:GetOwner():ViewPunch(Angle(RecoilY * -30 * self.Primary.Recoil, RecoilX * -30 * self.Primary.Recoil, 0))
+	if (SERVER and game.SinglePlayer()) or CLIENT then owner:SetEyeAngles((Ang:Forward() + RecoilY * Ang:Up() + Ang:Right() * RecoilX):Angle()) end
+	if not owner:OnGround() then owner:SetVelocity(-owner:GetAimVector() * 10) end
+	owner:ViewPunchReset()
+	owner:BetterViewPunch(Angle(RecoilY * -30 * self.Primary.Recoil, RecoilX * -30 * self.Primary.Recoil, 0))
 	self:TakePrimaryAmmo(1)
 	local Extra = 0
-	if self:GetOwner():WaterLevel() >= 3 then Extra = 1 end
+	if owner:WaterLevel() >= 3 then Extra = 1 end
 	self:SetNextPrimaryFire(CurTime() + self.TriggerDelay + self.CycleTime + Extra)
 end
 

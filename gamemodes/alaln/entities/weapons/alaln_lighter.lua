@@ -126,7 +126,7 @@ function SWEP:Deploy()
 	self:EmitSound("player/weapon_draw_0" .. math.random(1, 5) .. ".wav")
 	self:SetNWBool("Light", true)
 	self:SetHoldType(self.HoldType)
-	timer.Simple(self:SequenceDuration() - 0.8, function() if CLIENT and IsValid(self) then ParticleEffectAttach("lighter_flame", PATTACH_POINT_FOLLOW, self:GetOwner():GetViewModel(), 1) end end)
+	timer.Simple(0.6, function() if CLIENT and IsValid(self) and IsValid(self:GetOwner():GetViewModel()) then ParticleEffectAttach("lighter_flame", PATTACH_POINT_FOLLOW, self:GetOwner():GetViewModel(), 1) end end)
 	return true
 end
 
@@ -160,16 +160,17 @@ function SWEP:SecondaryAttack()
 	-- ignite props/npcs
 	if trace.Hit and IsValid(trace.Entity) and not trace.Entity:IsWorld() and table.HasValue(allowedmats, trace.MatType) and not trace.Entity:IsOnFire() and trace.Entity:WaterLevel() < 1 then
 		local vm = ply:GetViewModel()
-		vm:SendViewModelMatchingSequence(vm:LookupSequence("reach_out_start"))
+		if IsValid(vm) then vm:SendViewModelMatchingSequence(vm:LookupSequence("reach_out_start")) end
 		self:SetHoldType(self.IgniteHoldType)
 		timer.Simple(.5, function()
 			if not (IsValid(self) or IsValid(trace.Entity)) then return end
 			if not SERVER then return end
+			if trace.Entity:IsNPC() then ply:AddScore(math.random(1, 4)) end
 			trace.Entity:Ignite(15, 180)
 		end)
 
 		timer.Simple(1, function()
-			if not IsValid(self) then return end
+			if not IsValid(self) or not IsValid(vm) then return end
 			vm:SendViewModelMatchingSequence(vm:LookupSequence("reach_out_end"))
 			self:SetHoldType(self.HoldType)
 		end)
@@ -183,22 +184,32 @@ function SWEP:Reload()
 end
 
 function SWEP:ToggleLighter()
+	local owner = self:GetOwner()
+	local vm = owner:GetViewModel()
+	if not IsValid(owner) or not IsValid(vm) then return end -- I HATE THIS FUCKIGN SHITJFASFDFSDAFASDFASD
 	if self:IsLit() then
 		-- Put Lighter away
 		self:SendWeaponAnim(ACT_VM_HOLSTER)
-		self:GetOwner():GetViewModel():StopParticles()
-		timer.Simple(self:SequenceDuration() - 0.8, function() if IsValid(self) then self:SetNWBool("Light", false) end end)
-		-- hate
-		timer.Simple(self:SequenceDuration() - 0.25, function() if IsValid(self) then self:GetOwner():GetViewModel():SetNoDraw(true) end end)
+		vm:StopParticles()
+		timer.Simple(0.8, function() if IsValid(self) then self:SetNWBool("Light", false) end end)
+		timer.Simple(0.3, function() 
+			if IsValid(self) and IsValid(vm) and self:GetNWBool("Light", false) == true then 
+			vm:SetNoDraw(true) 
+		end 
+	end)
 		self:SetHoldType(self.HoldTypeOff)
 		self:Holster()
 	else
-		if self:GetOwner():WaterLevel() >= 2 then return end
+		if owner:WaterLevel() >= 2 then return end
 		-- Take Lighter Out
 		self:SendWeaponAnim(ACT_VM_DRAW)
 		self:SetNWBool("Light", true)
 		timer.Simple(self:SequenceDuration(), function() if IsValid(self) then self:SendWeaponAnim(ACT_VM_IDLE) end end)
-		self:GetOwner():GetViewModel():SetNoDraw(false)
+		timer.Simple(0.4, function() 
+			if IsValid(self) and IsValid(vm) and self:GetNWBool("Light", false) == true then 
+				vm:SetNoDraw(false) 
+			end 
+		end)
 		self:SetHoldType(self.HoldType)
 		self:Deploy()
 	end
@@ -243,7 +254,7 @@ if CLIENT then
 				dlight.r = r
 				dlight.g = g
 				dlight.b = b
-				dlight.brightness = 3
+				dlight.brightness = 2
 				dlight.size = 320
 				dlight.decay = 128
 				dlight.dietime = CurTime() + .1

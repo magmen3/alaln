@@ -10,7 +10,7 @@ hook.Add("PlayerInitialSpawn", "alaln-initialspawn", function(ply)
 		end
 	end
 
-	ply:SetNWString("alaln-class", "Standard")
+	ply:SetNWString("alaln-class", "Psychopath")
 	ply:SetScore(0)
 end)
 
@@ -43,21 +43,22 @@ function GM:PlayerLoadout(ply)
 		ply:Give("alaln_lighter")
 	end
 
-	if ply:GetNWString("alaln-class", "Standard") == "Berserker" then
+	if ply:GetAlalnClass() == "Berserker" then
 		ply:Give("alaln_fists")
 		ply:SetMaxHealth(120)
 		ply:SetHealth(120)
 	end
 
-	if ply:GetNWString("alaln-class", "Standard") == "Cannibal" then
+	if ply:GetAlalnClass() == "Cannibal" then
 		ply:SetMaxHealth(100)
 		ply:SetHealth(100)
+		ply:Give("alaln_cannibalism")
 		ply:SetCrazyness(math.random(6, 18))
 		ply:SetHunger(math.random(55, 75))
 		ply:SetMaterial("models/screamer/corpse9")
 	end
 
-	if ply:GetNWString("alaln-class", "Standard") ~= "Standard" then BetterChatPrint(ply, "You are " .. ply:GetNWString("alaln-class", "Standard") .. ".", color_red2) end
+	if ply:GetAlalnClass() ~= "Psychopath" then BetterChatPrint(ply, "You are " .. ply:GetAlalnClass() .. ".", color_red2) end
 	local size = 12
 	local DEFAULT_VIEW_OFFSET = Vector(0, 0, 64)
 	local DEFAULT_VIEW_OFFSET_DUCKED = Vector(0, 0, 42)
@@ -88,6 +89,7 @@ local NPCNames = {
 	entityflame = "magic of fire"
 }
 
+local clr_blur = Color(0, 0, 255, 100) -- Color(255, 0, 0, 100)
 hook.Add("PlayerDeath", "alaln-plydeath", function(victim, inflictor, attacker)
 	for _, ply in player.Iterator() do
 		if IsValid(attacker) and victim ~= attacker then
@@ -100,6 +102,7 @@ hook.Add("PlayerDeath", "alaln-plydeath", function(victim, inflictor, attacker)
 	end
 
 	if IsValid(attacker) and attacker:IsPlayer() then
+		attacker:ScreenFade(SCREENFADE.OUT, clr_blur, 0.5, 0)
 		attacker:AddScore(math.random(3, 8))
 		attacker:AddCrazyness(math.random(8, 24))
 		if attacker:GetCrazyness() >= 20 and attacker:GetCrazyness() <= 40 and math.random(2, 4) == 2 then
@@ -112,6 +115,13 @@ hook.Add("PlayerDeath", "alaln-plydeath", function(victim, inflictor, attacker)
 	end
 
 	victim.NextSpawnTime = CurTime() + 5
+end)
+
+hook.Add("OnNPCKilled", "alaln-npcdeath", function(npc, attacker, inflictor)
+	if attacker:IsPlayer() then
+		attacker:ScreenFade(SCREENFADE.OUT, clr_blur, 0.5, 0)
+		attacker:AddScore(math.random(2, 6))
+	end
 end)
 
 hook.Add("PlayerConnect", "alaln-joinmessage", function(name, ip)

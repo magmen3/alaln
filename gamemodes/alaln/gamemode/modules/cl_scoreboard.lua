@@ -14,7 +14,7 @@ local PLAYER_LINE = {
 		self.Avatar:SetMouseInputEnabled(false)
 		self.Name = self:Add("DLabel")
 		self.Name:Dock(FILL)
-		self.Name:SetFont("alaln-hudfontvsmall")
+		self.Name:SetFont("alaln-hudfontsmall")
 		self.Name:SetTextColor(Color(93, 93, 93))
 		self.Name:DockMargin(8, 0, 0, 0)
 		self.Mute = self:Add("DImageButton")
@@ -23,19 +23,19 @@ local PLAYER_LINE = {
 		self.Ping = self:Add("DLabel")
 		self.Ping:Dock(RIGHT)
 		self.Ping:SetWidth(50)
-		self.Ping:SetFont("alaln-hudfontvsmall")
+		self.Ping:SetFont("alaln-hudfontsmall")
 		self.Ping:SetTextColor(Color(93, 93, 93))
 		self.Ping:SetContentAlignment(5)
 		self.Deaths = self:Add("DLabel")
 		self.Deaths:Dock(RIGHT)
 		self.Deaths:SetWidth(50)
-		self.Deaths:SetFont("alaln-hudfontvsmall")
+		self.Deaths:SetFont("alaln-hudfontsmall")
 		self.Deaths:SetTextColor(Color(93, 93, 93))
 		self.Deaths:SetContentAlignment(5)
 		self.Kills = self:Add("DLabel")
 		self.Kills:Dock(RIGHT)
 		self.Kills:SetWidth(50)
-		self.Kills:SetFont("alaln-hudfontvsmall")
+		self.Kills:SetFont("alaln-hudfontsmall")
 		self.Kills:SetTextColor(Color(93, 93, 93))
 		self.Kills:SetContentAlignment(5)
 		self:Dock(TOP)
@@ -124,21 +124,21 @@ local PLAYER_LINE = {
 		-- We draw our background a different colour based on the status of the player
 		--
 		if self.Player:Team() == TEAM_CONNECTING then
-			draw.RoundedBox(4, 0, 0, w, h, Color(200, 200, 200, 200))
+			draw.RoundedBox(4, 0, 0, w, h, Color(120, 15, 15, 200))
 			return
 		end
 
 		if not self.Player:Alive() then
-			draw.RoundedBox(4, 0, 0, w, h, Color(230, 200, 200, 255))
+			draw.RoundedBox(4, 0, 0, w, h, Color(80, 0, 0, 255))
 			return
 		end
 
 		if self.Player:IsAdmin() then
-			draw.RoundedBox(4, 0, 0, w, h, Color(230, 255, 230, 255))
+			draw.RoundedBox(4, 0, 0, w, h, Color(180, 15, 15, 255))
 			return
 		end
 
-		draw.RoundedBox(4, 0, 0, w, h, Color(230, 230, 230, 255))
+		draw.RoundedBox(4, 0, 0, w, h, Color(165, 15, 15, 255))
 	end
 }
 

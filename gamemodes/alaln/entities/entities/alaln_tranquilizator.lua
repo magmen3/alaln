@@ -43,6 +43,7 @@ function ENT:Use(ply)
 		BetterChatPrint(ply, "You eated tranquilizator, now you feel better.", Color(25, 225, 25))
 		ply:EmitSound("vj_cofr/aom/pills/pills_use.wav", 55, math.random(90, 110))
 		self:Remove()
+		ply:AddScore(0.6)
 	else
 		BetterChatPrint(ply, "You already mentally fine.", Color(255, 235, 0))
 	end

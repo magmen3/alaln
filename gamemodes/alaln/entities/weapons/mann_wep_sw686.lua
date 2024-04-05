@@ -1,7 +1,7 @@
 AddCSLuaFile()
 SWEP.Base = "mann_wep_base"
 SWEP.PrintName = "S&W-686"
-SWEP.Purpose = "PLACEHOLDER"
+SWEP.Purpose = "Что может делать револьвер? Срать в лицо!"
 SWEP.Instructions = "LMB to fire,\nRMB to aim sights."
 SWEP.Spawnable = true
 SWEP.Category = "Forsakened"
@@ -27,7 +27,7 @@ SWEP.CycleTime = .4
 SWEP.ENT = "mann_ent_sw686"
 SWEP.CustomColor = Color(150, 150, 150, 255)
 SWEP.HolsterSlot = 2
-SWEP.AimPos = Vector(-2.332, -2, 2.039)
+SWEP.AimPos = Vector(-2.332, -2, 1.039)
 SWEP.AimAng = angle_zero
 SWEP.SprintPos = Vector(5, -2, 0)
 SWEP.SprintAng = Angle(-20, 30, 0)

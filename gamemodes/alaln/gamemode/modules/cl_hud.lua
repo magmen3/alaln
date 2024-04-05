@@ -180,6 +180,6 @@ local BadNames = {
 
 hook.Add("HUDShouldDraw", "alaln-hidedefaulthud", function(name) return BadNames[name] end)
 hook.Add("ScoreboardShow", "alaln-scoreboard", function()
-	if SBOXMode:GetBool() == true or not LocalPlayer():Alive() then return end
-	return true
+	--!!if SBOXMode:GetBool() == true or not LocalPlayer():Alive() then return end
+	return --!!true
 end)

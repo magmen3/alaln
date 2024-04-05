@@ -76,3 +76,7 @@ function plyMeta:AddScore(score)
 
 	self:SetScore(math.Clamp(self:GetScore() + score, 0, 100))
 end
+
+function plyMeta:GetAlalnClass()
+	return self:GetNWString("alaln-class", "Psychopath")
+end
