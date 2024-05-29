@@ -22,7 +22,7 @@ AddCSLuaFile()
 AddCSLuaFile("client.lua")
 include("client.lua")
 SWEP.Base = "alaln_base"
-SWEP.PrintName = "Mann Melee Wep Base"
+SWEP.PrintName = "Mann's Melee Weapon Base"
 SWEP.Category = "Forsakened"
 SWEP.Spawnable = false
 SWEP.AdminOnly = true
@@ -81,8 +81,7 @@ SWEP.DeploySound = "player/weapon_draw_0" .. math.random(1, 5) .. ".wav"
 -- SWEP.WMPos = Vector(2.5, -1, 0)
 -- SWEP.WMAng = Angle(80, -30, 180)
 SWEP.ENT = "mann_ent_base"
-SWEP.DeathDroppable = true
-SWEP.CommandDroppable = true
+SWEP.Droppable = true
 function SWEP:Initialize()
 	self:SetNextIdle(CurTime() + 1.5)
 	self:SetHoldType(self.HoldType)
@@ -98,15 +97,16 @@ end
 
 function SWEP:Deploy()
 	if IsValid(self) and IsValid(self:GetOwner()) then
+		local vm = self:GetOwner():GetViewModel()
 		if not IsFirstTimePredicted() then
 			self:DoBFSAnimation(self.DeployAnim)
-			self:GetOwner():GetViewModel():SetPlaybackRate(self.DeployAnimRate or 1)
+			vm:SetPlaybackRate(self.DeployAnimRate or 1)
 			return
 		end
 
 		self:GetOwner():DoAnimationEvent(ACT_GMOD_GESTURE_ITEM_PLACE)
-		self:SetNextPrimaryFire(CurTime() + self:GetOwner():GetViewModel():SequenceDuration())
-		self:SetNextSecondaryFire(CurTime() + self:GetOwner():GetViewModel():SequenceDuration())
+		self:SetNextPrimaryFire(CurTime() + vm:SequenceDuration())
+		self:SetNextSecondaryFire(CurTime() + vm:SequenceDuration())
 		self:SetHoldType(self.HoldType)
 		self:DoBFSAnimation(self.DeployAnim)
 		self:GetOwner():EmitSound(self.DeploySound)
@@ -117,21 +117,24 @@ function SWEP:Deploy()
 end
 
 function SWEP:PrimaryAttack()
+	local owner = self:GetOwner()
+	if not IsValid(owner) then return end
 	if not IsFirstTimePredicted() then
 		self:DoBFSAnimation(self.PrimaryAnim)
-		self:GetOwner():GetViewModel():SetPlaybackRate(self.PrimaryAnimRate or 1)
+		owner:GetViewModel():SetPlaybackRate(self.PrimaryAnimRate or 1)
 		return
 	end
 
-	if self.SoundCL and CLIENT and self:GetOwner() ~= LocalPlayer() then
-		self:GetOwner():EmitSound(self.Primary.Sound, 75, math.random(95, 105))
+	owner:SetAnimation(PLAYER_ATTACK1)
+	if self.SoundCL and CLIENT and owner ~= LocalPlayer() then
+		owner:EmitSound(self.Primary.Sound, 75, math.random(95, 105))
 	elseif not self.SoundCL then
-		self:GetOwner():EmitSound(self.Primary.Sound, 75, math.random(95, 105))
+		owner:EmitSound(self.Primary.Sound, 75, math.random(95, 105))
 	end
 
-	self:GetOwner():BetterViewPunch(self.PrimaryPunch)
+	owner:BetterViewPunch(self.PrimaryPunch)
 	self:DoBFSAnimation(self.PrimaryAnim)
-	self:GetOwner():GetViewModel():SetPlaybackRate(self.PrimaryAnimRate or 1)
+	owner:GetViewModel():SetPlaybackRate(self.PrimaryAnimRate or 1)
 	self:SetNextPrimaryFire(CurTime() + self.Primary.Delay)
 	self:SetNextSecondaryFire(CurTime() + self.Secondary.Delay)
 	if self.PrimaryTimer then
@@ -149,35 +152,38 @@ end
 
 function SWEP:SecondaryAttack()
 	if not self.AllowSecondAttack then return end
+	local owner = self:GetOwner()
+	if not IsValid(owner) then return end
 	if not IsFirstTimePredicted() then
 		self:DoBFSAnimation(self.SecondaryAnim)
-		self:GetOwner():GetViewModel():SetPlaybackRate(self.SecondaryAnimRate or 1)
+		owner:GetViewModel():SetPlaybackRate(self.SecondaryAnimRate or 1)
 		return
 	end
 
-	if self.SoundCL and CLIENT and self:GetOwner() ~= LocalPlayer() then
-		self:GetOwner():EmitSound(self.Secondary.Sound, 75, math.random(95, 105))
+	owner:SetAnimation(PLAYER_ATTACK1)
+	if self.SoundCL and CLIENT and owner ~= LocalPlayer() then
+		owner:EmitSound(self.Secondary.Sound, 75, math.random(95, 105))
 	elseif not self.SoundCL then
-		self:GetOwner():EmitSound(self.Secondary.Sound, 75, math.random(95, 105))
+		owner:EmitSound(self.Secondary.Sound, 75, math.random(95, 105))
 	end
 
-	self:GetOwner():BetterViewPunch(self.SecondaryPunch)
+	owner:BetterViewPunch(self.SecondaryPunch)
 	self:DoBFSAnimation(self.SecondaryAnim)
 	if self.SecondaryAnim2 then
 		timer.Simple(self.SecAnimTwoDelay, function()
 			if IsValid(self) then
 				self:DoBFSAnimation(self.SecondaryAnim2)
-				if self.SoundCL and CLIENT and self:GetOwner() ~= LocalPlayer() then
-					self:GetOwner():EmitSound(self.Secondary2Sound, 75, math.random(95, 105))
+				if self.SoundCL and CLIENT and owner ~= LocalPlayer() then
+					owner:EmitSound(self.Secondary2Sound, 75, math.random(95, 105))
 				else
-					self:GetOwner():EmitSound(self.Secondary2Sound, 75, math.random(95, 105))
+					owner:EmitSound(self.Secondary2Sound, 75, math.random(95, 105))
 				end
 			end
 		end)
 	end
 
-	self:GetOwner():DoAnimationEvent(ACT_GMOD_GESTURE_MELEE_SHOVE_2HAND)
-	self:GetOwner():GetViewModel():SetPlaybackRate(self.SecondaryAnimRate or 1)
+	owner:DoAnimationEvent(ACT_GMOD_GESTURE_MELEE_SHOVE_2HAND)
+	owner:GetViewModel():SetPlaybackRate(self.SecondaryAnimRate or 1)
 	self:SetNextPrimaryFire(CurTime() + self.Secondary.Delay)
 	self:SetNextSecondaryFire(CurTime() + self.Secondary.Delay)
 	if self.SecondaryTimer then
@@ -197,7 +203,6 @@ function SWEP:SlashAttack()
 	if CLIENT then return end
 	local ply = self:GetOwner()
 	self:UpdateNextIdle()
-	ply:SetAnimation(PLAYER_ATTACK1)
 	ply:BetterViewPunch(self.AttPrimaryPunch)
 	ply:LagCompensation(true)
 	local tr = util.QuickTrace(ply:GetShootPos(), ply:GetAimVector() * self.ReachDistance, {ply})
@@ -232,10 +237,10 @@ function SWEP:SlashAttack()
 			local angle = ply:GetAngles().y - tr.Entity:GetAngles().y
 			if angle < -180 then angle = 360 + angle end
 			if self.AllowBackStab and angle <= 90 and angle >= -90 then
-				dmginfo:SetDamage(self.Primary.Damage * self.BackStabMul)
+				dmginfo:SetDamage(self.Primary.Damage * self.BackStabMul * (ply:GetAlalnState("class") == "Berserker" and 1.8 or 1))
 				DebugPrint("slash back DMG = " .. dmginfo:GetDamage())
 			else
-				dmginfo:SetDamage(self.Primary.Damage)
+				dmginfo:SetDamage(self.Primary.Damage * (ply:GetAlalnState("class") == "Berserker" and 1.8 or 1))
 				DebugPrint("slash front DMG = " .. dmginfo:GetDamage())
 			end
 
@@ -270,7 +275,6 @@ function SWEP:StabAttack()
 	if CLIENT then return end
 	local ply = self:GetOwner()
 	self:UpdateNextIdle()
-	ply:SetAnimation(PLAYER_ATTACK1)
 	ply:BetterViewPunch(self.AttSecondaryPunch)
 	ply:LagCompensation(true)
 	local tr = util.QuickTrace(ply:GetShootPos(), ply:GetAimVector() * self.ReachDistance, {ply})
@@ -305,10 +309,10 @@ function SWEP:StabAttack()
 			local angle = ply:GetAngles().y - tr.Entity:GetAngles().y
 			if angle < -180 then angle = 360 + angle end
 			if self.AllowBackStab and angle <= 90 and angle >= -90 then
-				secdmginfo:SetDamage(self.Secondary.Damage * self.BackStabMul)
+				secdmginfo:SetDamage(self.Secondary.Damage * self.BackStabMul * (ply:GetAlalnState("class") == "Berserker" and 1.8 or 1))
 				DebugPrint("stab back DMG = " .. secdmginfo:GetDamage())
 			else
-				secdmginfo:SetDamage(self.Secondary.Damage)
+				secdmginfo:SetDamage(self.Secondary.Damage * (ply:GetAlalnState("class") == "Berserker" and 1.8 or 1))
 				DebugPrint("stab front DMG = " .. secdmginfo:GetDamage())
 			end
 
@@ -344,14 +348,14 @@ function SWEP:Reload()
 end
 
 function SWEP:DoBFSAnimation(anim)
-	if self:GetOwner() then
+	if IsValid(self:GetOwner()) and IsValid(self:GetOwner():GetViewModel()) then
 		local vm = self:GetOwner():GetViewModel()
 		vm:SendViewModelMatchingSequence(vm:LookupSequence(anim))
 	end
 end
 
 function SWEP:UpdateNextIdle()
-	if self:GetOwner() then
+	if IsValid(self:GetOwner()) then
 		local vm = self:GetOwner():GetViewModel()
 		self:SetNextIdle(CurTime() + vm:SequenceDuration() + self.Primary.Delay + self.PrimaryAnimRate * 2)
 	end
@@ -375,13 +379,18 @@ function SWEP:Holster(newWep)
 end
 
 function SWEP:OnDrop()
-	local Ent = ents.Create(self.ENT)
-	Ent:SetPos(self:GetPos())
-	Ent:SetAngles(self:GetAngles())
-	Ent:Spawn()
-	Ent:Activate()
-	Ent:GetPhysicsObject():SetVelocity(self:GetVelocity() / 2)
-	self:Remove()
+	if IsValid(self) then
+		local Ent = ents.Create(self.ENT)
+		if IsValid(Ent) then
+			Ent:SetPos(self:GetPos())
+			Ent:SetAngles(self:GetAngles())
+			Ent:Spawn()
+			Ent:Activate()
+			Ent:GetPhysicsObject():SetVelocity(self:GetVelocity() / 2)
+		end
+
+		self:Remove()
+	end
 end
 
 function SWEP:Think()

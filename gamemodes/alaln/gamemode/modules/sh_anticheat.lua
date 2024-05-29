@@ -1,6 +1,15 @@
-hook.Add("SpawnMenuOpen", "alaln-spawnmenu", function() if SBOXMode:GetInt() == 0 then return false end end)
-hook.Add("ContextMenuOpen", "alaln-contextmenu", function() if SBOXMode:GetInt() == 0 then return false end end)
-hook.Add("PlayerNoClip", "alaln-noclip", function(ply, desiredState) return SBOXMode:GetBool() end)
+hook.Add("SpawnMenuOpen", "alaln-spawnmenu", function()
+	return SBOXMode:GetBool() --if SBOXMode:GetInt() == 0 then return false end end)
+end)
+
+hook.Add("ContextMenuOpen", "alaln-contextmenu", function()
+	return SBOXMode:GetBool() --function() if SBOXMode:GetInt() == 0 then return false end end)
+end)
+
+hook.Add("PlayerNoClip", "alaln-noclip", function()
+	return SBOXMode:GetBool() --function(ply, desiredState) return SBOXMode:GetBool() end)
+end)
+
 hook.Add("PlayerSpray", "alaln-sprays", function() return true end)
 -- format: multiline
 local BadSpawns = {

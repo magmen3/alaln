@@ -1,21 +1,30 @@
 DeriveGamemode("sandbox")
 GM.Name = "Forsakened"
-GM.Author = "Mannytko, Deka, patrickkane1997"
+GM.Author = "Mannytko, Deka, and others listed on WS page"
 GM.Email = "loh"
 GM.Website = "loh"
-if not ConVarExists("alaln_sboxmode") then CreateConVar("alaln_sboxmode", 0, FCVAR_NOTIFY, "Enable sandbox mode? (q menu, context menu, noclip, etc.)", 0, 1) end
-if not ConVarExists("alaln_dark_light") then CreateConVar("alaln_dark_light", 0, FCVAR_NOTIFY, "Enable darkest lighting in maps? (experimental, not recommended)", 0, 1) end
-SBOXMode = GetConVar("alaln_sboxmode")
---[[ TODO:
-	1. Добавить мусорки в которых типо лутаться можно если Е зажать
-	2. Добавить систему очков и их накопление за убийства
-	3. Доделать каннибала
-	4. Добавить больше классов
-	5. Добавить эээ как их там lens flare вроде ну в воркшопе аддон скачать и всё
+--[[ --!! TODO: (теперь в дискорде) (уже нет)
+	1. Добавить различные препараты временно дающие баффы
+	2. Добавить больше классов
+	3. Переделать еду и транквилизаторы на базе свепов
+	4. Добавить алтари, из которых можно получить рандомный бафф/вещь за очки
+	5. Добавить базовую систему строительства
+	6. Взять отсюда плавную камеру и сделать как в SCP:CB https://steamcommunity.com/sharedfiles/filedetails/?id=3166995133
+	7. Возможно починить баг с лестницами и хуллами с помощью этого аддо https://steamcommunity.com/sharedfiles/filedetails/?id=3233720748
+	8. Еще мб это https://steamcommunity.com/sharedfiles/filedetails/?id=3241813281
+	9. Рандомные звуки игроков???? Кашль там чиханье типо как на хмцд https://steamcommunity.com/sharedfiles/filedetails/?id=3245359152
+	10. Улучшенное третье лицо https://steamcommunity.com/sharedfiles/filedetails/?id=3246688602
 ]]
+do
+	local convarflags = bit.bor(FCVAR_REPLICATED, FCVAR_NOTIFY)
+	CreateConVar("alaln_sboxmode", 0, convarflags, "Enable sandbox mode? (q menu, context menu, noclip, etc.)", 0, 1)
+	CreateConVar("alaln_disable_monsters", 0, convarflags, "Disables monsters if you wan't to do", 0, 1)
+	CreateConVar("alaln_dark_light", 0, convarflags, "Enable darkest lighting in maps? (experimental, not recommended)", 0, 1)
+end
+
+SBOXMode = GetConVar("alaln_sboxmode")
 local color_yellow = Color(255, 170, 0)
 local color_red = Color(165, 0, 0)
-roundActive = false
 team.SetUp(1, "Survivors", color_red)
 local devconvar = GetConVar("developer")
 function DebugPrint(message)
@@ -28,10 +37,10 @@ function DebugPrint(message)
 	MsgC(color_yellow, " [ALALN DEBUG]" .. tostring(message) .. "\n")
 end
 
--- rubat moment https://github.com/Facepunch/garrysmod-requests/issues/122
+-- Rubat moment x2 https://github.com/Facepunch/garrysmod-requests/issues/122
 if SERVER then
 	util.AddNetworkString("alaln-chatprint")
-	-- taken from wiremod
+	-- Taken from wiremod
 	function BetterChatPrint(ply, msg, color)
 		if not (ply or msg or color) then
 			DebugPrint("Error! Calling BetterChatPrint() without args")
@@ -44,27 +53,38 @@ if SERVER then
 		net.Send(ply)
 	end
 else
+	function BetterChatPrint(msg, color)
+		if not (msg or color) then
+			DebugPrint("Error! Calling BetterChatPrint() without args")
+			return
+		end
+
+		chat.AddText(color, msg)
+	end
+
 	net.Receive("alaln-chatprint", function() chat.AddText(net.ReadColor(), net.ReadString()) end)
 end
 
-local DarkLight = GetConVar("alaln_dark_light")
-hook.Add("Initialize", "alaln-lighting", function()
-	if DarkLight:GetBool() == false then return end
-	timer.Simple(1, function()
-		if SERVER then
-			for i = 0, 63 do
-				engine.LightStyle(i, "b")
+do
+	local DarkLight = GetConVar("alaln_dark_light")
+	hook.Add("Initialize", "alaln-lighting", function()
+		if DarkLight:GetBool() == false then return end
+		timer.Simple(1, function()
+			if SERVER then
+				for i = 0, 63 do
+					engine.LightStyle(i, "b")
+				end
+			else
+				render.RedownloadAllLightmaps(true, true)
 			end
-		else
-			render.RedownloadAllLightmaps(true, true)
-		end
+		end)
 	end)
-end)
+end
 
--- hl2 use sounds (probably should use PlayerUse hook for this)
+--!! HL2 use sounds (probably should use PlayerUse hook for this)
 if SERVER then
 	hook.Add("FindUseEntity", "alaln-finduseent", function(ply, ent)
-		if not ply:KeyPressed(IN_USE) or ply:KeyDown(IN_ATTACK2) then return end
+		if not ply:KeyPressed(IN_USE) or ply:KeyDown(IN_ATTACK2) or not ply:Alive() then return end
 		if IsValid(ent) then
 			ply:EmitSound("HL2Player.Use")
 		else
@@ -78,9 +98,3 @@ if SERVER then
 		end
 	end)
 end
-
-local deathsounds = {"vo/npc/male01/pain07.wav", "vo/npc/male01/pain09.wav", "vo/npc/male01/no02.wav"}
-hook.Add("PlayerDeathSound", "alaln-deathsound", function(ply)
-	sound.Play(table.Random(deathsounds), ply:GetNWEntity("plyrag"):GetPos(), 100, math.random(95, 105))
-	return true
-end)

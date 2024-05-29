@@ -1,5 +1,5 @@
+AddCSLuaFile()
 if SERVER then
-	AddCSLuaFile()
 	SWEP.Weight = 5
 	SWEP.AutoSwitchTo = false
 	SWEP.AutoSwitchFrom = false
@@ -19,42 +19,44 @@ else
 	SWEP.ViewModelFOV = 77
 	SWEP.IconOverride = "editor/env_firesource"
 	function SWEP:DrawWeaponSelection(x, y, wide, tall, alpha)
-		if not IsValid(DrawModel) then
-			DrawModel = ClientsideModel(self.WorldModel, RENDER_GROUP_OPAQUE_ENTITY)
-			DrawModel:SetNoDraw(true)
-		else
-			DrawModel:SetModel(self.WorldModel)
-			local vec = Vector(25, 25, 25)
-			local ang = Vector(-48, -48, -48):Angle()
-			cam.Start3D(vec, ang, 20, x, y + 35, wide, tall, 5, 4096)
-			cam.IgnoreZ(true)
-			render.SuppressEngineLighting(true)
-			render.SetLightingOrigin(self:GetPos())
-			render.ResetModelLighting(50 / 255, 50 / 255, 50 / 255)
-			render.SetColorModulation(1, 1, 1)
-			render.SetBlend(255)
-			render.SetModelLighting(4, 1, 1, 1)
-			DrawModel:SetRenderAngles(Angle(0, RealTime() * 30 % 360, 0))
-			DrawModel:DrawModel()
-			DrawModel:SetRenderAngles()
-			render.SetColorModulation(1, 1, 1)
-			render.SetBlend(1)
-			render.SuppressEngineLighting(false)
-			cam.IgnoreZ(false)
-			cam.End3D()
+		if not PotatoMode:GetBool() then
+			if not IsValid(DrawModel) then
+				DrawModel = ClientsideModel(self.WorldModel, RENDER_GROUP_OPAQUE_ENTITY)
+				DrawModel:SetNoDraw(true)
+			else
+				DrawModel:SetModel(self.WorldModel)
+				local vec = Vector(24, 24, 24)
+				local ang = Vector(-24, -24, -24):Angle()
+				cam.Start3D(vec, ang, 20, x, y + 35, wide, tall, 5, 4096)
+				cam.IgnoreZ(true)
+				render.SuppressEngineLighting(true)
+				render.SetLightingOrigin(self:GetPos())
+				render.ResetModelLighting(50 / 255, 50 / 255, 50 / 255)
+				render.SetColorModulation(1, 1, 1)
+				render.SetBlend(255)
+				render.SetModelLighting(4, 1, 1, 1)
+				DrawModel:SetRenderAngles(Angle(0, RealTime() * 30 % 360, 0))
+				DrawModel:DrawModel()
+				DrawModel:SetRenderAngles()
+				render.SetColorModulation(1, 1, 1)
+				render.SetBlend(1)
+				render.SuppressEngineLighting(false)
+				cam.IgnoreZ(false)
+				cam.End3D()
+			end
 		end
 
 		self:PrintWeaponInfo(x + wide + 20, y + tall * 0.95, alpha)
 	end
 
-	-- tried to make viewmodel like in The Forest
+	-- Tried to make viewmodel like in The Forest
 	function SWEP:CalcViewModelView(ViewModel, OldEyePos, OldEyeAng, EyePos, EyeAng)
 		local ply = LocalPlayer()
 		if not (IsValid(ply) or ply:Alive()) or ply:GetMoveType() == MOVETYPE_NOCLIP or ply:GetNoDraw() then return end
 		local eye = ply:GetAttachment(ply:LookupAttachment("eyes"))
 		local sitvec = Vector(0, 0, ply:KeyDown(IN_DUCK) and 2.5 or 2)
 		local eyeang = eye.Ang
-		--eyeang.x = 30 -- i hate nmrih viewmodels
+		--eyeang.x = 30 -- I hate nmrih viewmodels
 		local vm_origin, vm_angles = EyePos + sitvec, eyeang
 		return vm_origin, vm_angles
 	end
@@ -78,15 +80,15 @@ SWEP.Secondary.Automatic = false
 SWEP.Secondary.Ammo = "none"
 SWEP.WorldModelPosition = Vector(3.5, -2, -2)
 SWEP.WorldModelAngle = Angle(180)
-SWEP.DeathDroppable = false
-SWEP.CommandDroppable = false
+SWEP.Droppable = false
+SWEP.HolsterTries = 0
+SWEP.HolsterCD = 0
 game.AddParticles("particles/lighter.pcf")
 PrecacheParticleSystem("lighter_flame")
 function SWEP:Initialize()
 	self:SetHoldType(self.HoldType)
 end
 
-local holcd = 0
 local randholstrings = {"I think it's a bad idea to put an open lighter in your pocket...", "Did you read the engraving?", "I should probably close it before put it in pocket..."}
 local randfirestrings = {"You've done yourself a little trolling.", "Seems like you should have been more careful to this thing."}
 local color_red = Color(165, 0, 0)
@@ -95,25 +97,26 @@ function SWEP:Holster(wep)
 	local ply = self:GetOwner()
 	if not IsValid(ply) or not ply:Alive() then return end
 	if IsValid(ply:GetViewModel()) then ply:GetViewModel():StopParticles() end
-	-- funnies
-	if wep and wep ~= NULL and ply:Alive() and self:IsLit() and holcd < CurTime() then
+	-- Funnies
+	if wep and wep ~= NULL and ply:Alive() and self:IsLit() and self.HolsterCD < CurTime() then
 		if ply:WaterLevel() >= 2 then return true end
-		if math.random(1, 6) == 3 then
+		if math.random(1, 6) == 3 and self.HolsterTries > 1 then
 			if SERVER then
-				ply:Ignite(5, 180)
+				ply:Ignite(3, 140)
 				BetterChatPrint(ply, table.Random(randfirestrings), color_red)
 			end
 			return true
 		else
 			if SERVER then
 				BetterChatPrint(ply, table.Random(randholstrings), color_yellow)
-			elseif CLIENT then
-				surface.PlaySound("common/warning.wav")
+			elseif CLIENT and ply == LocalPlayer() then
+				surface.PlaySound(Sound("common/warning.wav"))
 			end
 			return false
 		end
 
-		holcd = CurTime() + 1
+		self.HolsterTries = self.HolsterTries + 1
+		self.HolsterCD = CurTime() + 1
 	end
 
 	self:EmitSound("player/weapon_holster_0" .. math.random(1, 5) .. ".wav")
@@ -121,12 +124,13 @@ function SWEP:Holster(wep)
 end
 
 function SWEP:Deploy()
-	if not IsValid(self:GetOwner()) or not self:GetOwner():Alive() then return end
-	if self:GetOwner():WaterLevel() >= 2 then return end
-	self:EmitSound("player/weapon_draw_0" .. math.random(1, 5) .. ".wav")
+	local ply = self:GetOwner()
+	if not IsValid(ply) or not ply:Alive() then return end
+	if ply:WaterLevel() >= 2 then return end
+	self:EmitSound("player/weapon_draw_0" .. math.random(1, 5) .. ".wav", 60)
 	self:SetNWBool("Light", true)
 	self:SetHoldType(self.HoldType)
-	timer.Simple(0.6, function() if CLIENT and IsValid(self) and IsValid(self:GetOwner():GetViewModel()) then ParticleEffectAttach("lighter_flame", PATTACH_POINT_FOLLOW, self:GetOwner():GetViewModel(), 1) end end)
+	timer.Simple(0.6, function() if CLIENT and IsValid(self) and IsValid(ply:GetViewModel()) then ParticleEffectAttach("lighter_flame", PATTACH_POINT_FOLLOW, ply:GetViewModel(), 1) end end)
 	return true
 end
 
@@ -158,15 +162,15 @@ function SWEP:SecondaryAttack()
 
 	local allowedmats = {MAT_ANTLION, MAT_BLOODYFLESH, MAT_FLESH, MAT_ALIENFLESH, MAT_FOLIAGE, MAT_GRASS, MAT_WOOD}
 	-- ignite props/npcs
-	if trace.Hit and IsValid(trace.Entity) and not trace.Entity:IsWorld() and table.HasValue(allowedmats, trace.MatType) and not trace.Entity:IsOnFire() and trace.Entity:WaterLevel() < 1 then
+	if trace.Hit and IsValid(trace.Entity) and not trace.Entity:IsWorld() and allowedmats[trace.MatType] and not trace.Entity:IsOnFire() and trace.Entity:WaterLevel() < 1 then -- table.HasValue(allowedmats, trace.MatType)
 		local vm = ply:GetViewModel()
 		if IsValid(vm) then vm:SendViewModelMatchingSequence(vm:LookupSequence("reach_out_start")) end
 		self:SetHoldType(self.IgniteHoldType)
 		timer.Simple(.5, function()
 			if not (IsValid(self) or IsValid(trace.Entity)) then return end
 			if not SERVER then return end
-			if trace.Entity:IsNPC() then ply:AddScore(math.random(1, 4)) end
-			trace.Entity:Ignite(15, 180)
+			if trace.Entity:IsNPC() then ply:AddAlalnState("score", math.random(1, 4)) end
+			trace.Entity:Ignite(5, 140)
 		end)
 
 		timer.Simple(1, function()
@@ -186,17 +190,16 @@ end
 function SWEP:ToggleLighter()
 	local owner = self:GetOwner()
 	local vm = owner:GetViewModel()
-	if not IsValid(owner) or not IsValid(vm) then return end -- I HATE THIS FUCKIGN SHITJFASFDFSDAFASDFASD
+	if not IsValid(owner) or not IsValid(vm) then -- I HATE THIS FUCKIGN SHITJFASFDFSDAFASDFASD
+		return
+	end
+
 	if self:IsLit() then
 		-- Put Lighter away
 		self:SendWeaponAnim(ACT_VM_HOLSTER)
 		vm:StopParticles()
 		timer.Simple(0.8, function() if IsValid(self) then self:SetNWBool("Light", false) end end)
-		timer.Simple(0.3, function() 
-			if IsValid(self) and IsValid(vm) and self:GetNWBool("Light", false) == true then 
-			vm:SetNoDraw(true) 
-		end 
-	end)
+		timer.Simple(0.3, function() if IsValid(self) and IsValid(vm) and self:GetNWBool("Light", false) == true then vm:SetNoDraw(true) end end)
 		self:SetHoldType(self.HoldTypeOff)
 		self:Holster()
 	else
@@ -205,11 +208,7 @@ function SWEP:ToggleLighter()
 		self:SendWeaponAnim(ACT_VM_DRAW)
 		self:SetNWBool("Light", true)
 		timer.Simple(self:SequenceDuration(), function() if IsValid(self) then self:SendWeaponAnim(ACT_VM_IDLE) end end)
-		timer.Simple(0.4, function() 
-			if IsValid(self) and IsValid(vm) and self:GetNWBool("Light", false) == true then 
-				vm:SetNoDraw(false) 
-			end 
-		end)
+		timer.Simple(0.4, function() if IsValid(self) and IsValid(vm) and self:GetNWBool("Light", false) == true then vm:SetNoDraw(false) end end)
 		self:SetHoldType(self.HoldType)
 		self:Deploy()
 	end
@@ -219,12 +218,9 @@ function SWEP:IsLit()
 	return self:GetNWBool("Light", true)
 end
 
-function SWEP:GetLightColor()
-	return 212, 131, 43
-end
-
 if CLIENT then
 	local NextThink = 0
+	local r, g, b = 212, 131, 43
 	function SWEP:Think()
 		if not IsValid(self) or CurTime() < NextThink then return end
 		local ply = self:GetOwner()
@@ -249,7 +245,6 @@ if CLIENT then
 			-- dynamic lights
 			local dlight = DynamicLight(self:EntIndex())
 			if dlight then
-				local r, g, b = self:GetLightColor()
 				dlight.pos = pos
 				dlight.r = r
 				dlight.g = g

@@ -7,7 +7,7 @@ ENT.UseCD = 0
 function ENT:Initialize()
 	if not SERVER then return end
 	self:SetModel(Model("models/Items/hevsuit.mdl"))
-	self:SetMaterial("phoenix_storms/torpedo")
+	self:SetMaterial("forsakened/hevsuit_sheet")
 	local mins, maxs = self:GetModelBounds()
 	local x0 = mins.x -- Define the min corner of the box
 	local y0 = mins.y
@@ -15,7 +15,8 @@ function ENT:Initialize()
 	local x1 = maxs.x -- Define the max corner of the box
 	local y1 = maxs.y
 	local z1 = maxs.z
-	self:PhysicsInitConvex({Vector(x0, y0, z0), Vector(x0, y0, z1), Vector(x0, y1, z0), Vector(x0, y1, z1), Vector(x1, y0, z0), Vector(x1, y0, z1), Vector(x1, y1, z0), Vector(x1, y1, z1)})
+	local vecs = {Vector(x0, y0, z0), Vector(x0, y0, z1), Vector(x0, y1, z0), Vector(x0, y1, z1), Vector(x1, y0, z0), Vector(x1, y0, z1), Vector(x1, y1, z0), Vector(x1, y1, z1)}
+	self:PhysicsInitConvex(vecs)
 	self:EnableCustomCollisions(true)
 	self:SetMoveType(MOVETYPE_VPHYSICS)
 	self:SetSolid(SOLID_VPHYSICS)
@@ -42,26 +43,30 @@ function ENT:Use(ply)
 	if CLIENT or self.UseCD > CurTime() then return end
 	self.UseCD = CurTime() + 1
 	if ply:Armor() < 1 then
+		if ply:GetAlalnState("class") == "Cannibal" then
+			ply:SetSubMaterial()
+			ply:SetSubMaterial(3, "models/screamer/corpse9")
+		elseif ply:GetAlalnState("class") == "Berserker" then
+			ply:SetSubMaterial()
+			ply:SetSubMaterial(3, "models/in/other/corpse1_player_charple")
+		end
+
 		ply:SetArmor(100)
 		BetterChatPrint(ply, "You wear armor.", color_green)
 		ply:EmitSound("npc/combine_soldier/gear" .. math.random(1, 6) .. ".wav", 55, math.random(90, 110))
-		ply:SetModel("models/sgg/hev_corpse.mdl")
-		ply:SetSubMaterial(0, "phoenix_storms/dome")
-		ply:SetSubMaterial(2, "phoenix_storms/torpedo")
+		ply:SetModel(Model("models/sgg/hev_corpse.mdl"))
 		ply:SetWalkSpeed(ply:GetWalkSpeed() * 0.8)
 		ply:SetRunSpeed(ply:GetRunSpeed() * 0.8)
 		ply:SetJumpPower(ply:GetJumpPower() * 0.8)
 		ply:SetSlowWalkSpeed(ply:GetSlowWalkSpeed() * 0.8)
 		ply:SetCrouchedWalkSpeed(ply:GetCrouchedWalkSpeed() * 0.9)
 		ply:SetNWBool("HasArmor", true)
-		ply:AddScore(0.5)
+		ply:AddAlalnState("score", 0.5)
 		self:Remove()
 	elseif ply:Armor() >= 1 and ply:Armor() < 95 then
 		ply:SetArmor(100)
 		ply:EmitSound("npc/combine_soldier/gear" .. math.random(1, 6) .. ".wav", 55, math.random(90, 110))
-		ply:SetModel("models/sgg/hev_corpse.mdl")
-		ply:SetSubMaterial(0, "phoenix_storms/dome")
-		ply:SetSubMaterial(2, "phoenix_storms/torpedo")
+		ply:SetModel(Model("models/sgg/hev_corpse.mdl"))
 		BetterChatPrint(ply, "You repaired your armor.", color_green)
 		ply:SetNWBool("HasArmor", true)
 		self:Remove()

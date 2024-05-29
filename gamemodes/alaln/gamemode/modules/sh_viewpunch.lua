@@ -1,4 +1,3 @@
--- я только щас заметил что эта херня использует SetEyeAngles и из за этого во время вьюпанча может нерегать :steamdeadpan:
 if SERVER then
 	util.AddNetworkString("alaln-viewpunch")
 	local plyMeta = FindMetaTable("Player")

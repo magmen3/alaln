@@ -15,14 +15,21 @@ local MenuMusic = {
 	"in2/carnophage.mp3",
 	"in2/identity_theft.mp3",
 	"in2/maintenance_tunnels.mp3",
-	"in2/waking.mp3"
+	"in2/waking.mp3",
+	"placenta/music/whitewaking2.ogg",
+	"placenta/music/thecoldflame.ogg",
+	"placenta/music/todayisworst.ogg"
 }
 
 local noisetex = Material("filmgrain/noise")
 local noisetex2 = Material("filmgrain/noiseadd")
-local muzon
-local Menu
+local muzon, Menu, rndtxt
+local DevConVar = GetConVar("developer")
+local randomstrings = {"RUN", "LIVER FAILURE FOREVER", "YOU'RE ALREADY DEAD", "KILL OR DIE"}
+local textactive = true
+local sndvolume = GetConVar("snd_musicvolume")
 local function DrawMenu()
+	if DevConVar:GetInt() >= 1 then return end
 	local MenuClrs = {
 		bg = Color(10, 0, 0, 200),
 		white = Color(165, 5, 5, 0)
@@ -55,7 +62,14 @@ local function DrawMenu()
 		surface.DrawTexturedRect(0, 0, ScrW(), ScrH())
 		draw.SimpleText("Forsakened", MenuFonts.big, w / 4.5, h / 3, MenuClrs.white, TEXT_ALIGN_CENTER, TEXT_ALIGN_TOP)
 		MenuClrs.white.a = MenuClrs.white.a / 2
-		draw.SimpleText("By Mannytko, Deka, and patrickkane1997.", MenuFonts.small, w / 4.5, h / 2.4, MenuClrs.white, TEXT_ALIGN_CENTER, TEXT_ALIGN_TOP)
+		if textactive == true then -- С каждой подписочкой на канал мир становится добрее
+			textactive = false
+			rndtxt = table.Random(randomstrings)
+		end
+
+		draw.SimpleText("By " .. GAMEMODE.Author, MenuFonts.small, w / 4.5, h / 2.4, MenuClrs.white, TEXT_ALIGN_CENTER, TEXT_ALIGN_TOP)
+		MenuClrs.white.a = MenuClrs.white.a * math.Rand(0.2, 0.8)
+		draw.SimpleText(rndtxt, MenuFonts.button, w / 2, h / 1.1, MenuClrs.white, TEXT_ALIGN_CENTER, TEXT_ALIGN_TOP)
 	end
 
 	timer.Simple(.5, function()
@@ -64,6 +78,7 @@ local function DrawMenu()
 		local track = table.Random(MenuMusic)
 		muzon = CreateSound(LocalPlayer(), track)
 		muzon:Play()
+		muzon:ChangeVolume(sndvolume:GetFloat() or 0.9)
 	end)
 
 	Menu = DFrame
@@ -177,6 +192,7 @@ gameevent.Listen("OnRequestFullUpdate")
 hook.Add("OnRequestFullUpdate", "alaln-mainmenu", function(data)
 	local ply = Player(data.userid)
 	if ply == LocalPlayer() and not MenuActive then
+		if DevConVar:GetInt() >= 1 then return end
 		DrawMenu()
 		MenuActive = true
 	end
@@ -184,11 +200,12 @@ end)
 
 hook.Add("PreRender", "alaln-mainmenu", function()
 	if input.IsKeyDown(KEY_ESCAPE) and gui.IsGameUIVisible() then
+		if DevConVar:GetInt() >= 1 then return end
 		if IsValid(Menu) then
 			if muzon and muzon:IsPlaying() then muzon:Stop() end
 			gui.HideGameUI()
 			Menu:Remove()
-		elseif not MenuActive then
+		else
 			gui.HideGameUI()
 			DrawMenu()
 		end

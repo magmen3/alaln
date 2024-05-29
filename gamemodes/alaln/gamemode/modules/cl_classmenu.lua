@@ -6,6 +6,7 @@ local CMClr = {
 
 local hudfontsmall = "alaln-hudfontsmall"
 -- class menu
+--!! Надо будет переделать текст в классах чтобы под мониторы подходило разные
 net.Receive("alaln-classmenu", function()
 	--------------------------------------------------- Class Menu
 	local frame = vgui.Create("DFrame")
@@ -54,10 +55,11 @@ net.Receive("alaln-classmenu", function()
 		draw.SimpleText("Psychopath", hudfontsmall, 75, 50, CMClr.text, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
 	end
 
+	local ply = LocalPlayer()
 	button1.DoClick = function()
 		DebugPrint("Selected Psychopath class")
 		net.Start("alaln-setclass")
-		net.WritePlayer(LocalPlayer())
+		net.WritePlayer(ply)
 		net.WriteString("Psychopath")
 		net.SendToServer()
 		frame:Close()
@@ -70,14 +72,18 @@ net.Receive("alaln-classmenu", function()
 	button2:SetSize(150, 100)
 	button2.Paint = function(self, w, h)
 		draw.RoundedBox(5, 0, 0, w, h, CMClr.button)
-		draw.SimpleText("Cannibal (20)", hudfontsmall, 75, 50, CMClr.text, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
+		draw.SimpleText("Cannibal (45)", hudfontsmall, 75, 50, CMClr.text, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
 	end
 
 	button2.DoClick = function()
 		DebugPrint("Selected Cannibal class")
-		if LocalPlayer():GetScore() < 20 then BetterChatPrint(ply, "You need more score to choose this class.", CMClr.text) end
+		if ply:GetAlalnState("score") < 45 then
+			BetterChatPrint("You need more score to choose this class.", CMClr.text)
+			return
+		end
+
 		net.Start("alaln-setclass")
-		net.WritePlayer(LocalPlayer())
+		net.WritePlayer(ply)
 		net.WriteString("Cannibal")
 		net.SendToServer()
 		frame:Close()
@@ -86,18 +92,22 @@ net.Receive("alaln-classmenu", function()
 	--------------------------------------------------- Berserker
 	local button3 = vgui.Create("DButton", frame)
 	button3:SetText("")
-	button3:SetPos(170, 400)
-	button3:SetSize(150, 100)
+	button3:SetPos(145, 400)
+	button3:SetSize(200, 100)
 	button3.Paint = function(self, w, h)
 		draw.RoundedBox(5, 0, 0, w, h, CMClr.button)
-		draw.SimpleText("Berserker (35)", hudfontsmall, 75, 50, CMClr.text, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
+		draw.SimpleText("Berserker (75)", hudfontsmall, 100, 50, CMClr.text, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
 	end
 
 	button3.DoClick = function()
 		DebugPrint("Selected Berserker class")
-		if LocalPlayer():GetScore() < 35 then BetterChatPrint(ply, "You need more score to choose this class.", CMClr.text) end
+		if ply:GetAlalnState("score") < 75 then
+			BetterChatPrint("You need more score to choose this class.", CMClr.text)
+			return
+		end
+
 		net.Start("alaln-setclass")
-		net.WritePlayer(LocalPlayer())
+		net.WritePlayer(ply)
 		net.WriteString("Berserker")
 		net.SendToServer()
 		frame:Close()

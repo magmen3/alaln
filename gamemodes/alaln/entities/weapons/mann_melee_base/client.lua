@@ -10,39 +10,41 @@ if CLIENT then
 	SWEP.BobScale = -2
 	SWEP.IconOverride = "editor/ai_goal_police"
 	function SWEP:DrawWeaponSelection(x, y, wide, tall, alpha)
-		if not IsValid(DrawModel) then
-			if self.VModelForSelector then
-				DrawModel = ClientsideModel(self.ViewModel, RENDER_GROUP_OPAQUE_ENTITY)
-			else
-				DrawModel = ClientsideModel(self.WorldModel, RENDER_GROUP_OPAQUE_ENTITY)
-			end
+		if not PotatoMode:GetBool() then
+			if not IsValid(DrawModel) then
+				if self.VModelForSelector then
+					DrawModel = ClientsideModel(self.ViewModel, RENDER_GROUP_OPAQUE_ENTITY)
+				else
+					DrawModel = ClientsideModel(self.WorldModel, RENDER_GROUP_OPAQUE_ENTITY)
+				end
 
-			DrawModel:SetNoDraw(true)
-		else
-			if self.VModelForSelector then
-				DrawModel:SetModel(self.ViewModel)
+				DrawModel:SetNoDraw(true)
 			else
-				DrawModel:SetModel(self.WorldModel)
-			end
+				if self.VModelForSelector then
+					DrawModel:SetModel(self.ViewModel)
+				else
+					DrawModel:SetModel(self.WorldModel)
+				end
 
-			local vec = Vector(55, 55, 55)
-			local ang = Vector(-48, -48, -48):Angle()
-			cam.Start3D(vec, ang, 20, x, y + 35, wide, tall, 5, 4096)
-			cam.IgnoreZ(true)
-			render.SuppressEngineLighting(true)
-			render.SetLightingOrigin(self:GetPos())
-			render.ResetModelLighting(50 / 255, 50 / 255, 50 / 255)
-			render.SetColorModulation(1, 1, 1)
-			render.SetBlend(255)
-			render.SetModelLighting(4, 1, 1, 1)
-			DrawModel:SetRenderAngles(Angle(0, RealTime() * 30 % 360, 0))
-			DrawModel:DrawModel()
-			DrawModel:SetRenderAngles()
-			render.SetColorModulation(1, 1, 1)
-			render.SetBlend(1)
-			render.SuppressEngineLighting(false)
-			cam.IgnoreZ(false)
-			cam.End3D()
+				local vec = Vector(55, 55, 55)
+				local ang = Vector(-48, -48, -48):Angle()
+				cam.Start3D(vec, ang, 20, x, y + 35, wide, tall, 5, 4096)
+				cam.IgnoreZ(true)
+				render.SuppressEngineLighting(true)
+				render.SetLightingOrigin(self:GetPos())
+				render.ResetModelLighting(50 / 255, 50 / 255, 50 / 255)
+				render.SetColorModulation(1, 1, 1)
+				render.SetBlend(255)
+				render.SetModelLighting(4, 1, 1, 1)
+				DrawModel:SetRenderAngles(Angle(0, RealTime() * 30 % 360, 0))
+				DrawModel:DrawModel()
+				DrawModel:SetRenderAngles()
+				render.SetColorModulation(1, 1, 1)
+				render.SetBlend(1)
+				render.SuppressEngineLighting(false)
+				cam.IgnoreZ(false)
+				cam.End3D()
+			end
 		end
 
 		self:PrintWeaponInfo(x + wide + 20, y + tall * 0.95, alpha)
@@ -82,7 +84,7 @@ if CLIENT then
 		local hitEnt = IsValid(traceResult.Entity) and traceResult.Entity:IsNPC() and color_red or color_white
 		local frac = traceResult.Fraction
 		local alpha = -(frac * 255 - 255) / 2
-		surface.SetDrawColor(Color(hitEnt.r, hitEnt.g, hitEnt.b, alpha))
+		surface.SetDrawColor(hitEnt.r, hitEnt.g, hitEnt.b, alpha)
 		draw.NoTexture()
 		Circle(traceResult.HitPos:ToScreen().x, traceResult.HitPos:ToScreen().y, math.min(20, 5 / frac), 3)
 	end

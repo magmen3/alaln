@@ -1,10 +1,10 @@
 AddCSLuaFile()
 ENT.Type = "anim"
 ENT.Base = "base_anim"
-ENT.PrintName = "Mann Ent Base"
+ENT.PrintName = "Mann's Entity Base"
 ENT.Category = "Forsakened"
 ENT.SWEP = "mann_wep_base"
-ENT.Model = "models/weapons/w_pist_usp.mdl"
+ENT.Model = Model("models/weapons/w_pist_usp.mdl")
 ENT.ImpactSound = "Drywall.ImpactHard"
 ENT.SecondSound = ""
 ENT.Material = ""
@@ -24,7 +24,7 @@ if SERVER then
 	function ENT:Initialize()
 		self:SetModel(self.Model)
 		if self.Bodygroups then
-			for i, val in pairs(self.Bodygroups) do
+			for i, val in ipairs(self.Bodygroups) do
 				self:SetBodygroup(i, val)
 			end
 		end
@@ -72,7 +72,7 @@ if SERVER then
 			if self.RoundsInMag > 0 then
 				if not self.Melee then
 					ply:GiveAmmo(self.RoundsInMag, self.AmmoType, true)
-					self:EmitSound(self.RSound, 65, self.RSoundPitch)
+					self:EmitSound(self.RSound, 75, self.RSoundPitch)
 					self.RoundsInMag = 0
 				end
 

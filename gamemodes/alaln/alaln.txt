@@ -25,5 +25,13 @@
 			"type"		"CheckBox"
 			"default"	"0"
 		}
+		3
+		{
+			"name"		"alaln_disable_monsters"
+			"text"		"Disable Monsters"
+			"help"		"Disables monsters if you wan't to do"
+			"type"		"CheckBox"
+			"default"	"0"
+		}
 	}
 }

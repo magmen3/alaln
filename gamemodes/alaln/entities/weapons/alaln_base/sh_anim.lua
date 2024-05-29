@@ -25,13 +25,13 @@ local ActIndex = {
 	Desc: Sets up the translation table, to translate from normal
 			standing idle pose, to holding weapon pose.
 -----------------------------------------------------------]]
-function SWEP:SetWeaponHoldType(t)
-	t = string.lower(t)
-	local index = ActIndex[t]
+function SWEP:SetWeaponHoldType(holdtype)
+	holdtype = string.lower(holdtype)
+	local index = ActIndex[holdtype]
 	if index == nil then
-		Msg("SWEP:SetWeaponHoldType - ActIndex[ \"" .. t .. "\" ] isn't set! (defaulting to normal)\n")
-		t = "normal"
-		index = ActIndex[t]
+		Msg("SWEP:SetWeaponHoldType - ActIndex[ \"" .. holdtype .. "\" ] isn't set! (defaulting to normal)\n")
+		holdtype = "normal"
+		index = ActIndex[holdtype]
 	end
 
 	self.ActivityTranslate = {}
@@ -47,9 +47,9 @@ function SWEP:SetWeaponHoldType(t)
 	self.ActivityTranslate[ACT_MP_JUMP] = index + 7
 	self.ActivityTranslate[ACT_RANGE_ATTACK1] = index + 8
 	self.ActivityTranslate[ACT_MP_SWIM] = index + 9
-	-- "normal" jump animation doesn't exist
-	if t == "normal" then self.ActivityTranslate[ACT_MP_JUMP] = ACT_HL2MP_JUMP_SLAM end
-	self:SetupWeaponHoldTypeForAI(t)
+	-- "normal" jump animation doesn'holdtype exist
+	if holdtype == "normal" then self.ActivityTranslate[ACT_MP_JUMP] = ACT_HL2MP_JUMP_SLAM end
+	self:SetupWeaponHoldTypeForAI(holdtype)
 end
 
 -- Default hold pos is the pistol

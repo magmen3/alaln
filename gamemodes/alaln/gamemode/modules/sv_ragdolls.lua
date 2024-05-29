@@ -1,8 +1,8 @@
 util.AddNetworkString("alaln-ragplayercolor")
-local meta = FindMetaTable("Player")
-local metaent = FindMetaTable("Entity")
-if not (meta or metaent) then return end
-function metaent:BetterSetPlayerColor(col)
+local plyMeta = FindMetaTable("Player")
+local entMeta = FindMetaTable("Entity")
+if not (plyMeta or entMeta) then return end
+function entMeta:BetterSetPlayerColor(col)
 	if not (col or self) then
 		DebugPrint("Error! Calling BetterSetPlayerColor() without args")
 		return
@@ -18,7 +18,7 @@ function metaent:BetterSetPlayerColor(col)
 end
 
 local vecgovno = Vector(0, 0, 10)
-function meta:CreateRagdoll()
+function plyMeta:CreateRagdoll()
 	if not (self or self:IsValid() or self:IsPlayer()) then return end
 	self.DeathRagdoll = self.DeathRagdoll or false
 	local ply_pos = self:GetPos() - vecgovno
@@ -78,7 +78,7 @@ function meta:CreateRagdoll()
 		phys:SetVelocity(plyvel * 2)
 	end
 
-	if self:IsOnFire() then ent:Ignite(math.random(6, 8), 150) end
+	if self:IsOnFire() then ent:Ignite(math.random(3, 6), 140) end
 	ent:SetCollisionGroup(COLLISION_GROUP_WEAPON)
 	self:SetNWEntity("plyrag", ent)
 end

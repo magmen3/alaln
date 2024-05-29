@@ -1,5 +1,5 @@
--- Variables that are used on both client and server
-SWEP.PrintName = "Scripted Weapon" -- 'Nice' Weapon name (Shown on HUD)
+-- Default weapon base edited for optimization purposes
+SWEP.PrintName = "Scripted Weapon"
 SWEP.Purpose = ""
 SWEP.Instructions = ""
 SWEP.ViewModelFOV = 75
@@ -8,20 +8,20 @@ SWEP.ViewModel = "models/weapons/v_pistol.mdl"
 SWEP.WorldModel = "models/weapons/w_357.mdl"
 SWEP.Spawnable = false
 SWEP.AdminOnly = true
-SWEP.Primary.ClipSize = 8 -- Size of a clip
-SWEP.Primary.DefaultClip = 32 -- Default number of bullets in a clip
+SWEP.Primary.ClipSize = 0 -- Size of a clip
+SWEP.Primary.DefaultClip = 0 -- Default number of bullets in a clip
 SWEP.Primary.Automatic = false -- Automatic/Semi Auto
-SWEP.Primary.Ammo = "Pistol"
-SWEP.Secondary.ClipSize = 8 -- Size of a clip
-SWEP.Secondary.DefaultClip = 32 -- Default number of bullets in a clip
+SWEP.Primary.Ammo = "none"
+SWEP.Secondary.ClipSize = 0 -- Size of a clip
+SWEP.Secondary.DefaultClip = 0 -- Default number of bullets in a clip
 SWEP.Secondary.Automatic = false -- Automatic/Semi Auto
-SWEP.Secondary.Ammo = "Pistol"
+SWEP.Secondary.Ammo = "none"
 --[[---------------------------------------------------------
 	Name: SWEP:Initialize()
 	Desc: Called when the weapon is first loaded
 -----------------------------------------------------------]]
 function SWEP:Initialize()
-	self:SetHoldType("pistol")
+	self:SetHoldType("normal")
 end
 
 --[[---------------------------------------------------------

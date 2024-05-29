@@ -39,18 +39,25 @@ function ENT:PhysicsCollide(data, ent)
 	end
 end
 
+local color_green = Color(25, 225, 25)
+local color_yellow = Color(255, 235, 0)
 function ENT:Use(ply)
 	if CLIENT or self.UseCD > CurTime() then return end
 	self.UseCD = CurTime() + 1
-	if ply:GetHunger() <= 90 then
-		ply:AddHunger(math.random(15, 25))
-		--ply:ChatPrint("You eated food, now your hunger is " .. math.Round(ply:GetHunger(), 0) .. ".")
-		BetterChatPrint(ply, "You eated food, now your hunger is " .. math.Round(ply:GetHunger(), 0) .. ".", Color(25, 225, 25))
+	if ply:GetAlalnState("class") == "Cannibal" then
+		BetterChatPrint(ply, "You don't wan't to eat this.", color_yellow)
+		return
+	end
+
+	if ply:GetAlalnState("hunger") <= 90 then
+		ply:AddAlalnState("hunger", math.random(15, 25))
+		--ply:ChatPrint("You eated food, now your hunger is " .. math.Round(ply:GetAlalnState("hunger"), 0) .. ".")
+		BetterChatPrint(ply, "You eated food, now your hunger is " .. math.Round(ply:GetAlalnState("hunger"), 0) .. ".", color_green)
 		ply:EmitSound("npc/barnacle/barnacle_gulp" .. math.random(1, 2) .. ".wav", 55, math.random(90, 110))
-		ply:AddScore(0.3)
+		ply:AddAlalnState("score", 0.3)
 		self:Remove()
 	else
-		BetterChatPrint(ply, "You are fed.", Color(255, 235, 0))
+		BetterChatPrint(ply, "You are fed.", color_yellow)
 	end
 end
 

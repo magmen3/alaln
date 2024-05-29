@@ -1,7 +1,4 @@
---[[ take this stuff ]]
---
 local EMPTY_KEY = Material("gui/key.png")
--- SRC: https://gist.github.com/theawesomecoder61/d2c3a3d42bbce809ca446a85b4dda754
 function draw.Arc(cx, cy, radius, thickness, startang, endang, roughness, color)
 	surface.SetDrawColor(color)
 	surface.DrawArc(surface.PrecacheArc(cx, cy, radius, thickness, startang, endang, roughness))
@@ -62,7 +59,7 @@ function surface.PrecacheArc(cx, cy, radius, thickness, startang, endang, roughn
 	return triarc
 end
 
-function surface.DrawArc(arc) --Draw a premade arc.
+function surface.DrawArc(arc) -- Draw a premade arc.
 	for k, v in ipairs(arc) do
 		surface.DrawPoly(v)
 	end
@@ -74,8 +71,8 @@ hook.Add("HUDPaint", "DrawUsablePrompt", function()
 		if useable:GetDrawProgress() and useable:GetUser() == LocalPlayer() and LocalPlayer():KeyDown(IN_USE) and CurTime() < useable:GetEndTime() then
 			surface.SetDrawColor(255, 255, 255)
 			draw.NoTexture()
-			surface.DrawLine(ScrW() / 2, ScrH() / 2 - 32, ScrW() / 2, ScrH() / 2 - 23) -- without this, the top of the ring looks jittery and dumb.  why?  who knows
-			draw.Arc(ScrW() / 2, ScrH() / 2, 32, 10, -(((1 - math.abs((useable:GetEndTime() - CurTime()) / useable.TimeToUse)) * 360) - 90), 90, 3, Color(255, 255, 255)) --thanks datae
+			surface.DrawLine(ScrW() / 2, ScrH() / 2 - 32, ScrW() / 2, ScrH() / 2 - 23) -- without this, the top of the ring looks jittery and dumb. why? who knows
+			draw.Arc(ScrW() / 2, ScrH() / 2, 32, 10, -(((1 - math.abs((useable:GetEndTime() - CurTime()) / useable.TimeToUse)) * 360) - 90), 90, 3, color_white)
 		end
 
 		if useable:GetDrawKeyPrompt() then

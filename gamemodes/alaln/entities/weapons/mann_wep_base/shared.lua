@@ -23,7 +23,7 @@ AddCSLuaFile("client.lua")
 include("client.lua")
 game.AddParticles("particles/pcfs_jack_muzzleflashes.pcf")
 SWEP.Base = "alaln_base"
-SWEP.PrintName = "Mann Wep Base"
+SWEP.PrintName = "Mann's Weapon Base"
 SWEP.ViewModelFlip = true
 SWEP.ViewModel = "models/weapons/v_pist_jivejeven.mdl"
 SWEP.WorldModel = "models/weapons/w_pist_usp.mdl"
@@ -50,8 +50,7 @@ SWEP.Secondary.ClipSize = -1
 SWEP.Secondary.DefaultClip = -1
 SWEP.Secondary.Ammo = "none"
 SWEP.CanAmmoShow = true
-SWEP.DeathDroppable = true
-SWEP.CommandDroppable = true
+SWEP.Droppable = true
 -- самое веселое
 SWEP.VModelForSelector = false -- это ставить если у оружия нету нормальной world модели (используется в селекторе оружия)
 SWEP.AimTime = 3 -- скорость прицеливания (чем меньше тем быстрее)
@@ -65,6 +64,7 @@ SWEP.AimPos = Vector(1.75, 0, 1.22) -- позиция оружия в прице
 SWEP.FuckedWorldModel = true -- веселуха
 SWEP.FuckedWorldModelForward = 1 -- веселуха 2
 SWEP.FuckedWorldModelUp = 1 -- короче идите все на
+SWEP.FuckedWorldModelRight = 1 -- Pizdets
 SWEP.ENT = "mann_ent_base" -- энтити оружия (в основном используется при выбрасывании)
 SWEP.ShellType = "ShellEject" -- эффект выпадения гильзы (лучше не трогать)
 SWEP.MuzzleEffect = "pcf_jack_mf_spistol" -- эффект выстрела (тоже лучше не трогать)
@@ -162,7 +162,7 @@ if CLIENT then
 				if math.random(1, 2) == 2 then
 					self:GetOwner():SetDSP(11, true)
 					timer.Simple(3, function()
-						if not IsValid(self) then return end
+						if not IsValid(self:GetOwner()) then return end
 						self:GetOwner():SetDSP(0)
 					end)
 				end
@@ -176,7 +176,7 @@ if CLIENT then
 			if math.random(1, 2) == 2 then
 				self:GetOwner():SetDSP(11, true)
 				timer.Simple(5, function()
-					if not IsValid(self) then return end
+					if not IsValid(self:GetOwner()) then return end
 					self:GetOwner():SetDSP(0)
 				end)
 			end
@@ -207,10 +207,10 @@ function SWEP:PrimaryAttack()
 
 	self.LastFire = CurTime()
 	local WaterMul = 1
-	if owner:GetAlalnClass() == "Berserker" then WaterMul = .9 end
+	if owner:GetAlalnState("class") == "Berserker" then WaterMul = .9 end
 	if owner:WaterLevel() >= 3 then WaterMul = .5 end
 	local dmgAmt, InAcc = self.Primary.Damage * math.Rand(.9, 1.1) * WaterMul, 1 - self.Accuracy
-	if owner:GetAlalnClass() == "Berserker" then InAcc = 1.3 - self.Accuracy end
+	if owner:GetAlalnState("class") == "Berserker" then InAcc = 1.3 - self.Accuracy end
 	if self:GetAiming() <= 99 then InAcc = InAcc + self.HipFireInaccuracy end
 	local BulletTraj = (owner:GetAimVector() + VectorRand() * InAcc):GetNormalized()
 	local bullet = {}
@@ -437,7 +437,7 @@ function SWEP:StallAnimation(anim, time)
 end
 
 function SWEP:DoBFSAnimation(anim)
-	if self:GetOwner() and self:GetOwner().GetViewModel then
+	if IsValid(self:GetOwner()) and IsValid(self:GetOwner():GetViewModel()) then
 		local vm = self:GetOwner():GetViewModel()
 		vm:SendViewModelMatchingSequence(vm:LookupSequence(anim))
 	end
@@ -571,14 +571,19 @@ function SWEP:RicochetOrPenetrate(initialTrace)
 end
 
 function SWEP:OnDrop()
-	local Ent = ents.Create(self.ENT)
-	Ent:SetPos(self:GetPos())
-	Ent:SetAngles(self:GetAngles())
-	Ent:Spawn()
-	Ent:Activate()
-	Ent.RoundsInMag = self:Clip1()
-	Ent:GetPhysicsObject():SetVelocity(self:GetVelocity() / 2)
-	self:Remove()
+	if IsValid(self) then
+		local Ent = ents.Create(self.ENT)
+		if IsValid(Ent) then
+			Ent:SetPos(self:GetPos() or self:GetOwner():GetPos())
+			Ent:SetAngles(self:GetAngles())
+			Ent:Spawn()
+			Ent:Activate()
+			Ent.RoundsInMag = self:Clip1()
+			Ent:GetPhysicsObject():SetVelocity(self:GetVelocity() / 2)
+		end
+
+		self:Remove()
+	end
 end
 
 function SWEP:BallisticSnap(traj)
@@ -598,12 +603,12 @@ function SWEP:BallisticSnap(traj)
 	if Dist > 1000 then
 		for i = 1, math.floor(Dist / 500) do
 			local SoundSrc = Src + traj * i * 500
-			local plys = player.GetAll()
-			for key, ply in ipairs(plys) do
+			--local plys = player.GetAll()
+			for key, ply in player.Iterator() do
 				if ply ~= self:GetOwner() then
 					local PlyPos = ply:GetPos()
 					if (PlyPos - SoundSrc):Length() < 500 then
-						local Snd = "snd_jack_hmcd_bc_" .. math.random(1, 7) .. ".wav"
+						local Snd = "snd_jack_hmcd_ricochet_" .. math.random(1, 2) .. ".wav"
 						local Pitch = math.random(90, 110)
 						sound.Play(Snd, ply:GetShootPos(), 50, Pitch)
 					end
@@ -672,7 +677,7 @@ if CLIENT then
 				else
 					local pos, ang = self:GetOwner():GetBonePosition(self:GetOwner():LookupBone("ValveBiped.Bip01_R_Hand"))
 					if pos and ang then
-						self.WModel:SetRenderOrigin(pos + ang:Right() + ang:Up() * self.FuckedWorldModelUp + ang:Forward() * self.FuckedWorldModelForward)
+						self.WModel:SetRenderOrigin(pos + ang:Right() * self.FuckedWorldModelRight + ang:Up() * self.FuckedWorldModelUp + ang:Forward() * self.FuckedWorldModelForward)
 						ang:RotateAroundAxis(ang:Forward(), 180)
 						ang:RotateAroundAxis(ang:Right(), 10)
 						self.WModel:SetRenderAngles(ang)

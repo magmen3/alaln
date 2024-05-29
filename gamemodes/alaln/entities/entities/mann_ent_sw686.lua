@@ -12,4 +12,4 @@ ENT.EntMass = 25
 ENT.AmmoAmt = 6
 ENT.AmmoType = "357"
 ENT.RSound = "items/ammo_pickup.wav"
-ENT.RSoundPitch = math.random(95, 105)
+ENT.RSoundPitch = math.random(85, 95)

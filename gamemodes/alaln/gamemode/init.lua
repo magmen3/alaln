@@ -3,7 +3,7 @@ AddCSLuaFile("shared.lua")
 AddCSLuaFile("loader.lua")
 include("loader.lua")
 include("shared.lua")
-resource.AddFile("resource/fonts/SMODGUI.ttf")
+resource.AddFile("resource/fonts/SMODGUI.ttf") -- I hope this thing works
 local color_red = Color(180, 0, 0)
 util.AddNetworkString("alaln-navmeshnotfound")
 util.AddNetworkString("alaln-setclass")
@@ -11,8 +11,8 @@ function GM:Initialize()
 	timer.Simple(1, function()
 		if not navmesh.IsLoaded() then
 			MsgC(color_red, " [ALALN] Navmesh not found! This maps not support Forsakened gamemode.\n")
-			local plys = player.GetAll()
-			for _, ply in ipairs(plys) do
+			--local plys = player.GetAll()
+			for _, ply in player.Iterator() do
 				if ply:IsListenServerHost() then
 					net.Start("alaln-navmeshnotfound")
 					net.Send(ply)
@@ -73,9 +73,9 @@ end
 
 function GM:PlayerCanHearPlayersVoice(listener, talker)
 	if not listener:IsValid() then return false end
-	local list_team = listener:Team()
+	--[[local list_team = listener:Team()
 	local talk_team = talker:Team()
-	if talk_team == TEAM_SPECTATOR then return list_team == TEAM_SPECTATOR end
+	if talk_team == TEAM_SPECTATOR then return list_team == TEAM_SPECTATOR end]]
 	if listener:GetPos():DistToSqr(talker:GetPos()) <= 562500 then -- 750 * 750
 		return true, true
 	end

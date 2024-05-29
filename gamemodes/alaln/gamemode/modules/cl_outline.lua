@@ -1,5 +1,5 @@
--- rubat moment 2 https://github.com/Facepunch/garrysmod/pull/1590
-if engine.ActiveGamemode() ~= "alaln" then return end
+-- Rubat moment https://github.com/Facepunch/garrysmod/pull/1590
+--if engine.ActiveGamemode() ~= "alaln" then return end
 OUTLINE_MODE_BOTH = 0 -- Render always
 OUTLINE_MODE_NOTVISIBLE = 1
 OUTLINE_MODE_VISIBLE = 2

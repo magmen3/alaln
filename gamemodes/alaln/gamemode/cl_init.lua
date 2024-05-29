@@ -1,5 +1,7 @@
 include("shared.lua")
 include("loader.lua")
+CreateClientConVar("alaln_potatomode", 0, true, false, "Enable low-end PC mode?", 0, 1)
+PotatoMode = GetConVar("alaln_potatomode")
 RunConsoleCommand("cl_drawownshadow", "1")
 local BadType = {
 	["joinleave"] = true,
@@ -22,10 +24,11 @@ hook.Add("player_spawn", "alaln-networkplyhull", function(data)
 	local ply = Player(data.userid)
 	if BRANCH ~= "x86-64" then
 		for i = 1, 10 do
-			ply:ChatPrint("Даун поставь x64 бету")
+			ply:ChatPrint("Поставь x64 бету")
 		end
 	end
 
+	ply:SetDSP(0)
 	--hook.Run("Player Spawn",ply)
 	if ply.SetHull then
 		ply:SetHull(ply:GetNWVector("HullMin"), ply:GetNWVector("Hull"))
@@ -56,7 +59,7 @@ concommand.Add("checkammo", function()
 		text = "Empty magazine."
 	end
 
-	chat.AddText(color_yellow, text)
+	BetterChatPrint(text, color_yellow)
 end, nil, "Check your current gun ammo", FCVAR_NONE)
 
 local color_button = Color(165, 0, 0)

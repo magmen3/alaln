@@ -1,34 +1,14 @@
-util.AddNetworkString("alaln-flinch")
-local nextheadshot = 0
 hook.Add("EntityTakeDamage", "alaln-enttakedamage", function(target, dmginfo)
 	if not target:IsPlayer() or (target:IsPlayer() and target:HasGodMode()) then return end
 	if dmginfo:GetDamageType() == DMG_BURN or target:IsOnFire() then
 		if SERVER then util.ScreenShake(target:GetPos(), 0.3, 3, 5, 0) end
 		target:BetterViewPunch(AngleRand(-5, 5))
-		target:AddCrazyness(0.2)
+		target:AddAlalnState("crazyness", 0.2)
 	end
 
-	local damag = dmginfo:GetDamage() * 0.6
-	target:BetterViewPunch(AngleRand(-damag, damag))
+	local dmgpunch = dmginfo:GetDamage() * 0.6
+	target:BetterViewPunch(AngleRand(-dmgpunch, dmgpunch))
 	if dmginfo:GetDamageType() == 4 and dmginfo:GetDamage() >= 20 then dmginfo:ScaleDamage(0.85) end
-	if dmginfo:GetDamage() > 1 and target:LastHitGroup(HITGROUP_HEAD) and dmginfo:IsBulletDamage() and nextheadshot < CurTime() then
-		local headshotsound = CreateSound(target, "player/general/flesh_burn.wav")
-		if SERVER then util.ScreenShake(target:GetPos(), 1, 5, 4, 0) end
-		target:BetterViewPunch(Angle(-30, 0, 0))
-		target:AddCrazyness(0.5)
-		dmginfo:ScaleDamage(10)
-		if not headshotsound:IsPlaying() then
-			headshotsound:Play()
-			headshotsound:ChangeVolume(0, 3)
-			timer.Simple(3, function()
-				if not (IsValid(target) or headshotsound:IsPlaying()) then return end
-				headshotsound:Stop()
-			end)
-		end
-
-		nextheadshot = CurTime() + 4
-	end
-
 	if dmginfo:GetDamage() > 30 and dmginfo:IsFallDamage() then
 		if SERVER then util.ScreenShake(target:GetPos(), 1, 5, 5, 0) end
 		dmginfo:ScaleDamage(2)
@@ -43,17 +23,17 @@ hook.Add("EntityTakeDamage", "alaln-enttakedamage", function(target, dmginfo)
 
 	if dmginfo:IsExplosionDamage() and dmginfo:GetDamage() > 25 then
 		if SERVER then util.ScreenShake(target:GetPos(), 15, 15, 5, 0) end
-		target:AddCrazyness(1)
+		target:AddAlalnState("crazyness", 1)
 		target:BetterViewPunch(AngleRand(-90, 90))
 		dmginfo:ScaleDamage(2)
 	end
 
-	if target:IsPlayer() and dmginfo:IsDamageType(4) then -- fists block
+	if target:IsPlayer() and dmginfo:IsDamageType(4) then -- Fists block
 		local wep = target:GetActiveWeapon()
 		if IsValid(wep) and wep.isInBlockDam then dmginfo:ScaleDamage(0.45) end
 	end
 
-	target:AddCrazyness(dmginfo:GetDamage() * 0.1)
+	target:AddAlalnState("crazyness", dmginfo:GetDamage() * 0.1)
 	if target:Armor() >= 1 then
 		local armormul = 1 - (target:Armor() / target:GetMaxArmor())
 		local armordmg = target:Armor() - (dmginfo:GetDamage() * 0.1)
@@ -62,6 +42,28 @@ hook.Add("EntityTakeDamage", "alaln-enttakedamage", function(target, dmginfo)
 	end
 end)
 
+local nextheadshot = 0
+hook.Add("ScalePlayerDamage", "alaln-headburnsound", function(ply, hitgroup, dmginfo)
+	if dmginfo:GetDamage() > 1 and hitgroup == HITGROUP_HEAD and dmginfo:IsBulletDamage() and nextheadshot < CurTime() then
+		local headshotsound = CreateSound(ply, "player/general/flesh_burn.wav")
+		if SERVER then util.ScreenShake(ply:GetPos(), 1, 5, 4, 0) end
+		ply:BetterViewPunch(Angle(-30, 0, 0))
+		ply:AddAlalnState("crazyness", 0.5)
+		dmginfo:ScaleDamage(10)
+		if not headshotsound:IsPlaying() then
+			headshotsound:Play()
+			headshotsound:ChangeVolume(0, 3)
+			timer.Simple(3, function()
+				if not (IsValid(ply) or headshotsound:IsPlaying()) then return end
+				headshotsound:Stop()
+			end)
+		end
+
+		nextheadshot = CurTime() + 4
+	end
+end)
+
+util.AddNetworkString("alaln-flinch")
 hook.Add("ScalePlayerDamage", "alaln-flinchplayers", function(ply, grp)
 	if IsValid(ply) and ply:IsPlayer() and ply:Alive() and not ply:GetNoDraw() then
 		local group = nil

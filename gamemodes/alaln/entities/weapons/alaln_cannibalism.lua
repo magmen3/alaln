@@ -6,11 +6,15 @@ SWEP.Purpose = "Kill and eat other people."
 SWEP.Instructions = "LMB/RMB to attack and eat people."
 SWEP.Slot = 0
 SWEP.SlotPos = 1
+SWEP.BobScale = -2
+SWEP.SwayScale = -2
+SWEP.AutoSwitchTo = false
+SWEP.AutoSwitchFrom = false
 SWEP.Spawnable = true
-SWEP.ViewModel = Model("models/weapons/v_models/V_demhands.mdl")
+SWEP.ViewModel = Model("models/weapons/v_models/v_demhands.mdl")
 SWEP.WorldModel = ""
 SWEP.DrawWorldModel = false
-SWEP.ViewModelFOV = 65
+SWEP.ViewModelFOV = 70
 SWEP.UseHands = true
 SWEP.Primary.ClipSize = -1
 SWEP.Primary.DefaultClip = -1
@@ -23,14 +27,45 @@ SWEP.Secondary.Automatic = true
 SWEP.Secondary.Ammo = "none"
 SWEP.Damage = math.random(24, 32)
 SWEP.DamageType = DMG_SLASH
-SWEP.HitDistance = 75
-SWEP.HitRate = 1
+SWEP.HitDistance = 110
+SWEP.HitRate = 0.9
 SWEP.HitSound = {"physics/flesh/flesh_squishy_impact_hard1.wav", "physics/flesh/flesh_squishy_impact_hard2.wav", "physics/flesh/flesh_squishy_impact_hard3.wav", "physics/flesh/flesh_squishy_impact_hard4.wav"}
 SWEP.SwingSound = Sound("npc/fast_zombie/claw_miss2.wav")
-if CLIENT then SWEP.WepSelectIcon = surface.GetTextureID("vgui/hud/alaln_fists") end
-SWEP.IconOverride = "halflife/lab1_cmpm3000"
+SWEP.Droppable = false
+if CLIENT then
+	SWEP.WepSelectIcon = surface.GetTextureID("vgui/hud/alaln_fists")
+	function SWEP:CalcViewModelView(ViewModel, OldEyePos, OldEyeAng, EyePos, EyeAng)
+		local ply = LocalPlayer()
+		if not (IsValid(ply) or ply:Alive()) or ply:GetMoveType() == MOVETYPE_NOCLIP or ply:GetNoDraw() then return end
+		local eye = ply:GetAttachment(ply:LookupAttachment("eyes"))
+		local sitvec = Vector(0, 0, ply:KeyDown(IN_DUCK) and 2.5 or 2)
+		local eyeang = eye.Ang
+		local vm_origin, vm_angles = EyePos + sitvec, eyeang
+		return vm_origin, vm_angles
+	end
+
+	local color_red = Color(180, 0, 0)
+	function SWEP:DrawHUD()
+		local owner = self:GetOwner()
+		local tr = {}
+		tr.start = owner:GetShootPos()
+		local dir = Vector(1, 0, 0)
+		dir:Rotate(owner:EyeAngles())
+		tr.endpos = tr.start + dir * 500
+		tr.filter = owner
+		local traceResult = util.TraceLine(tr)
+		local hitEnt = IsValid(traceResult.Entity) and traceResult.Entity:IsNPC() and color_red or color_white
+		local frac = traceResult.Fraction
+		local alpha = -(frac * 255 - 255) / 2
+		surface.SetDrawColor(hitEnt.r, hitEnt.g, hitEnt.b, alpha)
+		draw.NoTexture()
+		Circle(traceResult.HitPos:ToScreen().x, traceResult.HitPos:ToScreen().y, math.min(10, 6 / frac), 3)
+	end
+end
+
+SWEP.IconOverride = "editor/npc_maker"
 function SWEP:Initialize()
-	self:SetHoldType("fist")
+	self:SetHoldType("knife")
 end
 
 function SWEP:Deploy()
@@ -39,6 +74,7 @@ function SWEP:Deploy()
 end
 
 function SWEP:PrimaryAttack()
+	--if self:GetOwner():IsSprinting() then return end
 	local owner = self:GetOwner()
 	local vm = owner:GetViewModel()
 	if IsValid(vm) then
@@ -65,7 +101,13 @@ function SWEP:SecondaryAttack()
 	self:PrimaryAttack()
 end
 
-local corpse_clr = Color(195, 120, 100)
+local corpse_clr = Color(190, 165, 125)
+local mattypes = {
+	[MAT_FLESH] = true,
+	[MAT_ALIENFLESH] = true,
+	[MAT_ANTLION] = true
+}
+
 function SWEP.HitWait(self)
 	local owner = self:GetOwner()
 	local tr = util.TraceHull({
@@ -78,59 +120,57 @@ function SWEP.HitWait(self)
 	})
 
 	if tr.Hit then
-		if SERVER and string.find(tr.Entity:GetClass(), "player") then
-			tr.Entity:EmitSound(table.Random(self.HitSound), 150, 100)
-			if tr.Entity:Health() > self.Damage then
+		local trent = tr.Entity
+		if SERVER and string.find(trent:GetClass(), "player") then
+			trent:EmitSound(table.Random(self.HitSound), 150, 100)
+			if trent:Health() > self.Damage then
 				local dmginfo = DamageInfo()
 				dmginfo:SetAttacker(owner)
 				dmginfo:SetInflictor(self)
 				dmginfo:SetDamage(self.Damage)
 				dmginfo:SetDamageType(self.DamageType)
-				tr.Entity:TakeDamageInfo(dmginfo)
+				trent:TakeDamageInfo(dmginfo)
 			else
 				local nade = ents.Create("prop_ragdoll")
-				nade:SetModel(tr.Entity:GetModel())
-				nade:SetPos(tr.Entity:GetPos())
-				nade:SetAngles(tr.Entity:EyeAngles())
-				tr.Entity:KillSilent()
+				nade:SetModel(trent:GetModel())
+				nade:SetPos(trent:GetPos())
+				nade:SetAngles(trent:EyeAngles())
+				trent:KillSilent()
 				nade:Spawn()
 			end
 		else
-			if SERVER and string.find(tr.Entity:GetClass(), "npc") then
-				tr.Entity:EmitSound(table.Random(self.HitSound), 75, 100)
+			if SERVER and string.find(trent:GetClass(), "npc") then
+				trent:EmitSound(table.Random(self.HitSound), 75, 100)
 				local dmginfo = DamageInfo()
 				dmginfo:SetAttacker(owner)
 				dmginfo:SetInflictor(self)
 				dmginfo:SetDamage(self.Damage)
 				dmginfo:SetDamageForce(owner:GetAimVector() * self.Damage)
 				dmginfo:SetDamageType(self.DamageType)
-				tr.Entity:TakeDamageInfo(dmginfo)
-			else
-				if SERVER and string.find(tr.Entity:GetClass(), "prop_ragdoll") then
-					if tr.Entity:GetMaterialType() == MAT_FLESH then
-						tr.Entity:EmitSound(table.Random(self.HitSound), 100, 100)
-						if tr.Entity:GetMaterial() ~= "models/zombie_fast/fast_zombie_sheet" then
-							tr.Entity:SetMaterial("models/zombie_fast/fast_zombie_sheet", true)
-							tr.Entity:SetColor(corpse_clr)
-						else
-							owner:EmitSound("npc/barnacle/barnacle_gulp" .. math.random(1, 2) .. ".wav", 55, math.random(90, 110))
-							owner:AddHunger(tr.Entity:GetPhysicsObject():GetMass() / 2)
-							owner:AddScore(math.random(2, 5))
-							tr.Entity:Remove()
-						end
+				trent:TakeDamageInfo(dmginfo)
+				if trent:Health() <= trent:GetMaxHealth() / 2 then
+					if owner:GetAlalnState("hunger") <= 80 then
+						owner:AddAlalnState("hunger", math.random(1, 10))
+					elseif owner:GetAlalnState("hunger") >= 80 and owner:Health() < owner:GetMaxHealth() - 10 then
+						owner:SetHealth(owner:Health() + math.random(1, 5))
 					end
-
-					if tr.Entity:GetMaterialType() == MAT_ALIENFLESH or tr.Entity:GetMaterialType() == MAT_ANTLION then
-						tr.Entity:EmitSound(table.Random(self.HitSound), 75, 100)
-						if tr.Entity:GetMaterial() ~= "models/antlion/antlion_innards" then
-							tr.Entity:SetMaterial("models/antlion/antlion_innards", true)
-							tr.Entity:SetColor(corpse_clr)
-						else
-							owner:EmitSound("npc/barnacle/barnacle_gulp" .. math.random(1, 2) .. ".wav", 55, math.random(90, 110))
-							owner:AddHunger(tr.Entity:GetPhysicsObject():GetMass() / 2)
-							owner:AddScore(math.random(3, 6))
-							tr.Entity:Remove()
+				end
+			else
+				if SERVER and string.find(trent:GetClass(), "prop_ragdoll") and mattypes[trent:GetMaterialType()] then
+					trent:EmitSound(table.Random(self.HitSound), 100, 100)
+					if trent:GetMaterial() ~= "models/zombie_fast/fast_zombie_sheet" then
+						trent:SetMaterial("models/zombie_fast/fast_zombie_sheet", true)
+						trent:SetColor(corpse_clr)
+					else
+						owner:EmitSound("npc/barnacle/barnacle_gulp" .. math.random(1, 2) .. ".wav", 55, math.random(90, 110))
+						if owner:GetAlalnState("hunger") <= 95 then
+							owner:AddAlalnState("hunger", trent:GetPhysicsObject():GetMass() * 2)
+						elseif owner:GetAlalnState("hunger") >= 95 and owner:Health() < owner:GetMaxHealth() - 10 then
+							owner:SetHealth(owner:Health() + trent:GetPhysicsObject():GetMass() * 1.5)
 						end
+
+						owner:AddAlalnState("score", math.random(1, 4))
+						trent:Remove()
 					end
 				end
 			end
@@ -139,7 +179,7 @@ function SWEP.HitWait(self)
 end
 
 function SWEP:OnDrop()
-	self:Remove() -- You can't drop fists
+	self:Remove()
 end
 
 function SWEP:Reload()

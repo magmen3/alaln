@@ -6,15 +6,15 @@ SWEP.UseHands = true
 SWEP.PrintName = "Berserker Fists"
 SWEP.Category = "Forsakened"
 SWEP.Purpose = "These are your hands. They're no energy sword, but they still pack a wallop, and can kick someone ass."
-SWEP.Instructions = "R to upper/lower fists,\nLMB with uppered fists to swing,\nRMB with uppered fists to block,\nRMB with lowered fists to grab"
+SWEP.Instructions = "R to upper/lower fists,\nLMB with uppered fists to swing,\nRMB with uppered fists to block,\nRMB with lowered fists to grab."
 SWEP.ViewModel = Model("models/weapons/v_fist.mdl")
 SWEP.WorldModel = ""
 SWEP.DrawWorldModel = false
 SWEP.ViewModelPositionOffset = Vector(0, -1, -1)
 SWEP.ViewModelAngleOffset = Angle(0, 0, -1)
 SWEP.ViewModelFOV = 75
-SWEP.BobScale = 2.5
-SWEP.SwayScale = 2.5
+SWEP.BobScale = -2
+SWEP.SwayScale = -2
 SWEP.Primary.ClipSize = -1
 SWEP.Primary.DefaultClip = -1
 SWEP.Primary.Automatic = true
@@ -23,9 +23,8 @@ SWEP.Secondary.ClipSize = -1
 SWEP.Secondary.DefaultClip = -1
 SWEP.Secondary.Automatic = true
 SWEP.Secondary.Ammo = "none"
-SWEP.ViewModelFlip = false
 SWEP.AutoSwitchTo = true
-SWEP.AutoSwitchFrom = false
+SWEP.AutoSwitchFrom = true
 if CLIENT then SWEP.WepSelectIcon = surface.GetTextureID("vgui/hud/alaln_fists") end
 SWEP.IconOverride = "halflife/lab1_cmpm3000"
 SWEP.Slot = 0
@@ -33,13 +32,12 @@ SWEP.SlotPos = 1
 SWEP.AllowViewAttachment = true
 SWEP.HitDistance = 75
 SWEP.Range = 85
-SWEP.DeathDroppable = false
-SWEP.CommandDroppable = false
+SWEP.Droppable = false
 local HitSound = Sound("Flesh.ImpactHard")
 function SWEP:Initialize()
-	self:SetHoldType("fist")
 	self.isInBlockDam = false
 	self.Time = 0
+	self:SetHoldType("fist")
 end
 
 function SWEP:SetupDataTables()
@@ -70,7 +68,7 @@ function SWEP:Sprinting()
 end
 
 function SWEP:PrimaryAttack(right)
-	if self:GetOwner():IsSprinting() then return end
+	--if self:GetOwner():IsSprinting() then return end
 	local currentAnimFSF = self:GetSequenceName(self:GetOwner():GetViewModel():GetSequence())
 	if currentAnimFSF == "inspect" or self.fistsOut == false then
 		self.fistsOut = true
@@ -107,7 +105,7 @@ function SWEP:PrimaryAttack(right)
 end
 
 function SWEP:Reload()
-	if self:GetOwner():IsSprinting() then return end
+	--if self:GetOwner():IsSprinting() then return end
 	if self.canPutfistsOut == false then return end
 	self.canPutfistsOut = false
 	timer.Simple(0.6, function()
@@ -225,7 +223,7 @@ function SWEP:DealDamage()
 end
 
 function SWEP:OnDrop()
-	self:Remove() -- You can't drop fists
+	self:Remove()
 end
 
 function SWEP:Deploy()
@@ -390,7 +388,7 @@ if CLIENT then
 		local hitEnt = IsValid(traceResult.Entity) and traceResult.Entity:IsNPC() and color_red or color_white
 		local frac = traceResult.Fraction
 		local alpha = -(frac * 255 - 255) / 2
-		surface.SetDrawColor(Color(hitEnt.r, hitEnt.g, hitEnt.b, alpha))
+		surface.SetDrawColor(hitEnt.r, hitEnt.g, hitEnt.b, alpha)
 		draw.NoTexture()
 		Circle(traceResult.HitPos:ToScreen().x, traceResult.HitPos:ToScreen().y, math.min(10, 6 / frac), 3)
 	end
@@ -403,7 +401,13 @@ function SWEP:Think()
 	local selftable = self:GetTable()
 	if selftable.Drag and (not owner:KeyDown(IN_ATTACK2) or not IsValid(selftable.Drag.Entity)) then
 		local ent = self.Drag.Entity
-		if IsValid(ent) then timer.Create("RemoveOwner_" .. ent:EntIndex(), 30, 1, function() ent:SetNWEntity("PlayerCarrying", nil) end) end
+		if IsValid(ent) then
+			timer.Create("RemoveOwner_" .. ent:EntIndex(), 30, 1, function()
+				if not IsValid(ent) then return end
+				ent:SetNWEntity("PlayerCarrying", nil)
+			end)
+		end
+
 		selftable.Drag = nil
 	end
 
@@ -431,7 +435,7 @@ function SWEP:Think()
 		end
 	end
 
-	if owner:KeyPressed(IN_JUMP) and owner:WaterLevel() < 2 and self.canWbkUseJumpAnim == true and self.fistsOut == false then
+	--[[if owner:KeyPressed(IN_JUMP) and owner:WaterLevel() < 2 and self.canWbkUseJumpAnim == true and self.fistsOut == false then
 		self.canWbkUseJumpAnim = false
 		if owner:IsSprinting() then
 			vm:SendViewModelMatchingSequence(vm:LookupSequence("WbkIdle_JumpRun"))
@@ -440,32 +444,30 @@ function SWEP:Think()
 		end
 
 		self:UpdateNextIdle()
-	end
-
+	end]]
 	if owner:OnGround() and self.canWbkUseJumpAnim == false then self.canWbkUseJumpAnim = true end
 	if not owner:OnGround() and owner:WaterLevel() == 0 and self.fistsOut == false and idletime > 0 and CurTime() > idletime then
 		vm:SendViewModelMatchingSequence(vm:LookupSequence("WbKInAir"))
 		self:UpdateNextIdle()
 	end
 
-	if owner:IsSprinting() and self.fistsOut == true then
+	--[[if owner:IsSprinting() and self.fistsOut == true then
 		self.fistsOut = false
 		self:SetHoldType("normal")
 		vm:SetWeaponModel("models/weapons/c_arms.mdl", self)
 		vm:SendViewModelMatchingSequence(vm:LookupSequence("fists_holster"))
 		self:EmitSound("weapons/wbk/PF_Osm_2.wav")
-	end
-
+	end]]
 	if self.fistsOut == false and idletime > 0 and CurTime() > idletime then
 		if owner:WaterLevel() >= 2 then
-			if owner:KeyDown(IN_FORWARD) or owner:IsSprinting() then
+			--[[if owner:KeyDown(IN_FORWARD) or owner:IsSprinting() then
 				vm:SendViewModelMatchingSequence(vm:LookupSequence("WbKInSwim"))
 				self:UpdateNextIdle()
 			else
 				vm:SendViewModelMatchingSequence(vm:LookupSequence("WbkIdle_Lowered"))
 				self:UpdateNextIdle()
-			end
-		else
+			end]]
+			--[[else
 			if owner:OnGround() then
 				if owner:IsSprinting() then
 					vm:SendViewModelMatchingSequence(vm:LookupSequence("WbKSprint"))
@@ -474,7 +476,7 @@ function SWEP:Think()
 					vm:SendViewModelMatchingSequence(vm:LookupSequence("WbkIdle_Lowered"))
 					self:UpdateNextIdle()
 				end
-			end
+			end]]
 		end
 	end
 

@@ -10,6 +10,7 @@ if CLIENT then
 	SWEP.Purpose = ""
 	SWEP.IconOverride = "editor/ai_goal_standoff"
 	local color_red = Color(180, 0, 0)
+	local clr_white = Color(255, 255, 255)
 	function SWEP:DrawHUD()
 		local owner = self:GetOwner()
 		if not IsValid(owner) then return end
@@ -22,7 +23,8 @@ if CLIENT then
 			tr.endpos = tr.start + dir * 500
 			tr.filter = owner
 			local traceResult = util.TraceLine(tr)
-			local hitEnt = IsValid(traceResult.Entity) and traceResult.Entity:IsNPC() and color_red or color_white
+			local hitEnt = IsValid(traceResult.Entity) and traceResult.Entity:IsNPC() and color_red or clr_white
+			hitEnt.a = (Wep:GetAiming() * 2) + 55
 			local frac = traceResult.Fraction
 			surface.SetDrawColor(hitEnt)
 			draw.NoTexture()
@@ -57,39 +59,41 @@ if CLIENT then
 	end
 
 	function SWEP:DrawWeaponSelection(x, y, wide, tall, alpha)
-		if not IsValid(DrawModel) then
-			if self.VModelForSelector then
-				DrawModel = ClientsideModel(self.ViewModel, RENDER_GROUP_OPAQUE_ENTITY)
-			else
-				DrawModel = ClientsideModel(self.WorldModel, RENDER_GROUP_OPAQUE_ENTITY)
-			end
+		if not PotatoMode:GetBool() then
+			if not IsValid(DrawModel) then
+				if self.VModelForSelector then
+					DrawModel = ClientsideModel(self.ViewModel, RENDER_GROUP_OPAQUE_ENTITY)
+				else
+					DrawModel = ClientsideModel(self.WorldModel, RENDER_GROUP_OPAQUE_ENTITY)
+				end
 
-			DrawModel:SetNoDraw(true)
-		else
-			if self.VModelForSelector then
-				DrawModel:SetModel(self.ViewModel)
+				DrawModel:SetNoDraw(true)
 			else
-				DrawModel:SetModel(self.WorldModel)
-			end
+				if self.VModelForSelector then
+					DrawModel:SetModel(self.ViewModel)
+				else
+					DrawModel:SetModel(self.WorldModel)
+				end
 
-			local vec = Vector(55, 55, 55)
-			local ang = Vector(-48, -48, -48):Angle()
-			cam.Start3D(vec, ang, 20, x, y + 35, wide, tall, 5, 4096)
-			cam.IgnoreZ(true)
-			render.SuppressEngineLighting(true)
-			render.SetLightingOrigin(self:GetPos())
-			render.ResetModelLighting(50 / 255, 50 / 255, 50 / 255)
-			render.SetColorModulation(1, 1, 1)
-			render.SetBlend(255)
-			render.SetModelLighting(4, 1, 1, 1)
-			DrawModel:SetRenderAngles(Angle(0, RealTime() * 30 % 360, 0))
-			DrawModel:DrawModel()
-			DrawModel:SetRenderAngles()
-			render.SetColorModulation(1, 1, 1)
-			render.SetBlend(1)
-			render.SuppressEngineLighting(false)
-			cam.IgnoreZ(false)
-			cam.End3D()
+				local vec = Vector(55, 55, 55)
+				local ang = Vector(-48, -48, -48):Angle()
+				cam.Start3D(vec, ang, 20, x, y + 35, wide, tall, 5, 4096)
+				cam.IgnoreZ(true)
+				render.SuppressEngineLighting(true)
+				render.SetLightingOrigin(self:GetPos())
+				render.ResetModelLighting(50 / 255, 50 / 255, 50 / 255)
+				render.SetColorModulation(1, 1, 1)
+				render.SetBlend(255)
+				render.SetModelLighting(4, 1, 1, 1)
+				DrawModel:SetRenderAngles(Angle(0, RealTime() * 30 % 360, 0))
+				DrawModel:DrawModel()
+				DrawModel:SetRenderAngles()
+				render.SetColorModulation(1, 1, 1)
+				render.SetBlend(1)
+				render.SuppressEngineLighting(false)
+				cam.IgnoreZ(false)
+				cam.End3D()
+			end
 		end
 
 		self:PrintWeaponInfo(x + wide + 20, y + tall * 0.95, alpha)
@@ -164,5 +168,5 @@ if CLIENT then
 		end
 	end
 
-	hook.Add("PreDrawPlayerHands", "HMCD_INSHands", tryParentHands)
+	hook.Add("PreDrawPlayerHands", "alaln-inshands", tryParentHands)
 end
