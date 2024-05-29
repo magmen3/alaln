@@ -15,7 +15,7 @@ end
 
 function plyMeta:SetAlalnState(type, amt)
 	if type == "hunger" then
-		self:SetHunger(math.Clamp(amt, 0, 100))
+		self:SetNWFloat("alaln-hunger", math.Clamp(amt, 0, 100))
 	elseif type == "crazyness" then
 		self:SetNWFloat("alaln-crazyness", math.Clamp(amt, 0, 100))
 	elseif type == "class" then
@@ -32,13 +32,13 @@ end
 
 function plyMeta:AddAlalnState(type, amt)
 	if type == "hunger" then
-		self:SetHunger(math.Clamp(self:GetAlalnState("hunger") + amt, 0, 100))
+		self:SetAlalnState("hunger", math.Clamp(self:GetAlalnState("hunger") + amt, 0, 100))
 	elseif type == "crazyness" then
-		self:SetNWFloat("alaln-crazyness", math.Clamp(self:GetAlalnState("crazyness") + amt, 0, 100))
+		self:SetAlalnState("crazyness", math.Clamp(self:GetAlalnState("crazyness") + amt, 0, 100))
 	elseif type == "score" then
-		self:SetNWFloat("alaln-score", math.Clamp(self:GetAlalnState("score") + amt, 0, 6666))
+		self:SetAlalnState("score", math.Clamp(self:GetAlalnState("score") + amt, 0, 6666))
 	elseif type == "stamina" then
-		self:SetNWFloat("alaln-stamina", math.Clamp(self:GetAlalnState("stamina") + amt, 0, 50))
+		self:SetAlalnState("stamina", math.Clamp(self:GetAlalnState("stamina") + amt, 0, 50))
 	end
 end
 
