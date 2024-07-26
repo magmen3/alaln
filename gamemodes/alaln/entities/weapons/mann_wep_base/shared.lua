@@ -25,10 +25,12 @@ game.AddParticles("particles/pcfs_jack_muzzleflashes.pcf")
 SWEP.Base = "alaln_base"
 SWEP.PrintName = "Mann's Weapon Base"
 SWEP.ViewModelFlip = true
-SWEP.ViewModel = "models/weapons/v_pist_jivejeven.mdl"
+SWEP.ViewModel = "models/weapons/v_pist_usp.mdl"
 SWEP.WorldModel = "models/weapons/w_pist_usp.mdl"
+SWEP.IdlePos = Vector(0, 0, 0)
+SWEP.ViewModelFOV = 75
 SWEP.HoldType = "pistol"
-SWEP.Category = "Forsakened"
+SWEP.Category = "! Forsakened"
 SWEP.Spawnable = false
 SWEP.AdminOnly = true
 SWEP.Weight = 5
@@ -59,6 +61,7 @@ SWEP.SprintPos = Vector(-4, 0, -10) -- позиция оружия во врем
 SWEP.SprintAng = Angle(80, 0, 0) -- угол оружия во время бега
 -- SWEP.IronSightsPos = Vector(0, 0, 0)
 -- SWEP.IronSightsAng = Angle(0, 0, 0)
+-- SWEP.IdlePos = Vector(0, 0, 0)
 SWEP.AimPos = Vector(1.75, 0, 1.22) -- позиция оружия в прицеливании
 -- SWEP.AimAng =  Angle(0, 0, 0) -- угол оружия в прицеливании (не обязательно)
 SWEP.FuckedWorldModel = true -- веселуха
@@ -85,7 +88,7 @@ SWEP.Accuracy = 1 -- общий множитель разброса (лучше 
 SWEP.Spread = .03 -- множитель разброса от бедра (чем меньше тем лучше)
 SWEP.ShotPitch = math.random(97, 102) -- рандомный (от 97 до 102) тон звука выстрела (100 это стандартный тон)
 SWEP.VReloadTime = 0 -- время перезарядки после которой поступают патроны (лучше не трогать)
-SWEP.HipFireInaccuracy = .003 -- разброс от бедра (чем меньше тем лучше)
+SWEP.HipFireInaccuracy = .06 -- разброс от бедра (чем меньше тем лучше)
 SWEP.CycleType = "auto" -- механизм (тип) выстрела или чето типо того (manual,revolving,auto)
 SWEP.ReloadType = "magazine" -- тип перезарядки (individual,clip,magazine)
 SWEP.LastFire = 0 -- я сам не знаю на че влияет
@@ -162,7 +165,7 @@ if CLIENT then
 				if math.random(1, 2) == 2 then
 					self:GetOwner():SetDSP(11, true)
 					timer.Simple(3, function()
-						if not IsValid(self:GetOwner()) then return end
+						if not IsValid(self) or not IsValid(self:GetOwner()) then return end
 						self:GetOwner():SetDSP(0)
 					end)
 				end
@@ -176,7 +179,7 @@ if CLIENT then
 			if math.random(1, 2) == 2 then
 				self:GetOwner():SetDSP(11, true)
 				timer.Simple(5, function()
-					if not IsValid(self:GetOwner()) then return end
+					if not IsValid(self) or not IsValid(self:GetOwner()) then return end
 					self:GetOwner():SetDSP(0)
 				end)
 			end
@@ -207,10 +210,20 @@ function SWEP:PrimaryAttack()
 
 	self.LastFire = CurTime()
 	local WaterMul = 1
-	if owner:GetAlalnState("class") == "Berserker" then WaterMul = .9 end
+	if owner:GetAlalnState("class") == "Berserker" then
+		WaterMul = .9
+	elseif owner:GetAlalnState("class") == "Gunslinger" then
+		WaterMul = 1.5
+	end
+
 	if owner:WaterLevel() >= 3 then WaterMul = .5 end
 	local dmgAmt, InAcc = self.Primary.Damage * math.Rand(.9, 1.1) * WaterMul, 1 - self.Accuracy
-	if owner:GetAlalnState("class") == "Berserker" then InAcc = 1.3 - self.Accuracy end
+	if owner:GetAlalnState("class") == "Berserker" then
+		InAcc = (1.05 - self.Accuracy) * 1.5
+	elseif owner:GetAlalnState("class") == "Gunslinger" then
+		InAcc = (1 - self.Accuracy) * 0.5
+	end
+
 	if self:GetAiming() <= 99 then InAcc = InAcc + self.HipFireInaccuracy end
 	local BulletTraj = (owner:GetAimVector() + VectorRand() * InAcc):GetNormalized()
 	local bullet = {}
@@ -225,7 +238,7 @@ function SWEP:PrimaryAttack()
 	bullet.Callback = function(ply, tr) ply:GetActiveWeapon():BulletCallbackFunc(dmgAmt, ply, tr, dmg, false, true, false) end
 	owner:FireBullets(bullet)
 	if self.Supersonic then self:BallisticSnap(BulletTraj) end
-	if CLIENT then self:Stun() end
+	if owner:GetAlalnState("class") ~= "Gunslinger" and CLIENT then self:Stun() end
 	if (self:Clip1() == 1) and self.LastFireAnim then
 		self:DoBFSAnimation(self.LastFireAnim)
 	elseif self:Clip1() > 0 then
@@ -276,22 +289,41 @@ function SWEP:PrimaryAttack()
 	end
 
 	local Ang, Rec = owner:EyeAngles(), self.Primary.Recoil
+	if owner:GetAlalnState("class") == "Gunslinger" then
+		Rec = Rec * 0.5
+	elseif owner:GetAlalnState("class") == "Berserker" then
+		Rec = Rec * 1.2
+	end
+
 	local RecoilY = math.Rand(.020, .023) * Rec
 	local RecoilX = math.Rand(-.018, .021) * Rec
 	if (SERVER and game.SinglePlayer()) or CLIENT then owner:SetEyeAngles((Ang:Forward() + RecoilY * Ang:Up() + Ang:Right() * RecoilX):Angle()) end
-	if not owner:OnGround() then owner:SetVelocity(-owner:GetAimVector() * 10) end
+	if not owner:OnGround() then owner:SetVelocity(owner:GetAimVector() * -10) end
 	owner:ViewPunchReset()
 	owner:BetterViewPunch(Angle(RecoilY * -30 * self.Primary.Recoil, RecoilX * -30 * self.Primary.Recoil, 0))
 	self:TakePrimaryAmmo(1)
 	local Extra = 0
 	if owner:WaterLevel() >= 3 then Extra = 1 end
-	self:SetNextPrimaryFire(CurTime() + self.TriggerDelay + self.CycleTime + Extra)
+	local trigdelay, velmul = self.TriggerDelay, 1
+	if owner:GetAlalnState("class") == "Gunslinger" then
+		trigdelay = trigdelay * 0.7
+		velmul = velmul * 0.6
+	elseif owner:GetAlalnState("class") == "Berserker" then
+		trigdelay = trigdelay * 1.2
+		velmul = velmul * 1.3
+	end
+
+	if owner:OnGround() then owner:SetVelocity(owner:GetAimVector() * -40 * velmul) end
+	self:SetNextPrimaryFire(CurTime() + trigdelay + self.CycleTime + Extra)
 end
 
 function SWEP:SecondaryAttack()
+	if self:GetReady() and self:GetAiming() <= 50 and not self:GetOwner():IsSprinting() and self:GetOwner():OnGround() then
+		self:EmitSound("weapons/ins2/uni/uni_ads_in_0" .. math.random(1, 6) .. ".wav", 30, math.random(95, 105))
+		self:SetNextSecondaryFire(CurTime() + 0.4)
+	end
 end
 
--- wat
 function SWEP:Think()
 	if SERVER then
 		if (self.ReloadType == "individual") and self:GetReloading() and self.VReloadTime < CurTime() then
@@ -441,11 +473,6 @@ function SWEP:DoBFSAnimation(anim)
 		local vm = self:GetOwner():GetViewModel()
 		vm:SendViewModelMatchingSequence(vm:LookupSequence(anim))
 	end
-end
-
-function SWEP:UpdateNextIdle()
-	local vm = self:GetOwner():GetViewModel()
-	self:SetNextIdle(CurTime() + vm:SequenceDuration())
 end
 
 function SWEP:Holster(newWep)
@@ -625,6 +652,7 @@ if CLIENT then
 	local LastExtraAim = 0
 	function SWEP:GetViewModelPosition(pos, ang)
 		if not IsValid(self:GetOwner()) then return pos, ang end
+		--pos = pos + self.IdlePos
 		local FT = FrameTime()
 		local SprintGotten = Lerp(.1, LastSprintGotten, self:GetSprinting())
 		LastSprintGotten = SprintGotten
@@ -639,7 +667,7 @@ if CLIENT then
 		end
 
 		LastExtraAim = ExtraAim
-		local Vec = self.AimPos * (Aim / 100)
+		local Vec = self.AimPos * (Aim / 100) + self.IdlePos
 		if self.CloseAimPos and (Aim > 0) then Vec = Vec + self.CloseAimPos * ExtraAim end
 		if (Aim > 0) and self:GetReady() and self.AimAng then
 			ang:RotateAroundAxis(ang:Right(), self.AimAng.p * Aim / 100)

@@ -22,14 +22,13 @@ hook.Add("PlayerStartVoice", "alaln-hideimageonvoice", function() return true en
 gameevent.Listen("player_spawn")
 hook.Add("player_spawn", "alaln-networkplyhull", function(data)
 	local ply = Player(data.userid)
-	if BRANCH ~= "x86-64" then
+	--[[if BRANCH ~= "x86-64" then
 		for i = 1, 10 do
 			ply:ChatPrint("Поставь x64 бету")
 		end
-	end
+	end]]
 
 	ply:SetDSP(0)
-	--hook.Run("Player Spawn",ply)
 	if ply.SetHull then
 		ply:SetHull(ply:GetNWVector("HullMin"), ply:GetNWVector("Hull"))
 		ply:SetHullDuck(ply:GetNWVector("HullMin"), ply:GetNWVector("HullDuck"))
@@ -63,6 +62,7 @@ concommand.Add("checkammo", function()
 end, nil, "Check your current gun ammo", FCVAR_NONE)
 
 local color_button = Color(165, 0, 0)
+local color_ui = Color(0, 0, 0, 150)
 net.Receive("alaln-navmeshnotfound", function()
 	local navframe = vgui.Create("DFrame")
 	navframe:SetSize(500, 500)
@@ -107,7 +107,7 @@ net.Receive("alaln-flinch", function(len)
 	if not IsValid(ply) then return end
 	ply:AnimRestartGesture(GESTURE_SLOT_FLINCH, gest, true)
 end)
---[[
+--[[ --!! Надо либо сделать альтернативу этой херне хомиградовской либо чет свое чтобы при каждом спавне появлялось
 local roundTimeStart = CurTime()
 -- format: multiline
 local rndsound = {

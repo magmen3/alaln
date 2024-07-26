@@ -10,8 +10,11 @@ SWEP.BounceWeaponIcon = false -- Should the weapon icon bounce?
 SWEP.SwayScale = -2 -- The scale of the viewmodel sway
 SWEP.BobScale = -2 -- The scale of the viewmodel bob
 SWEP.RenderGroup = RENDERGROUP_OPAQUE
-SWEP.WepSelectIcon = surface.GetTextureID("vgui/entities/drc_default")
-SWEP.IconOverride = "vgui/entities/drc_default"
+SWEP.WepSelectIcon = surface.GetTextureID("editor/ai_goal_standoff")
+SWEP.IconOverride = "editor/ai_goal_standoff"
+local icon = "flags16/al.png" -- "games/16/insmod.png"
+list.Set("ContentCategoryIcons", "! Forsakened", icon)
+
 function SWEP:DrawHUD()
 end
 
@@ -56,13 +59,13 @@ function Circle(x, y, radius, seg)
 	surface.DrawPoly(cir)
 end
 
-local alpha_black = Color(20, 0, 0, 75)
+local alpha_black = Color(25, 0, 0, 250)
 function SWEP:PrintWeaponInfo(x, y, alpha)
 	if self.DrawWeaponInfoBox == false then return end
 	if self.InfoMarkup == nil then
 		local str
-		local title_color = "<color=150, 0, 0, 255>"
-		local text_color = "<color=125, 0, 0, 255>"
+		local title_color = "<color=185, 0, 0, 255>"
+		local text_color = "<color=165, 0, 0, 255>"
 		str = "<font=alaln-hudfontvsmall>"
 		if self.Purpose ~= "" then str = str .. title_color .. "Description:</color>\n" .. text_color .. self.Purpose .. "</color>\n\n" end
 		if self.Instructions ~= "" then str = str .. title_color .. "Instruction:</color>\n" .. text_color .. self.Instructions .. "</color>\n" end

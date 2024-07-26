@@ -1,10 +1,10 @@
 AddCSLuaFile()
 ENT.Type = "anim"
 ENT.Base = "mann_ent_base"
-ENT.PrintName = "Sako 98 Sporter Rifle"
+ENT.PrintName = "Mosin Nagant M91"
 ENT.Category = "Forsakened"
-ENT.SWEP = "mann_wep_sako85"
-ENT.Model = Model("models/weapons/tfa_nmrih/w_fa_sako85_ironsights.mdl")
+ENT.SWEP = "mann_wep_mosin"
+ENT.Model = Model("models/weapons/w_ins2_mosin_nagant.mdl")
 ENT.Color = Color(200, 200, 200, 255)
 ENT.ImpactSound = "physics/metal/weapon_impact_soft" .. math.random(1, 3) .. ".wav"
 ENT.Spawnable = true

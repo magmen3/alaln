@@ -1,5 +1,6 @@
 -- Default weapon base edited for optimization purposes
 SWEP.PrintName = "Scripted Weapon"
+SWEP.Category = "! Forsakened"
 SWEP.Purpose = ""
 SWEP.Instructions = ""
 SWEP.ViewModelFOV = 75

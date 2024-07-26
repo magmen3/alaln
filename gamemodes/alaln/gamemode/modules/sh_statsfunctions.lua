@@ -97,14 +97,17 @@ net.Receive("alaln-setclass", function(len, ply)
 	local class = net.ReadString()
 	netply:SetNWString("alaln-class", class)
 	local score --!! TODO: Переделать это в виде таблицы
-	if class == "Cannibal" and ply:GetAlalnScore() >= 45 then -- Stupid shit
+	if class == "Cannibal" and ply:GetAlalnState("score") >= 45 then -- Stupid shit
 		score = 45
 		BetterChatPrint(ply, "You changed your class, you need to respawn to apply it.", color_yellow)
-	elseif class == "Berserker" and ply:GetAlalnScore() >= 75 then
+	elseif class == "Berserker" and ply:GetAlalnState("score") >= 75 then
 		score = 75
 		BetterChatPrint(ply, "You changed your class, you need to respawn to apply it.", color_yellow)
-	elseif class == "Psychopath" then
+	elseif class == "Psychopath" or class == "Faster" then
 		score = 0
+		BetterChatPrint(ply, "You changed your class, you need to respawn to apply it.", color_yellow)
+	elseif class == "Gunslinger" and ply:GetAlalnState("score") >= 95 then
+		score = 95
 		BetterChatPrint(ply, "You changed your class, you need to respawn to apply it.", color_yellow)
 	else
 		score = 0

@@ -22,8 +22,10 @@ function entMeta:StealthOpenDoor()
 	end
 end
 
+local DoorClass = {"prop_door", "prop_door_rotating", "func_door", "func_door_rotating", "door", "func_breakable"}
 function entMeta:SDOIsDoor()
-	return self:GetClass() == "prop_door_rotating" or self:GetClass() == "func_door_rotating"
+	local Class = self:GetClass()
+	return DoorClass[Class] -- table.HasValue(DoorClass, Class)
 end
 
 hook.Add("AcceptInput", "alaln-stealthdoors", function(ent, inp, act, ply, val)

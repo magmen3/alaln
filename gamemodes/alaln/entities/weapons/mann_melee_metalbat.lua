@@ -1,12 +1,16 @@
 AddCSLuaFile()
 SWEP.Base = "mann_melee_base"
 SWEP.PrintName = "Metal Baseball Bat"
-SWEP.Instructions = "This is your trusty metallic baseball bat. Use it as you see fit.\n\nLMB to slash.\nRMB to stab.\nBackstabs do more damage."
-SWEP.Category = "Forsakened"
+SWEP.Purpose = "An old metal baseball bat, all dented and scratched. Looks like it's been used for more than just baseball."
+SWEP.Instructions = "LMB to slash.\nRMB to stab.\nBackstabs do more damage."
+SWEP.Category = "! Forsakened"
 SWEP.Spawnable = true
 SWEP.ViewModel = Model("models/weapons/tfa_nmrih/v_me_bat_metal.mdl")
 SWEP.WorldModel = Model("models/weapons/tfa_nmrih/w_me_bat_metal.mdl")
-SWEP.ViewModelFOV = 65
+SWEP.ViewModelFOV = 130
+SWEP.ViewModelPositionOffset = Vector(-12, 0, 0)
+SWEP.ViewModelAngleOffset = Angle(-10, 0, -3)
+SWEP.ViewModelFlip = false
 SWEP.UseHands = true
 SWEP.HoldType = "melee2"
 SWEP.MeleeHolsterSlot = 1
@@ -46,6 +50,7 @@ SWEP.VModelForSelector = false
 SWEP.IdleAnim = "idle"
 SWEP.DeployAnim = "draw"
 SWEP.DeploySound = Sound("player/weapon_draw_0" .. math.random(1, 5) .. ".wav")
+SWEP.PitchMul = 0.96
 -- SWEP.WMPos 				= Vector(3.5, -1.5, -2.5)
 -- SWEP.WMAng 				= Angle(-80, 180, 180)
 SWEP.ENT = "mann_ent_metalbat"
@@ -53,15 +58,22 @@ SWEP.Droppable = true
 SWEP.NoHolster = true
 SWEP.IconOverride = "editor/ai_goal_police"
 if CLIENT then
+	local Crouched = 0
 	-- tried to make viewmodel like in The Forest
-	function SWEP:CalcViewModelView(ViewModel, OldEyePos, OldEyeAng, EyePos, EyeAng)
+	--[[function SWEP:CalcViewModelView(ViewModel, OldEyePos, OldEyeAng, EyePos, EyeAng)
 		local ply = LocalPlayer()
-		if not (IsValid(ply) or ply:Alive()) or ply:GetMoveType() == MOVETYPE_NOCLIP or ply:GetNoDraw() then return end
+		if not (IsValid(ply) or ply:Alive()) or ply:GetMoveType() == MOVETYPE_NOCLIP or ply:GetNoDraw() then return pos, ang end
+		if self:GetOwner():KeyDown(IN_DUCK) then
+			Crouched = math.Clamp(Crouched + .1, 1.5, 6)
+		else
+			Crouched = math.Clamp(Crouched - .1, 1.5, 6)
+		end
+
 		local eye = ply:GetAttachment(ply:LookupAttachment("forward"))
-		local sitvec = Vector(1, -1, ply:KeyDown(IN_DUCK) and 1 or 0.5)
+		local sitvec = Vector(1, -1, Crouched)
 		local vm_origin, vm_angles = EyePos + sitvec, eye.Ang + Angle(0, -5, -10)
 		return vm_origin, vm_angles
-	end
+	end]]
 
 	function SWEP:DrawWorldModel()
 		if self:GetOwner():IsValid() then

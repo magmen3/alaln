@@ -4,13 +4,15 @@ if CLIENT then
 	SWEP.DrawAmmo = false
 	SWEP.DrawCrosshair = false
 	SWEP.ViewModelFOV = 75
+	SWEP.ViewModelPositionOffset = Vector(0, 0, 0)
+	SWEP.ViewModelAngleOffset = Angle(0, 0, 0)
 	SWEP.Slot = 1
 	SWEP.SlotPos = 0
 	SWEP.SwayScale = -2
 	SWEP.BobScale = -2
 	SWEP.IconOverride = "editor/ai_goal_police"
 	function SWEP:DrawWeaponSelection(x, y, wide, tall, alpha)
-		if not PotatoMode:GetBool() then
+		--if not PotatoMode:GetBool() then
 			if not IsValid(DrawModel) then
 				if self.VModelForSelector then
 					DrawModel = ClientsideModel(self.ViewModel, RENDER_GROUP_OPAQUE_ENTITY)
@@ -45,9 +47,27 @@ if CLIENT then
 				cam.IgnoreZ(false)
 				cam.End3D()
 			end
-		end
+		--end
 
 		self:PrintWeaponInfo(x + wide + 20, y + tall * 0.95, alpha)
+	end
+	
+	local Crouched = 0
+	function SWEP:CalcViewModelView(vm, oldpos, oldang, pos, ang)
+		local owner = self:GetOwner()
+		if not IsValid(owner) then return pos, ang end
+		if owner:KeyDown(IN_DUCK) then
+			Crouched = math.Clamp(Crouched + .05, 0, 2)
+		else
+			Crouched = math.Clamp(Crouched - .05, 0, 2)
+		end
+		local forward, right, up = self.ViewModelPositionOffset.x, self.ViewModelPositionOffset.y, self.ViewModelPositionOffset.z + Crouched
+		local angs = owner:EyeAngles()
+		--ang.pitch = -ang.pitch
+		ang:RotateAroundAxis(ang:Forward(), self.ViewModelAngleOffset.pitch)
+		ang:RotateAroundAxis(ang:Right(), self.ViewModelAngleOffset.roll)
+		ang:RotateAroundAxis(ang:Up(), self.ViewModelAngleOffset.yaw)
+		return pos + angs:Forward() * forward + angs:Right() * right + angs:Up() * up, ang
 	end
 
 	function SWEP:DrawWorldModel()

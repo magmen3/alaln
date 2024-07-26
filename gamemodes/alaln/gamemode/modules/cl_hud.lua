@@ -30,16 +30,16 @@ local function DrawSE()
 end
 
 -- Screen effects
-local noisetex = Material("filmgrain/noise")
-local noisetex2 = Material("filmgrain/noiseadd")
+local noisetex, noisetex2 = Material("filmgrain/noise"), Material("filmgrain/noiseadd")
 local deathclrmod = {
 	["$pp_colour_colour"] = 0,
 	["$pp_colour_mulr"] = 1,
 }
 
+local Height, Widgth = ScrH(), ScrW()
 hook.Add("RenderScreenspaceEffects", "alaln-screffects", function()
 	local ply = LocalPlayer()
-	if not (IsValid(ply) or ply:Alive()) or ply:GetMoveType() == MOVETYPE_NOCLIP then return end
+	if not IsValid(ply) or ply:GetMoveType() == MOVETYPE_NOCLIP then return end
 	local frac = 1 - ply:Health() / ply:GetMaxHealth()
 	local crazy = ply:GetAlalnState("crazyness") >= 10 and ply:GetAlalnState("crazyness") / 7 or 1
 	local clrmod = {
@@ -60,17 +60,17 @@ hook.Add("RenderScreenspaceEffects", "alaln-screffects", function()
 	DrawMaterialOverlay("fisheyelens", -0.045)
 	if ply:Alive() then
 		DrawColorModify(clrmod)
-		DrawToyTown(1, ScrH() / 4 * frac)
+		DrawToyTown(1, Height / 4 * frac)
 		if ply:WaterLevel() == 3 and not PotatoMode:GetBool() then DrawToyTown(15, ScrH() / 1.5) end
 		if ply:Health() <= 40 or ply:WaterLevel() == 3 then DrawMotionBlur(0.6 - 0.2 * frac, 0.8, 0.01) end
 		local hp = frac * 8
 		DrawCA(15 * hp + 5, 7 * hp + 5, 25, 9 * hp + 5, 6 * hp + 5, -5)
 		surface.SetMaterial(noisetex)
 		surface.SetDrawColor(190, 0, 0, 25 * frac)
-		surface.DrawTexturedRect(0, 0, ScrW(), ScrH())
+		surface.DrawTexturedRect(0, 0, Widgth, Height)
 		surface.SetMaterial(noisetex2)
 		surface.SetDrawColor(190, 0, 0, 100)
-		surface.DrawTexturedRect(0, 0, ScrW(), ScrH())
+		surface.DrawTexturedRect(0, 0, Widgth, Height)
 	else
 		DrawColorModify(deathclrmod)
 	end
@@ -98,12 +98,19 @@ end)
 -- Vignette
 do
 	local vignettemat = Material("illuvignet.png")
+	local Crouched = 0
 	hook.Add("HUDPaintBackground", "alaln-healthvignette", function()
 		local ply = LocalPlayer()
 		local frac = ply:GetMaxHealth() - ply:Health()
 		if not IsValid(ply) or ply:GetMoveType() == MOVETYPE_NOCLIP then return end
+		if ply:KeyDown(IN_DUCK) then
+			Crouched = math.Clamp(Crouched + .04, 1, 2)
+		else
+			Crouched = math.Clamp(Crouched - .04, 1, 2)
+		end
+
 		alpha = math.Approach(frac or 200, 0, FrameTime() * 30)
-		surface.SetDrawColor(0, 0, 0, 150 + alpha)
+		surface.SetDrawColor(0, 0, 0, 150 * Crouched + alpha)
 		surface.SetMaterial(vignettemat)
 		surface.DrawTexturedRect(0, 0, ScrW(), ScrH())
 	end)
@@ -258,3 +265,41 @@ local function DrawFlare()
 end
 
 hook.Add("RenderScreenspaceEffects", "alaln-lensflare", DrawFlare)
+-------------------------------------------------------
+-- Pickup hud
+local PickTable = {}
+local PickLerp = {}
+hook.Add("HUDWeaponPickedUp", "alaln-pickuphud", function(weapon)
+	table.insert(PickTable, weapon:GetPrintName())
+	timer.Simple(5, function()
+		table.remove(PickTable, 1)
+		table.remove(PickLerp, 1)
+	end)
+end)
+
+hook.Add("HUDItemPickedUp", "alaln-pickuphud", function(itemName)
+	table.insert(PickTable, "#" .. itemName)
+	timer.Simple(5, function()
+		table.remove(PickTable, 1)
+		table.remove(PickLerp, 1)
+	end)
+end)
+
+hook.Add("HUDAmmoPickedUp", "alaln-pickuphud", function(ammo, ammout)
+	table.insert(PickTable, ammo .. " - " .. ammout)
+	timer.Simple(5, function()
+		table.remove(PickTable, 1)
+		table.remove(PickLerp, 1)
+	end)
+end)
+
+local ammoclr = Color(160, 0, 0)
+hook.Add("HUDDrawPickupHistory", "alaln-pickuphud", function()
+	for i = 1, table.Count(PickTable) do
+		if PickTable[i] then
+			PickLerp[i] = Lerp(5 * FrameTime(), PickLerp[i] or 0, (i - 1) * 40)
+			draw.DrawText("Found " .. PickTable[i], "alaln-hudfontsmall", ScrW() - 30, ScrH() / 3 + PickLerp[i], ammoclr, TEXT_ALIGN_RIGHT)
+		end
+	end
+	return false
+end)

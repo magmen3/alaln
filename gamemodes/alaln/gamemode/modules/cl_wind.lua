@@ -1,5 +1,6 @@
-local ply = LocalPlayer()
-timer.Simple(1, function()
+timer.Simple(5, function()
+	local ply = LocalPlayer()
+	if not IsValid(ply) then print("FUCK") end
 	local Wind = CreateSound(ply, Sound("ambient/levels/canals/windmill_wind_loop1.wav"))
 	Wind:PlayEx(0, 0)
 	local WindHit1 = CreateSound(ply, Sound("ambient/wind/wind_hit1.wav"))

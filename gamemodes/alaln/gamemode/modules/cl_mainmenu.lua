@@ -211,3 +211,11 @@ hook.Add("PreRender", "alaln-mainmenu", function()
 		end
 	end
 end)
+
+hook.Add("RenderScreenspaceEffects", "alaln-mainmenu", function()
+	if IsValid(Menu) and system.HasFocus() then
+		DrawMotionBlur(0.18, 0.99, 0.05)
+		DrawToyTown(2, ScrH() / 2)
+		--DrawBokehDOF(1, 1, 5)
+	end
+end)

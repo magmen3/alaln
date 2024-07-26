@@ -24,7 +24,6 @@ function GM:Initialize()
 	end)
 end
 
-hook.Add("UpdateAnimation", "alaln-fixanims", function(ply, event, data) ply:RemoveGesture(ACT_GMOD_NOCLIP_LAYER) end)
 -- needful commands
 RunConsoleCommand("sv_defaultdeployspeed", "1")
 RunConsoleCommand("sv_rollangle", "-4")

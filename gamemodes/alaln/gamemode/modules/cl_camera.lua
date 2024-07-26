@@ -17,6 +17,7 @@ end]]
 ThirdPerson = CreateClientConVar("alaln_thirdperson", 1, true, false, "Enable thirdperson?", 0, 1)
 do
 	--local eyevecsuperpuper = Vector(0, 0, 0.25)
+	local Crouched = 0
 	hook.Add("CalcView", "alaln-calcview", function(ply, vec, ang, fov, znear, zfar)
 		if ply ~= LocalPlayer() then return end
 		if not (ply or IsValid(ply)) or ply:GetMoveType() == MOVETYPE_NOCLIP or ply:GetNoDraw() or ply:GetViewEntity() ~= ply then return end
@@ -39,16 +40,28 @@ do
 			start = eye.Pos,
 			endpos = eye.Pos + angol:Up() * 1 + angol:Right() * 15 + angol:Forward() * -45,
 			filter = ply,
-		}).HitPos or vec
+		}).HitPos or vec -- + eyevecsuperpuper
 
-		-- + eyevecsuperpuper
+		if ply:KeyDown(IN_DUCK) then
+			Crouched = math.Clamp(Crouched + .1, 0, 5)
+		else
+			Crouched = math.Clamp(Crouched - .1, 0, 5)
+		end
+		
+		local drawply = false
+		if ThirdPerson:GetBool() or ply:InVehicle() then
+			drawply = true
+		else
+			drawply = false
+		end
+
 		local view = {
 			origin = pozishon,
 			angles = angol,
-			fov = fov + math.min(20, ply:GetVelocity():Length2D() * 0.03) - (ply:KeyDown(IN_DUCK) and 5 or 0) - 5,
+			fov = fov + math.min(20, ply:GetVelocity():Length2D() * 0.03) - Crouched - 5,
 			znear = znear,
 			zfar = zfar,
-			drawviewer = ThirdPerson:GetBool()
+			drawviewer = drawply
 		}
 		return view
 	end)
@@ -94,9 +107,17 @@ do
 		local wep = ply:GetActiveWeapon()
 		if ply:KeyDown(IN_DUCK) then amt = amt / 2 end
 		if IsValid(wep) and wep.GetAiming and (wep:GetAiming() >= 99) then
-			if wep.Scoped and (ply:KeyDown(IN_FORWARD) or ply:KeyDown(IN_BACK) or ply:KeyDown(IN_MOVELEFT) or ply:KeyDown(IN_MOVERIGHT)) then
+			if wep.Scoped and (ply:KeyDown(IN_FORWARD) or ply:KeyDown(IN_BACK) or ply:KeyDown(IN_MOVELEFT) or ply:KeyDown(IN_MOVERIGHT)) and not ply:GetAlalnState("class") == "Gunslinger" then
 				spr = spr * 2
 				amt = amt * 2
+			end
+
+			if ply:GetAlalnState("class") == "Gunslinger" then
+				spr = spr * 0.7
+				amt = amt * 0.7
+			elseif ply:GetAlalnState("class") == "Berserker" then
+				spr = spr * 1.3
+				amt = amt * 1.3
 			end
 
 			local S = .05
@@ -165,5 +186,5 @@ do
 		end
 	end
 
-	hook.Add("CalcViewModelView", "HL2ViewModelSway", doLag)
+	hook.Add("CalcViewModelView", "alaln-vmsway", doLag)
 end

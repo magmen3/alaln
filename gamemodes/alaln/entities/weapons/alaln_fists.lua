@@ -4,15 +4,15 @@ SWEP.Base = "alaln_base"
 SWEP.Spawnable = true
 SWEP.UseHands = true
 SWEP.PrintName = "Berserker Fists"
-SWEP.Category = "Forsakened"
+SWEP.Category = "! Forsakened"
 SWEP.Purpose = "These are your hands. They're no energy sword, but they still pack a wallop, and can kick someone ass."
 SWEP.Instructions = "R to upper/lower fists,\nLMB with uppered fists to swing,\nRMB with uppered fists to block,\nRMB with lowered fists to grab."
 SWEP.ViewModel = Model("models/weapons/v_fist.mdl")
 SWEP.WorldModel = ""
 SWEP.DrawWorldModel = false
-SWEP.ViewModelPositionOffset = Vector(0, -1, -1)
-SWEP.ViewModelAngleOffset = Angle(0, 0, -1)
-SWEP.ViewModelFOV = 75
+SWEP.ViewModelPositionOffset = Vector(-3, 0, -1)
+SWEP.ViewModelAngleOffset = Angle(0, 2, -1)
+SWEP.ViewModelFOV = 120
 SWEP.BobScale = -2
 SWEP.SwayScale = -2
 SWEP.Primary.ClipSize = -1
@@ -34,6 +34,7 @@ SWEP.HitDistance = 75
 SWEP.Range = 85
 SWEP.Droppable = false
 local HitSound = Sound("Flesh.ImpactHard")
+local SwingSound = Sound("weapons/slam/throw.wav")
 function SWEP:Initialize()
 	self.isInBlockDam = false
 	self.Time = 0
@@ -46,10 +47,16 @@ function SWEP:SetupDataTables()
 	self:NetworkVar("Int", 2, "Combo")
 end
 
+local Crouched = 0
 function SWEP:CalcViewModelView(vm, oldpos, oldang, pos, ang)
 	local owner = self:GetOwner()
 	if not IsValid(owner) then return pos, ang end
-	local forward, right, up = self.ViewModelPositionOffset.x, self.ViewModelPositionOffset.y, self.ViewModelPositionOffset.z
+	if owner:KeyDown(IN_DUCK) then
+		Crouched = math.Clamp(Crouched + .05, 0, 2)
+	else
+		Crouched = math.Clamp(Crouched - .05, 0, 2)
+	end
+	local forward, right, up = self.ViewModelPositionOffset.x, self.ViewModelPositionOffset.y, self.ViewModelPositionOffset.z + Crouched
 	local angs = owner:EyeAngles()
 	--ang.pitch = -ang.pitch
 	ang:RotateAroundAxis(ang:Forward(), self.ViewModelAngleOffset.pitch)
@@ -68,8 +75,9 @@ function SWEP:Sprinting()
 end
 
 function SWEP:PrimaryAttack(right)
+	local owner = self:GetOwner()
 	--if self:GetOwner():IsSprinting() then return end
-	local currentAnimFSF = self:GetSequenceName(self:GetOwner():GetViewModel():GetSequence())
+	local currentAnimFSF = self:GetSequenceName(owner:GetViewModel():GetSequence())
 	if currentAnimFSF == "inspect" or self.fistsOut == false then
 		self.fistsOut = true
 		self:SetHoldType("fist")
@@ -77,30 +85,37 @@ function SWEP:PrimaryAttack(right)
 		vm:SetWeaponModel("models/weapons/v_fist.mdl", self)
 		vm:SendViewModelMatchingSequence(vm:LookupSequence("draw"))
 		self:EmitSound("weapons/wbk/PF_Osm_3.wav")
-		self:GetOwner():BetterViewPunch(Angle(-4.4, 0, 1.5))
+		owner:BetterViewPunch(Angle(-4.4, 0, 1.5))
 		self:SetNextPrimaryFire(CurTime() + 0.3)
 		self:SetNextSecondaryFire(CurTime() + 0.3)
 		self:UpdateNextIdle()
 	else
 		self:GetOwner():SetAnimation(PLAYER_ATTACK1)
-		local currentPunchAnim = self:GetSequenceName(self:GetOwner():GetViewModel():GetSequence())
+		local currentPunchAnim = self:GetSequenceName(owner:GetViewModel():GetSequence())
 		local anim = "punch_miss"
 		if currentPunchAnim == "punch_miss" then anim = "punch_hit" end
-		if currentPunchAnim == "punch_hit" or currentPunchAnim == "draw" or not self:GetOwner():OnGround() then anim = "punch_hard" end
-		local vm = self:GetOwner():GetViewModel()
+		if currentPunchAnim == "punch_hit" or currentPunchAnim == "draw" or not owner:OnGround() then anim = "punch_hard" end
+		local vm = owner:GetViewModel()
 		vm:SendViewModelMatchingSequence(vm:LookupSequence(anim))
 		if anim == "punch_hard" then
-			self:EmitSound("weapons/wbk/PF_Swing_dif_" .. math.random(1, 3) .. ".wav")
 			self:GetOwner():BetterViewPunch(Angle(-9, -11, 1))
-		else
-			self:EmitSound("weapons/wbk/PF_Attack_" .. math.random(1, 3) .. ".wav")
+		end
+		self:EmitSound(SwingSound)
+		local velmul = 1
+		if owner:GetAlalnState("class") == "Gunslinger" then 
+			velmul = velmul * 0.6
+		elseif owner:GetAlalnState("class") == "Berserker" then
+			velmul = velmul * 1.3
 		end
 
+		if owner:OnGround() then
+			owner:SetVelocity(owner:GetAimVector() * 250 * velmul)
+		end
 		self:UpdateNextIdle()
 		self:SetNextMeleeAttack(CurTime() + 0.14)
 		self:GetOwner():BetterViewPunch(Angle(0, -8.5, -2.5))
-		self:SetNextPrimaryFire(CurTime() + 0.6)
-		self:SetNextSecondaryFire(CurTime() + 0.6)
+		self:SetNextPrimaryFire(CurTime() + 0.5)
+		self:SetNextSecondaryFire(CurTime() + 0.5)
 	end
 end
 
@@ -173,11 +188,7 @@ function SWEP:DealDamage()
 				self:UpdateNextIdle()
 			end)
 		else
-			if anim == "punch_hard" then
-				self:EmitSound("weapons/wbk/PF_Crit_" .. math.random(1, 2) .. ".wav")
-			else
-				self:EmitSound("weapons/wbk/PF_Hit_Humanoid_" .. math.random(2, 5) .. ".wav")
-			end
+			self:EmitSound(HitSound)
 		end
 	end
 
@@ -424,16 +435,16 @@ function SWEP:Think()
 		self:SetHoldType("normal")
 	end
 
-	local isCrouchAnim = self:GetSequenceName(vm:GetSequence())
+	--[[local isCrouchAnim = self:GetSequenceName(vm:GetSequence())
 	if owner:Crouching() and owner:OnGround() and isCrouchAnim ~= "WbkCrouch" and isCrouchAnim ~= "WbkDefendHimself" and not self.fistsOut then
 		vm:SetWeaponModel("models/weapons/c_arms_wbk_unarmed.mdl", self)
 		vm:SendViewModelMatchingSequence(vm:LookupSequence("WbkCrouch"))
-	else
+	else]]
 		if self.fistsOut and not self.isInBlockDam and vm:GetModel() == "models/weapons/c_arms_wbk_unarmed.mdl" then
 			vm:SetWeaponModel("models/weapons/v_fist.mdl", self)
 			vm:SendViewModelMatchingSequence(vm:LookupSequence("draw"))
 		end
-	end
+	--end
 
 	--[[if owner:KeyPressed(IN_JUMP) and owner:WaterLevel() < 2 and self.canWbkUseJumpAnim == true and self.fistsOut == false then
 		self.canWbkUseJumpAnim = false
@@ -460,14 +471,14 @@ function SWEP:Think()
 	end]]
 	if self.fistsOut == false and idletime > 0 and CurTime() > idletime then
 		if owner:WaterLevel() >= 2 then
-			--[[if owner:KeyDown(IN_FORWARD) or owner:IsSprinting() then
+			if owner:KeyDown(IN_FORWARD) or owner:IsSprinting() then
 				vm:SendViewModelMatchingSequence(vm:LookupSequence("WbKInSwim"))
 				self:UpdateNextIdle()
 			else
 				vm:SendViewModelMatchingSequence(vm:LookupSequence("WbkIdle_Lowered"))
 				self:UpdateNextIdle()
-			end]]
-			--[[else
+			end
+			else
 			if owner:OnGround() then
 				if owner:IsSprinting() then
 					vm:SendViewModelMatchingSequence(vm:LookupSequence("WbKSprint"))
@@ -476,7 +487,7 @@ function SWEP:Think()
 					vm:SendViewModelMatchingSequence(vm:LookupSequence("WbkIdle_Lowered"))
 					self:UpdateNextIdle()
 				end
-			end]]
+			end
 		end
 	end
 

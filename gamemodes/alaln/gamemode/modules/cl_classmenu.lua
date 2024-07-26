@@ -10,7 +10,7 @@ local hudfontsmall = "alaln-hudfontsmall"
 net.Receive("alaln-classmenu", function()
 	--------------------------------------------------- Class Menu
 	local frame = vgui.Create("DFrame")
-	frame:SetSize(500, 700)
+	frame:SetSize(500, 850)
 	frame:Center()
 	frame:SetTitle("")
 	frame:SetDraggable(false)
@@ -48,16 +48,15 @@ net.Receive("alaln-classmenu", function()
 	--------------------------------------------------- Psychopath (Standard)
 	local button1 = vgui.Create("DButton", frame)
 	button1:SetText("")
-	button1:SetPos(170, 100)
-	button1:SetSize(150, 100)
+	button1:SetPos(145, 100)
+	button1:SetSize(200, 100)
 	button1.Paint = function(self, w, h)
 		draw.RoundedBox(5, 0, 0, w, h, CMClr.button)
-		draw.SimpleText("Psychopath", hudfontsmall, 75, 50, CMClr.text, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
+		draw.SimpleText("Psychopath", hudfontsmall, 100, 50, CMClr.text, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
 	end
 
 	local ply = LocalPlayer()
 	button1.DoClick = function()
-		DebugPrint("Selected Psychopath class")
 		net.Start("alaln-setclass")
 		net.WritePlayer(ply)
 		net.WriteString("Psychopath")
@@ -65,14 +64,32 @@ net.Receive("alaln-classmenu", function()
 		frame:Close()
 	end
 
+	--------------------------------------------------- Faster
+	local button4 = vgui.Create("DButton", frame)
+	button4:SetText("")
+	button4:SetPos(145, 250)
+	button4:SetSize(200, 100)
+	button4.Paint = function(self, w, h)
+		draw.RoundedBox(5, 0, 0, w, h, CMClr.button)
+		draw.SimpleText("Faster", hudfontsmall, 100, 50, CMClr.text, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
+	end
+
+	button4.DoClick = function()
+		net.Start("alaln-setclass")
+		net.WritePlayer(ply)
+		net.WriteString("Faster")
+		net.SendToServer()
+		frame:Close()
+	end
+
 	--------------------------------------------------- Cannibal
 	local button2 = vgui.Create("DButton", frame)
 	button2:SetText("")
-	button2:SetPos(170, 250)
-	button2:SetSize(150, 100)
+	button2:SetPos(145, 400)
+	button2:SetSize(200, 100)
 	button2.Paint = function(self, w, h)
 		draw.RoundedBox(5, 0, 0, w, h, CMClr.button)
-		draw.SimpleText("Cannibal (45)", hudfontsmall, 75, 50, CMClr.text, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
+		draw.SimpleText("Cannibal (45)", hudfontsmall, 100, 50, CMClr.text, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
 	end
 
 	button2.DoClick = function()
@@ -92,7 +109,7 @@ net.Receive("alaln-classmenu", function()
 	--------------------------------------------------- Berserker
 	local button3 = vgui.Create("DButton", frame)
 	button3:SetText("")
-	button3:SetPos(145, 400)
+	button3:SetPos(145, 550)
 	button3:SetSize(200, 100)
 	button3.Paint = function(self, w, h)
 		draw.RoundedBox(5, 0, 0, w, h, CMClr.button)
@@ -109,6 +126,30 @@ net.Receive("alaln-classmenu", function()
 		net.Start("alaln-setclass")
 		net.WritePlayer(ply)
 		net.WriteString("Berserker")
+		net.SendToServer()
+		frame:Close()
+	end
+
+	--------------------------------------------------- Gunslinger
+	local button3 = vgui.Create("DButton", frame)
+	button3:SetText("")
+	button3:SetPos(145, 700)
+	button3:SetSize(200, 100)
+	button3.Paint = function(self, w, h)
+		draw.RoundedBox(5, 0, 0, w, h, CMClr.button)
+		draw.SimpleText("Gunslinger (95)", hudfontsmall, 100, 50, CMClr.text, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
+	end
+
+	button3.DoClick = function()
+		DebugPrint("Selected Gunslinger class")
+		if ply:GetAlalnState("score") < 95 then
+			BetterChatPrint("You need more score to choose this class.", CMClr.text)
+			return
+		end
+
+		net.Start("alaln-setclass")
+		net.WritePlayer(ply)
+		net.WriteString("Gunslinger")
 		net.SendToServer()
 		frame:Close()
 	end

@@ -26,6 +26,7 @@ ENT.PartialUses = {
 	{ prog = 99, func = function( ent ) ent:EmitSound( "buttons/blip1.wav", 75, 100 ) end }
 }
 ]]
+local math, table, Color = math, table, Color
 function ENT:SetupDataTables()
 	self:NetworkVar("Float", 0, "EndTime")
 	self:NetworkVar("Entity", 0, "User")

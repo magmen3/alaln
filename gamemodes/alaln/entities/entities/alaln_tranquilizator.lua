@@ -4,6 +4,7 @@ ENT.PrintName = "Tranquilizator"
 ENT.Spawnable = true
 ENT.Category = "Forsakened"
 ENT.UseCD = 0
+local math, table, Color = math, table, Color
 -- format: multiline
 local TranquilizatorModels = {
 	"models/vj_cofr/aom/pill_bottle.mdl",

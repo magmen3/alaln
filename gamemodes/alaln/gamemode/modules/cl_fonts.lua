@@ -81,3 +81,4 @@ local function CreateFonts()
 end
 
 CreateFonts()
+hook.Add("OnScreenSizeChanged", "alaln-fontsreload", function() CreateFonts() end)

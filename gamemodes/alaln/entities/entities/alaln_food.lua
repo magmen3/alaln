@@ -4,13 +4,15 @@ ENT.PrintName = "Food"
 ENT.Spawnable = true
 ENT.Category = "Forsakened"
 ENT.UseCD = 0
+local math, table, Color = math, table, Color
 -- format: multiline
 local FoodModels = {
 	"models/props_junk/garbage_milkcarton002a.mdl",
 	"models/props_junk/garbage_glassbottle003a.mdl",
 	"models/props_junk/garbage_glassbottle002a.mdl",
 	"models/props_junk/garbage_takeoutcarton001a.mdl",
-	"models/props_junk/watermelon01.mdl",
+	"models/props_junk/garbage_metalcan001a.mdl",
+	"models/props_junk/garbage_metalcan002a.mdl",
 	"models/props_junk/PopCan01a.mdl"
 }
 
@@ -51,10 +53,13 @@ function ENT:Use(ply)
 
 	if ply:GetAlalnState("hunger") <= 90 then
 		ply:AddAlalnState("hunger", math.random(15, 25))
-		--ply:ChatPrint("You eated food, now your hunger is " .. math.Round(ply:GetAlalnState("hunger"), 0) .. ".")
-		BetterChatPrint(ply, "You eated food, now your hunger is " .. math.Round(ply:GetAlalnState("hunger"), 0) .. ".", color_green)
+		--ply:ChatPrint("You ate food, now your hunger is " .. math.Round(ply:GetAlalnState("hunger"), 0) .. ".")
+		BetterChatPrint(ply, "You ate food, now your hunger is " .. math.Round(ply:GetAlalnState("hunger"), 0) .. ".", color_green)
 		ply:EmitSound("npc/barnacle/barnacle_gulp" .. math.random(1, 2) .. ".wav", 55, math.random(90, 110))
 		ply:AddAlalnState("score", 0.3)
+		if ply:Health() < ply:GetMaxHealth() * 0.75 then
+			ply:SetHealth(ply:Health() + math.random(5, 15))
+		end
 		self:Remove()
 	else
 		BetterChatPrint(ply, "You are fed.", color_yellow)

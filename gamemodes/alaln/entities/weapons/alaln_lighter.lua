@@ -8,7 +8,7 @@ else
 	SWEP.PrintName = "Lighter"
 	SWEP.Purpose = "It's your trusty lighter. There are many lighters like this in the world, but this is the one that can save your life."
 	SWEP.Instructions = "LMB to open/close lighter,\nRMB to ignite prop/entity you're looking at.\n\nThe engraving on the lighter says 'Do not put an open lighter in your pocket!'"
-	SWEP.Category = "Forsakened"
+	SWEP.Category = "! Forsakened"
 	SWEP.Slot = 0
 	SWEP.SlotPos = 0
 	SWEP.BobScale = -2
@@ -16,49 +16,69 @@ else
 	SWEP.DrawAmmo = false
 	SWEP.DrawSecondaryAmmo = false
 	SWEP.DrawCrosshair = false
-	SWEP.ViewModelFOV = 77
+	SWEP.ViewModelPositionOffset = Vector(-10, 0, 0)
+	SWEP.ViewModelAngleOffset = Angle(0, 0, 0)
+	SWEP.ViewModelFOV = 120
 	SWEP.IconOverride = "editor/env_firesource"
 	function SWEP:DrawWeaponSelection(x, y, wide, tall, alpha)
-		if not PotatoMode:GetBool() then
-			if not IsValid(DrawModel) then
-				DrawModel = ClientsideModel(self.WorldModel, RENDER_GROUP_OPAQUE_ENTITY)
-				DrawModel:SetNoDraw(true)
-			else
-				DrawModel:SetModel(self.WorldModel)
-				local vec = Vector(24, 24, 24)
-				local ang = Vector(-24, -24, -24):Angle()
-				cam.Start3D(vec, ang, 20, x, y + 35, wide, tall, 5, 4096)
-				cam.IgnoreZ(true)
-				render.SuppressEngineLighting(true)
-				render.SetLightingOrigin(self:GetPos())
-				render.ResetModelLighting(50 / 255, 50 / 255, 50 / 255)
-				render.SetColorModulation(1, 1, 1)
-				render.SetBlend(255)
-				render.SetModelLighting(4, 1, 1, 1)
-				DrawModel:SetRenderAngles(Angle(0, RealTime() * 30 % 360, 0))
-				DrawModel:DrawModel()
-				DrawModel:SetRenderAngles()
-				render.SetColorModulation(1, 1, 1)
-				render.SetBlend(1)
-				render.SuppressEngineLighting(false)
-				cam.IgnoreZ(false)
-				cam.End3D()
-			end
+		--if not PotatoMode:GetBool() then
+		if not IsValid(DrawModel) then
+			DrawModel = ClientsideModel(self.WorldModel, RENDER_GROUP_OPAQUE_ENTITY)
+			DrawModel:SetNoDraw(true)
+		else
+			DrawModel:SetModel(self.WorldModel)
+			local vec = Vector(24, 24, 24)
+			local ang = Vector(-24, -24, -24):Angle()
+			cam.Start3D(vec, ang, 20, x, y + 35, wide, tall, 5, 4096)
+			cam.IgnoreZ(true)
+			render.SuppressEngineLighting(true)
+			render.SetLightingOrigin(self:GetPos())
+			render.ResetModelLighting(50 / 255, 50 / 255, 50 / 255)
+			render.SetColorModulation(1, 1, 1)
+			render.SetBlend(255)
+			render.SetModelLighting(4, 1, 1, 1)
+			DrawModel:SetRenderAngles(Angle(0, RealTime() * 30 % 360, 0))
+			DrawModel:DrawModel()
+			DrawModel:SetRenderAngles()
+			render.SetColorModulation(1, 1, 1)
+			render.SetBlend(1)
+			render.SuppressEngineLighting(false)
+			cam.IgnoreZ(false)
+			cam.End3D()
 		end
 
+		--end
 		self:PrintWeaponInfo(x + wide + 20, y + tall * 0.95, alpha)
 	end
 
 	-- Tried to make viewmodel like in The Forest
-	function SWEP:CalcViewModelView(ViewModel, OldEyePos, OldEyeAng, EyePos, EyeAng)
+	--[[function SWEP:CalcViewModelView(ViewModel, OldEyePos, OldEyeAng, EyePos, EyeAng)
 		local ply = LocalPlayer()
-		if not (IsValid(ply) or ply:Alive()) or ply:GetMoveType() == MOVETYPE_NOCLIP or ply:GetNoDraw() then return end
+		if not (IsValid(ply) or ply:Alive()) or ply:GetMoveType() == MOVETYPE_NOCLIP or ply:GetNoDraw() then return pos, ang end
 		local eye = ply:GetAttachment(ply:LookupAttachment("eyes"))
 		local sitvec = Vector(0, 0, ply:KeyDown(IN_DUCK) and 2.5 or 2)
 		local eyeang = eye.Ang
 		--eyeang.x = 30 -- I hate nmrih viewmodels
 		local vm_origin, vm_angles = EyePos + sitvec, eyeang
 		return vm_origin, vm_angles
+	end]]
+	local Crouched = 0
+	function SWEP:CalcViewModelView(vm, oldpos, oldang, pos, ang)
+		local owner = self:GetOwner()
+		if not IsValid(owner) then return pos, ang end
+		if owner:KeyDown(IN_DUCK) then
+			Crouched = math.Clamp(Crouched + .05, 0, 2)
+		else
+			Crouched = math.Clamp(Crouched - .05, 0, 2)
+		end
+
+		local forward, right, up = self.ViewModelPositionOffset.x, self.ViewModelPositionOffset.y, self.ViewModelPositionOffset.z + Crouched
+		local angs = owner:EyeAngles()
+		--ang.pitch = -ang.pitch
+		ang:RotateAroundAxis(ang:Forward(), self.ViewModelAngleOffset.pitch)
+		ang:RotateAroundAxis(ang:Right(), self.ViewModelAngleOffset.roll)
+		ang:RotateAroundAxis(ang:Up(), self.ViewModelAngleOffset.yaw)
+		return pos + angs:Forward() * forward + angs:Right() * right + angs:Up() * up, ang
 	end
 end
 
@@ -162,7 +182,7 @@ function SWEP:SecondaryAttack()
 
 	local allowedmats = {MAT_ANTLION, MAT_BLOODYFLESH, MAT_FLESH, MAT_ALIENFLESH, MAT_FOLIAGE, MAT_GRASS, MAT_WOOD}
 	-- ignite props/npcs
-	if trace.Hit and IsValid(trace.Entity) and not trace.Entity:IsWorld() and allowedmats[trace.MatType] and not trace.Entity:IsOnFire() and trace.Entity:WaterLevel() < 1 then -- table.HasValue(allowedmats, trace.MatType)
+	if trace.Hit and IsValid(trace.Entity) and not trace.Entity:IsWorld() and table.HasValue(allowedmats, trace.MatType) and not trace.Entity:IsOnFire() and trace.Entity:WaterLevel() < 1 then -- table.HasValue(allowedmats, trace.MatType)
 		local vm = ply:GetViewModel()
 		if IsValid(vm) then vm:SendViewModelMatchingSequence(vm:LookupSequence("reach_out_start")) end
 		self:SetHoldType(self.IgniteHoldType)
@@ -199,7 +219,7 @@ function SWEP:ToggleLighter()
 		self:SendWeaponAnim(ACT_VM_HOLSTER)
 		vm:StopParticles()
 		timer.Simple(0.8, function() if IsValid(self) then self:SetNWBool("Light", false) end end)
-		timer.Simple(0.3, function() if IsValid(self) and IsValid(vm) and self:GetNWBool("Light", false) == true then vm:SetNoDraw(true) end end)
+		timer.Simple(0.4, function() if IsValid(self) and IsValid(vm) and self:GetNWBool("Light", false) == true then vm:SetNoDraw(true) end end)
 		self:SetHoldType(self.HoldTypeOff)
 		self:Holster()
 	else
@@ -208,7 +228,7 @@ function SWEP:ToggleLighter()
 		self:SendWeaponAnim(ACT_VM_DRAW)
 		self:SetNWBool("Light", true)
 		timer.Simple(self:SequenceDuration(), function() if IsValid(self) then self:SendWeaponAnim(ACT_VM_IDLE) end end)
-		timer.Simple(0.4, function() if IsValid(self) and IsValid(vm) and self:GetNWBool("Light", false) == true then vm:SetNoDraw(false) end end)
+		if IsValid(self) and IsValid(vm) and self:GetNWBool("Light", false) == true then vm:SetNoDraw(false) end
 		self:SetHoldType(self.HoldType)
 		self:Deploy()
 	end

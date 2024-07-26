@@ -1,5 +1,6 @@
+local hook_Add, math = hook.Add, math
 -- antibhop & sprint
-hook.Add("OnPlayerHitGround", "alaln-antibhop", function(ply, water, floater, speed)
+hook_Add("OnPlayerHitGround", "alaln-antibhop", function(ply, water, floater, speed)
 	if not IsValid(ply) or not ply:Alive() then return end
 	local vel = ply:GetVelocity()
 	vel.z = -5
@@ -7,24 +8,27 @@ hook.Add("OnPlayerHitGround", "alaln-antibhop", function(ply, water, floater, sp
 	--if ply:GetAlalnState("stamina") > 25 then ply:AddAlalnState("stamina", -5) end
 end)
 
-hook.Add("Move", "alaln-sprint", function(ply, mv)
+-- movement speed calculations
+hook_Add("Move", "alaln-sprint", function(ply, mv)
 	if not IsValid(ply) or not ply:Alive() then return end
 	if not ply.CurrentWalk then ply.CurrentWalk = 1 end
 	if not ply.CurrentSprint then ply.CurrentSprint = ply:GetWalkSpeed() end
-	local walking = ply:KeyDown(IN_FORWARD)
-	local notforward = not ply:KeyDown(IN_FORWARD) and (ply:KeyDown(IN_MOVELEFT) or ply:KeyDown(IN_MOVERIGHT) or ply:KeyDown(IN_BACK))
-	local staminamul = math.Clamp(ply:GetAlalnState("stamina") / 50, 0.6, 1)
-	local armormul = ply:Armor() >= 1 and 0.95 or 1
+	local walking, notforward = ply:KeyDown(IN_FORWARD), not ply:KeyDown(IN_FORWARD) and (ply:KeyDown(IN_MOVELEFT) or ply:KeyDown(IN_MOVERIGHT) or ply:KeyDown(IN_BACK))
+	local staminamul, classmul = math.Clamp(ply:GetAlalnState("stamina") / 50, 0.6, 1.5), ply:GetAlalnState("class") == "Faster" and 1.15 or 1
+	local armormul, armormuljump = (ply:GetNWBool("HasArmor", false) and 0.95 or 1), (ply:GetNWBool("HasArmor", false) and 0.8 or 1)
 	if walking and not notforward then
-		ply.CurrentWalk = math.Clamp(ply.CurrentWalk + 3, 5, 140 * armormul * staminamul)
+		ply.CurrentWalk = math.Clamp(ply.CurrentWalk + 3, 5, 140 * classmul * armormul * staminamul)
 	elseif not walking and notforward then
-		ply.CurrentWalk = math.Clamp(ply.CurrentWalk + 2, 5, 90 * armormul * staminamul)
+		ply.CurrentWalk = math.Clamp(ply.CurrentWalk + 2, 5, 90 * classmul * armormul * staminamul)
 	else
 		ply.CurrentWalk = 1
 	end
 
+	ply:SetJumpPower(200 * armormuljump)
+	ply:SetSlowWalkSpeed(ply:GetWalkSpeed() * 0.8 * armormuljump)
+	ply:SetCrouchedWalkSpeed(ply:GetWalkSpeed() * 0.5 * armormuljump)
 	if walking and ply:IsSprinting() then
-		ply.CurrentSprint = math.Clamp(ply.CurrentSprint + 4, ply:GetWalkSpeed(), 280 * armormul * staminamul)
+		ply.CurrentSprint = math.Clamp(ply.CurrentSprint + 4, ply:GetWalkSpeed(), 280 * classmul * armormul * staminamul)
 	else
 		ply.CurrentSprint = ply:GetWalkSpeed() * armormul
 	end
@@ -36,8 +40,8 @@ end)
 -- toggle crouch
 if CLIENT then
 	local induck = false
-	hook.Add("PlayerBindPress", "alaln-toggleduck", function(ply, bind, pressed) if string.find(bind, "duck") then return true end end)
-	hook.Add("PlayerButtonDown", "alaln-toggleduck", function(ply, button)
+	hook_Add("PlayerBindPress", "alaln-toggleduck", function(ply, bind, pressed) if string.find(bind, "duck") then return true end end)
+	hook_Add("PlayerButtonDown", "alaln-toggleduck", function(ply, button)
 		if button == input.GetKeyCode(input.LookupBinding("+duck")) and IsFirstTimePredicted() then
 			induck = not induck
 			if not induck then ply.crouchcd = CurTime() + 0.7 end
@@ -45,7 +49,7 @@ if CLIENT then
 		end
 	end)
 
-	hook.Add("CreateMove", "alaln-toggleduck", function(cmd)
+	hook_Add("CreateMove", "alaln-toggleduck", function(cmd)
 		local ply = LocalPlayer()
 		if induck then
 			LocalPlayer():SetDuckSpeed(0.1)
@@ -66,7 +70,7 @@ local notallowedmv = {
 	[MOVETYPE_OBSERVER] = true
 }
 
-hook.Add("SetupMove", "alaln-overridemovement", function(ply, mv, cmd)
+hook_Add("SetupMove", "alaln-overridemovement", function(ply, mv, cmd)
 	local movetype = ply:GetMoveType()
 	if not ply:Alive() or notallowedmv[movetype] then return end
 	local pl = ply:GetTable()
@@ -100,7 +104,7 @@ hook.Add("SetupMove", "alaln-overridemovement", function(ply, mv, cmd)
 end)
 
 -- player animations
-hook.Add("CalcMainActivity", "alaln-playeranims", function(ply, vel)
+hook_Add("CalcMainActivity", "alaln-playeranims", function(ply, vel)
 	local plyvel = vel:Length2D()
 	local wep = ply:GetActiveWeapon()
 	local unarmed = (IsValid(wep) and wep:GetHoldType() == "normal") or not IsValid(wep)
@@ -119,7 +123,7 @@ hook.Add("CalcMainActivity", "alaln-playeranims", function(ply, vel)
 	end
 end)
 
-hook.Add("PlayerUse", "alaln-useanims", function(ply, ent) if IsValid(ply) and ply:Alive() and ply:IsPlayer() then ply:DoAnimationEvent(ACT_GMOD_GESTURE_ITEM_GIVE) end end)
+hook_Add("PlayerUse", "alaln-useanims", function(ply, ent) if IsValid(ply) and ply:Alive() and ply:IsPlayer() then ply:DoAnimationEvent(ACT_GMOD_GESTURE_ITEM_GIVE) end end)
 function GM:PlayerStepSoundTime(ply, iType, bWalking)
 	local fStepTime = 350
 	local fMaxSpeed = ply:GetMaxSpeed()
@@ -143,16 +147,17 @@ function GM:PlayerStepSoundTime(ply, iType, bWalking)
 end
 
 -- footsteps
-hook.Add("PlayerFootstep", "alaln-plyfootstep", function(ply, pos, foot, sound, volume, rf)
+hook_Add("PlayerFootstep", "alaln-plyfootstep", function(ply, pos, foot, sound, volume, rf)
 	if not (IsValid(ply) or ply:Alive()) then return true end
-	-- that screenshake thing works on near player ONLY ON SERVER (wtf?)
-	-- on client this would shake screen for all player (wtf???)
-	--if SERVER then util.ScreenShake(ply:GetPos(), 0.1, 0.1, 1, 0) end
-	if ply:WaterLevel() > 1 then return true end
-	local vbs = math.Round(ply:GetVelocity():LengthSqr() / 60000, 1) or 0.3 -- returns ~0.3 on walking and ~0.7 on running
-	local punchang = Angle(vbs, math.Rand(-vbs, vbs), math.Rand(-vbs, vbs))
-	ply:BetterViewPunch(punchang)
-	if ply:GetMoveType() == MOVETYPE_LADDER then ply:BetterViewPunch(AngleRand(-5, 5)) end
+	if CLIENT and ply == LocalPlayer() then
+		if ply:WaterLevel() > 1 then return true end
+		local vbs = math.Round(ply:GetVelocity():LengthSqr() / 20000, 1) or 0.4
+		local punchang = Angle(vbs, math.Rand(-vbs, vbs), math.Rand(-vbs, vbs))
+		ply:BetterViewPunch(punchang)
+		if ply:GetMoveType() == MOVETYPE_LADDER then ply:BetterViewPunch(AngleRand(-5, 5)) end
+		-- util.ScreenShake(ply:GetPos(), 0.1, 0.1, 1, 0)
+	end
+
 	if (CLIENT and ply == LocalPlayer()) or not IsValid(ply) then return end
 	-- server only part
 	if ply:Armor() < 1 then ply:EmitSound("npc/footsteps/hardboot_generic" .. math.random(1, 6) .. ".wav", (ply:KeyDown(IN_DUCK) or ply:KeyDown(IN_WALK)) and 40 or 60, math.random(90, 110)) end

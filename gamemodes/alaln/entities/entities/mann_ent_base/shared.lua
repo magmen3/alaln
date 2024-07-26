@@ -9,6 +9,7 @@ ENT.ImpactSound = "Drywall.ImpactHard"
 ENT.SecondSound = ""
 ENT.Material = ""
 ENT.Scale = 1
+local math, Color, AngleRand = math, Color, AngleRand
 ENT.Color = Color(200, 200, 200, 255)
 -- ENT.Skin		= ""
 -- ENT.Sequence	= ""
@@ -58,8 +59,8 @@ if SERVER then
 
 	function ENT:PhysicsCollide(data, ent)
 		if data.DeltaTime > .1 then
-			self:EmitSound(self.ImpactSound, math.Clamp(data.Speed / 3, 20, 65), math.random(95, 105))
-			if self.SecondSound then sound.Play(self.SecondSound, self:GetPos(), math.Clamp(data.Speed / 3, 20, 65), math.random(95, 105)) end
+			self:EmitSound(self.ImpactSound, math.Clamp(data.Speed / 3, 20, 85), math.random(95, 105))
+			if self.SecondSound then sound.Play(self.SecondSound, self:GetPos(), math.Clamp(data.Speed / 3, 20, 85), math.random(95, 105)) end
 			self:GetPhysicsObject():SetVelocity(self:GetPhysicsObject():GetVelocity() * .6)
 		end
 	end

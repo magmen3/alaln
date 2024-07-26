@@ -59,7 +59,7 @@ if CLIENT then
 	end
 
 	function SWEP:DrawWeaponSelection(x, y, wide, tall, alpha)
-		if not PotatoMode:GetBool() then
+		--if not PotatoMode:GetBool() then
 			if not IsValid(DrawModel) then
 				if self.VModelForSelector then
 					DrawModel = ClientsideModel(self.ViewModel, RENDER_GROUP_OPAQUE_ENTITY)
@@ -78,23 +78,23 @@ if CLIENT then
 				local vec = Vector(55, 55, 55)
 				local ang = Vector(-48, -48, -48):Angle()
 				cam.Start3D(vec, ang, 20, x, y + 35, wide, tall, 5, 4096)
-				cam.IgnoreZ(true)
-				render.SuppressEngineLighting(true)
-				render.SetLightingOrigin(self:GetPos())
-				render.ResetModelLighting(50 / 255, 50 / 255, 50 / 255)
-				render.SetColorModulation(1, 1, 1)
-				render.SetBlend(255)
-				render.SetModelLighting(4, 1, 1, 1)
-				DrawModel:SetRenderAngles(Angle(0, RealTime() * 30 % 360, 0))
-				DrawModel:DrawModel()
-				DrawModel:SetRenderAngles()
-				render.SetColorModulation(1, 1, 1)
-				render.SetBlend(1)
-				render.SuppressEngineLighting(false)
-				cam.IgnoreZ(false)
+					cam.IgnoreZ(true)
+					render.SuppressEngineLighting(true)
+					render.SetLightingOrigin(self:GetPos())
+					render.ResetModelLighting(50 / 255, 50 / 255, 50 / 255)
+					render.SetColorModulation(1, 1, 1)
+					render.SetBlend(255)
+					render.SetModelLighting(4, 1, 1, 1)
+					DrawModel:SetRenderAngles(Angle(0, RealTime() * 30 % 360, 0))
+					DrawModel:DrawModel()
+					DrawModel:SetRenderAngles()
+					render.SetColorModulation(1, 1, 1)
+					render.SetBlend(1)
+					render.SuppressEngineLighting(false)
+					cam.IgnoreZ(false)
 				cam.End3D()
 			end
-		end
+		--end
 
 		self:PrintWeaponInfo(x + wide + 20, y + tall * 0.95, alpha)
 	end

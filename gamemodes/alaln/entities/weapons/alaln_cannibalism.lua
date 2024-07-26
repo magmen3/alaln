@@ -1,7 +1,7 @@
 AddCSLuaFile()
 SWEP.Base = "alaln_base"
 SWEP.PrintName = "Claws"
-SWEP.Category = "Forsakened"
+SWEP.Category = "! Forsakened"
 SWEP.Purpose = "Kill and eat other people."
 SWEP.Instructions = "LMB/RMB to attack and eat people."
 SWEP.Slot = 0
@@ -14,7 +14,9 @@ SWEP.Spawnable = true
 SWEP.ViewModel = Model("models/weapons/v_models/v_demhands.mdl")
 SWEP.WorldModel = ""
 SWEP.DrawWorldModel = false
-SWEP.ViewModelFOV = 70
+SWEP.ViewModelPositionOffset = Vector(-12, -1, 1)
+SWEP.ViewModelAngleOffset = Angle(-1, 0, 0)
+SWEP.ViewModelFOV = 120
 SWEP.UseHands = true
 SWEP.Primary.ClipSize = -1
 SWEP.Primary.DefaultClip = -1
@@ -28,20 +30,29 @@ SWEP.Secondary.Ammo = "none"
 SWEP.Damage = math.random(24, 32)
 SWEP.DamageType = DMG_SLASH
 SWEP.HitDistance = 110
-SWEP.HitRate = 0.9
+SWEP.HitRate = 0.4
 SWEP.HitSound = {"physics/flesh/flesh_squishy_impact_hard1.wav", "physics/flesh/flesh_squishy_impact_hard2.wav", "physics/flesh/flesh_squishy_impact_hard3.wav", "physics/flesh/flesh_squishy_impact_hard4.wav"}
 SWEP.SwingSound = Sound("npc/fast_zombie/claw_miss2.wav")
 SWEP.Droppable = false
 if CLIENT then
 	SWEP.WepSelectIcon = surface.GetTextureID("vgui/hud/alaln_fists")
-	function SWEP:CalcViewModelView(ViewModel, OldEyePos, OldEyeAng, EyePos, EyeAng)
-		local ply = LocalPlayer()
-		if not (IsValid(ply) or ply:Alive()) or ply:GetMoveType() == MOVETYPE_NOCLIP or ply:GetNoDraw() then return end
-		local eye = ply:GetAttachment(ply:LookupAttachment("eyes"))
-		local sitvec = Vector(0, 0, ply:KeyDown(IN_DUCK) and 2.5 or 2)
-		local eyeang = eye.Ang
-		local vm_origin, vm_angles = EyePos + sitvec, eyeang
-		return vm_origin, vm_angles
+
+	local Crouched = 0
+	function SWEP:CalcViewModelView(vm, oldpos, oldang, pos, ang)
+		local owner = self:GetOwner()
+		if not IsValid(owner) then return pos, ang end
+		if owner:KeyDown(IN_DUCK) then
+			Crouched = math.Clamp(Crouched + .05, 0, 2)
+		else
+			Crouched = math.Clamp(Crouched - .05, 0, 2)
+		end
+		local forward, right, up = self.ViewModelPositionOffset.x, self.ViewModelPositionOffset.y, self.ViewModelPositionOffset.z + Crouched
+		local angs = owner:EyeAngles()
+		--ang.pitch = -ang.pitch
+		ang:RotateAroundAxis(ang:Forward(), self.ViewModelAngleOffset.pitch)
+		ang:RotateAroundAxis(ang:Right(), self.ViewModelAngleOffset.roll)
+		ang:RotateAroundAxis(ang:Up(), self.ViewModelAngleOffset.yaw)
+		return pos + angs:Forward() * forward + angs:Right() * right + angs:Up() * up, ang
 	end
 
 	local color_red = Color(180, 0, 0)
@@ -86,6 +97,12 @@ function SWEP:PrimaryAttack()
 			self.Anim = 1
 		end
 	end
+	
+	if owner:OnGround() then
+		owner:SetVelocity(owner:GetAimVector() * 150)
+	else
+		owner:SetVelocity(owner:GetAimVector() * 50)
+	end
 
 	owner:SetAnimation(PLAYER_ATTACK1)
 	self:SetNextPrimaryFire(CurTime() + self.HitRate)
@@ -110,6 +127,7 @@ local mattypes = {
 
 function SWEP.HitWait(self)
 	local owner = self:GetOwner()
+	if not IsValid(owner) then return end
 	local tr = util.TraceHull({
 		start = owner:GetShootPos(),
 		endpos = owner:GetShootPos() + owner:GetAimVector() * self.HitDistance,
@@ -121,6 +139,10 @@ function SWEP.HitWait(self)
 
 	if tr.Hit then
 		local trent = tr.Entity
+		if SERVER and not IsValid(trent) then
+			self:EmitSound("Flesh.ImpactHard", 55, math.random(90, 110))
+		end
+
 		if SERVER and string.find(trent:GetClass(), "player") then
 			trent:EmitSound(table.Random(self.HitSound), 150, 100)
 			if trent:Health() > self.Damage then
@@ -153,7 +175,10 @@ function SWEP.HitWait(self)
 						owner:AddAlalnState("hunger", math.random(1, 10))
 					elseif owner:GetAlalnState("hunger") >= 80 and owner:Health() < owner:GetMaxHealth() - 10 then
 						owner:SetHealth(owner:Health() + math.random(1, 5))
+						self:SetNextPrimaryFire(CurTime() + self.HitRate * 1.15)
+						self:SetNextSecondaryFire(CurTime() + self.HitRate * 1.15)
 					end
+					owner:AddAlalnState("crazyness", -math.random(1, 5))
 				end
 			else
 				if SERVER and string.find(trent:GetClass(), "prop_ragdoll") and mattypes[trent:GetMaterialType()] then
@@ -161,15 +186,20 @@ function SWEP.HitWait(self)
 					if trent:GetMaterial() ~= "models/zombie_fast/fast_zombie_sheet" then
 						trent:SetMaterial("models/zombie_fast/fast_zombie_sheet", true)
 						trent:SetColor(corpse_clr)
+						self:SetNextPrimaryFire(CurTime() + self.HitRate * 2.5)
+						self:SetNextSecondaryFire(CurTime() + self.HitRate * 2.5)
 					else
 						owner:EmitSound("npc/barnacle/barnacle_gulp" .. math.random(1, 2) .. ".wav", 55, math.random(90, 110))
 						if owner:GetAlalnState("hunger") <= 95 then
 							owner:AddAlalnState("hunger", trent:GetPhysicsObject():GetMass() * 2)
-						elseif owner:GetAlalnState("hunger") >= 95 and owner:Health() < owner:GetMaxHealth() - 10 then
+						elseif owner:GetAlalnState("hunger") >= 95 and owner:Health() < owner:GetMaxHealth() + 10 then
 							owner:SetHealth(owner:Health() + trent:GetPhysicsObject():GetMass() * 1.5)
 						end
+						self:SetNextPrimaryFire(CurTime() + self.HitRate * 2.2)
+						self:SetNextSecondaryFire(CurTime() + self.HitRate * 2.2)
 
 						owner:AddAlalnState("score", math.random(1, 4))
+						owner:AddAlalnState("crazyness", -math.random(1, 5))
 						trent:Remove()
 					end
 				end

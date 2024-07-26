@@ -1,12 +1,15 @@
 AddCSLuaFile()
 SWEP.Base = "mann_melee_base"
 SWEP.PrintName = "Hatchet"
-SWEP.Instructions = "This is your trusty camping hatchet for survival in nature. Use it as you see fit.\n\nLMB to slash.\nRMB to stab.\nBackstabs do more damage."
-SWEP.Category = "Forsakened"
+SWEP.Purpose = "This is your trusty camping hatchet for survival in nature. Use it as you see fit."
+SWEP.Instructions = "LMB to slash,\nRMB to stab,\nBackstabs do more damage."
+SWEP.Category = "! Forsakened"
 SWEP.Spawnable = true
 SWEP.ViewModel = Model("models/weapons/tfa_nmrih/v_me_hatchet.mdl")
 SWEP.WorldModel = Model("models/weapons/tfa_nmrih/w_me_hatchet.mdl")
-SWEP.ViewModelFOV = 65
+SWEP.ViewModelFOV = 130
+SWEP.ViewModelPositionOffset = Vector(-18, 0, 0)
+SWEP.ViewModelAngleOffset = Angle(-3, 0, 0)
 SWEP.UseHands = true
 SWEP.HoldType = "melee"
 SWEP.MeleeHolsterSlot = 1
@@ -49,15 +52,22 @@ SWEP.ENT = "mann_ent_hatchet"
 SWEP.Droppable = true
 SWEP.IconOverride = "editor/ai_goal_police"
 if CLIENT then
+	local Crouched = 0
 	-- tried to make viewmodel like in The Forest
-	function SWEP:CalcViewModelView(ViewModel, OldEyePos, OldEyeAng, EyePos, EyeAng)
+	--[[function SWEP:CalcViewModelView(ViewModel, OldEyePos, OldEyeAng, EyePos, EyeAng)
 		local ply = LocalPlayer()
-		if not (IsValid(ply) or ply:Alive()) or ply:GetMoveType() == MOVETYPE_NOCLIP or ply:GetNoDraw() then return end
+		if not (IsValid(ply) or ply:Alive()) or ply:GetMoveType() == MOVETYPE_NOCLIP or ply:GetNoDraw() then return pos, ang end
+		if self:GetOwner():KeyDown(IN_DUCK) then
+			Crouched = math.Clamp(Crouched + .1, 1.5, 6)
+		else
+			Crouched = math.Clamp(Crouched - .1, 1.5, 6)
+		end
+
 		local eye = ply:GetAttachment(ply:LookupAttachment("forward"))
-		local sitvec = Vector(0, 0, ply:KeyDown(IN_DUCK) and 0.5 or 0)
+		local sitvec = Vector(0, 0, Crouched)
 		local vm_origin, vm_angles = EyePos + sitvec, eye.Ang + Angle(0, -5, 0)
 		return vm_origin, vm_angles
-	end
+	end]]
 
 	function SWEP:DrawWorldModel()
 		if self:GetOwner():IsValid() then

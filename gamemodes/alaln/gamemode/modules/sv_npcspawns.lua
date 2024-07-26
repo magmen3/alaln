@@ -36,8 +36,8 @@ local function spawnNPC()
 		snpc:Spawn()
 		print(snpc.PrintName or "none", snpc:GetClass() or "none")
 		npcCount = npcCount + 1
-		timer.Create("alaln-npcremove-" .. snpc:EntIndex(), 75, 1, function()
-			if not IsValid(snpc) or snpc:GetClass() == "alaln_garbage" then return end
+		timer.Create("alaln-npcremove-" .. snpc:EntIndex(), 85, 1, function()
+			if not IsValid(snpc) then return end
 			snpc:Remove()
 		end)
 	end

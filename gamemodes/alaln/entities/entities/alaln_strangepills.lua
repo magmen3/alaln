@@ -4,7 +4,8 @@ ENT.PrintName = "Strange Pills"
 ENT.Spawnable = true
 ENT.Category = "Forsakened"
 ENT.UseCD = 0
-local color_pills = Color(175, 165, 65)
+local math, Color = math, Color
+local color_pills = Color(110, 110, 0)
 function ENT:Initialize()
 	if not SERVER then return end
 	self:SetModel(Model("models/vj_cofr/aom/w_medkit.mdl"))
@@ -36,15 +37,16 @@ local color_red = Color(165, 0, 0)
 function ENT:Use(ply)
 	if CLIENT or self.UseCD > CurTime() then return end
 	self.UseCD = CurTime() + 1
-	if math.random(1, 2) == 1 then
+	local rnd = math.random(1, 2)
+	if rnd == 1 then
 		for i = 1, 4 do
 			ply:TakeDamage(math.random(2, 5), ply, ply)
 		end
 
 		BetterChatPrint(ply, "You feel yourself bad.", color_red)
-	else
+	elseif rnd == 2 and ply:Health() < ply:GetMaxHealth() then
 		for i = 1, 5 do
-			ply:SetHealth(ply:Health() + math.random(2, 5))
+			ply:SetHealth(ply:Health() + math.random(1, 5))
 		end
 
 		BetterChatPrint(ply, "You feel good.", color_green)

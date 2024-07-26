@@ -12,8 +12,9 @@ GM.Website = "loh"
 	6. Взять отсюда плавную камеру и сделать как в SCP:CB https://steamcommunity.com/sharedfiles/filedetails/?id=3166995133
 	7. Возможно починить баг с лестницами и хуллами с помощью этого аддо https://steamcommunity.com/sharedfiles/filedetails/?id=3233720748
 	8. Еще мб это https://steamcommunity.com/sharedfiles/filedetails/?id=3241813281
-	9. Рандомные звуки игроков???? Кашль там чиханье типо как на хмцд https://steamcommunity.com/sharedfiles/filedetails/?id=3245359152
+	9. Выполнить все то что в Forsaken.txt написано
 	10. Улучшенное третье лицо https://steamcommunity.com/sharedfiles/filedetails/?id=3246688602
+	11. https://steamcommunity.com/sharedfiles/filedetails/?id=3035102687 https://gamebanana.com/mods/181756 Снайперка
 ]]
 do
 	local convarflags = bit.bor(FCVAR_REPLICATED, FCVAR_NOTIFY)
@@ -22,6 +23,10 @@ do
 	CreateConVar("alaln_dark_light", 0, convarflags, "Enable darkest lighting in maps? (experimental, not recommended)", 0, 1)
 end
 
+hook.Remove("PlayerTick", "TickWidgets")
+hook.Remove("Think", "CheckSchedules")
+timer.Remove("HostnameThink")
+hook.Remove("LoadGModSave", "LoadGModSave")
 SBOXMode = GetConVar("alaln_sboxmode")
 local color_yellow = Color(255, 170, 0)
 local color_red = Color(165, 0, 0)
@@ -74,6 +79,7 @@ do
 				for i = 0, 63 do
 					engine.LightStyle(i, "b")
 				end
+				RunConsoleCommand("sv_skyname", "sky_borealis01")
 			else
 				render.RedownloadAllLightmaps(true, true)
 			end
@@ -81,7 +87,7 @@ do
 	end)
 end
 
---!! HL2 use sounds (probably should use PlayerUse hook for this)
+--!! HL2 use sounds (probably should use PlayerUse hook for this) -- Edit: nope, i shouldn't
 if SERVER then
 	hook.Add("FindUseEntity", "alaln-finduseent", function(ply, ent)
 		if not ply:KeyPressed(IN_USE) or ply:KeyDown(IN_ATTACK2) or not ply:Alive() then return end
@@ -89,6 +95,7 @@ if SERVER then
 			ply:EmitSound("HL2Player.Use")
 		else
 			timer.Simple(0, function()
+				if not IsValid(ply) then return end
 				if IsValid(ply:GetEntityInUse()) then
 					ply:EmitSound("HL2Player.Use")
 				else

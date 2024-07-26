@@ -1,7 +1,7 @@
 "alaln"
 {
 	"base"		 "base"
-	"title"		 "Forsakened BETA"
+	"title"		 "Forsakened: The Unholy Ressurection"
 	"category"	 "pve"
 	"menusystem" "1"
 	"version"	 "0.5"

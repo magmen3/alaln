@@ -1,12 +1,15 @@
 AddCSLuaFile()
 SWEP.Base = "mann_melee_base"
 SWEP.PrintName = "Claw Hammer"
-SWEP.Instructions = "PLACEHOLDER" --!!
-SWEP.Category = "Forsakened"
+SWEP.Purpose = "An old steel claw hammer, formerly someone's construction tool, is now your survival tool."
+SWEP.Instructions = "LMB to attack,\nRMB to nail an object/bolt a door,\nYou can only nail a item that is closely overlapping another surface."
+SWEP.Category = "! Forsakened"
 SWEP.Spawnable = true
 SWEP.ViewModel = Model("models/weapons/tfa_nmrih/v_tool_barricade.mdl")
 SWEP.WorldModel = Model("models/weapons/tfa_nmrih/w_tool_barricade.mdl")
-SWEP.ViewModelFOV = 65
+SWEP.ViewModelFOV = 110
+SWEP.ViewModelPositionOffset = Vector(-12, -1, 1)
+SWEP.ViewModelAngleOffset = Angle(-10, 0, -5)
 SWEP.UseHands = true
 SWEP.HoldType = "melee"
 SWEP.MeleeHolsterSlot = 1
@@ -42,6 +45,7 @@ SWEP.VModelForSelector = false
 SWEP.IdleAnim = "idle"
 SWEP.DeployAnim = "draw"
 SWEP.DeploySound = Sound("player/weapon_draw_0" .. math.random(1, 5) .. ".wav")
+SWEP.PitchMul = 1.05
 -- SWEP.WMPos 				= Vector(3.5, -1.5, -2.5)
 -- SWEP.WMAng 				= Angle(0, -60, 180)
 SWEP.ENT = "mann_ent_hammer"
@@ -49,12 +53,6 @@ SWEP.Droppable = true
 SWEP.IconOverride = "editor/ai_goal_police"
 game.AddDecal("alaln-naildecal", "decals/alaln_naildecal")
 do
-	local DoorClass = {"prop_door", "prop_door_rotating", "func_door", "func_door_rotating", "door", "func_breakable"}
-	local function IsDoor(ent)
-		local Class = ent:GetClass()
-		return DoorClass[Class] -- table.HasValue(DoorClass, Class)
-	end
-
 	local function BindObjects(ent1, pos1, ent2, pos2, power)
 		local Strength, CheckEnt, OtherEnt = 1, ent1, ent2
 		if CheckEnt:IsWorld() then
@@ -89,7 +87,7 @@ do
 				if self:CanNail(NewTr) then
 					if not NewTr.HitSky then NewEnt = NewTr.Entity end
 					if NewEnt and (IsValid(NewEnt) or NewEnt:IsWorld()) and not (NewEnt:IsPlayer() or NewEnt:IsNPC() or (NewEnt == Tr.Entity)) then
-						if IsDoor(Tr.Entity) then
+						if Tr.Entity:SDOIsDoor() then
 							if not IsFirstTimePredicted() then
 								self:DoBFSAnimation(self.SecondaryAnim)
 								owner:GetViewModel():SetPlaybackRate(self.SecondaryAnimRate or 1)
@@ -180,15 +178,22 @@ if CLIENT then
 		Circle(traceResult.HitPos:ToScreen().x, traceResult.HitPos:ToScreen().y, math.min(20, 5 / frac), 3)
 	end
 
+	local Crouched = 0
 	-- tried to make viewmodel like in The Forest
-	function SWEP:CalcViewModelView(ViewModel, OldEyePos, OldEyeAng, EyePos, EyeAng)
+	--[[function SWEP:CalcViewModelView(ViewModel, OldEyePos, OldEyeAng, EyePos, EyeAng)
 		local ply = LocalPlayer()
-		if not (IsValid(ply) or ply:Alive()) or ply:GetMoveType() == MOVETYPE_NOCLIP or ply:GetNoDraw() then return end
+		if not (IsValid(ply) or ply:Alive()) or ply:GetMoveType() == MOVETYPE_NOCLIP or ply:GetNoDraw() then return pos, ang end
+		if self:GetOwner():KeyDown(IN_DUCK) then
+			Crouched = math.Clamp(Crouched + .1, 1.5, 6)
+		else
+			Crouched = math.Clamp(Crouched - .1, 1.5, 6)
+		end
+
 		local eye = ply:GetAttachment(ply:LookupAttachment("forward"))
-		local sitvec = Vector(0, 0, ply:KeyDown(IN_DUCK) and 3 or 1.5)
+		local sitvec = Vector(0, 0, Crouched)
 		local vm_origin, vm_angles = EyePos + sitvec, eye.Ang + Angle(0, -2, 0)
 		return vm_origin, vm_angles
-	end
+	end]]
 
 	function SWEP:DrawWorldModel()
 		if self:GetOwner():IsValid() then

@@ -65,24 +65,25 @@ function surface.DrawArc(arc) -- Draw a premade arc.
 	end
 end
 
+local clr_circle = Color(150, 0, 0, 120)
+--local hudfontvsmall = "alaln-hudfontsmall"
 hook.Add("HUDPaint", "DrawUsablePrompt", function()
 	local useable = LocalPlayer():GetUseEntity()
 	if useable.IsProgressUsable and useable:IsProgressUsable() then
 		if useable:GetDrawProgress() and useable:GetUser() == LocalPlayer() and LocalPlayer():KeyDown(IN_USE) and CurTime() < useable:GetEndTime() then
-			surface.SetDrawColor(255, 255, 255)
+			surface.SetDrawColor(150, 0, 0, 120)
 			draw.NoTexture()
 			surface.DrawLine(ScrW() / 2, ScrH() / 2 - 32, ScrW() / 2, ScrH() / 2 - 23) -- without this, the top of the ring looks jittery and dumb. why? who knows
-			draw.Arc(ScrW() / 2, ScrH() / 2, 32, 10, -(((1 - math.abs((useable:GetEndTime() - CurTime()) / useable.TimeToUse)) * 360) - 90), 90, 3, color_white)
+			draw.Arc(ScrW() / 2, ScrH() / 2, 32, 10, -(((1 - math.abs((useable:GetEndTime() - CurTime()) / useable.TimeToUse)) * 360) - 90), 90, 3, clr_circle)
 		end
-
-		if useable:GetDrawKeyPrompt() then
-			surface.SetDrawColor(255, 255, 255, 255)
-			surface.SetMaterial(EMPTY_KEY)
+		--[[if useable:GetDrawKeyPrompt() then
+			surface.SetDrawColor(150, 0, 0, 60)
+			--surface.SetMaterial(EMPTY_KEY)
 			surface.DrawTexturedRect(ScrW() / 2 - 16, ScrH() / 2 - 16, 32, 32)
-			surface.SetFont("CloseCaption_Bold")
-			surface.SetTextColor(0, 0, 0)
-			surface.SetTextPos(ScrW() / 2 - 8, ScrH() / 2 - 14)
+			surface.SetFont(hudfontvsmall)
+			surface.SetTextColor(150, 0, 0)
+			surface.SetTextPos(ScrW() / 2 - 7, ScrH() / 2 - 14)
 			surface.DrawText("E")
-		end
+		end]]
 	end
 end)

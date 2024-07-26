@@ -56,7 +56,7 @@ if CLIENT then
 	local function Viewpunch(angle)
 		if not angle then return end
 		if ThirdPerson:GetBool() then return end
-		vp_punch_angle_velocity = vp_punch_angle_velocity + angle * 10
+		vp_punch_angle_velocity = vp_punch_angle_velocity + angle * 5
 	end
 
 	local plyMeta = FindMetaTable("Player")

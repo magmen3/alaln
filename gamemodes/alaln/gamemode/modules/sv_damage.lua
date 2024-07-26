@@ -1,3 +1,8 @@
+local painsounds = {
+	"vo/npc/male01/pain07.wav",
+	"vo/npc/male01/pain08.wav",
+	"vo/npc/male01/pain09.wav"
+}
 hook.Add("EntityTakeDamage", "alaln-enttakedamage", function(target, dmginfo)
 	if not target:IsPlayer() or (target:IsPlayer() and target:HasGodMode()) then return end
 	if dmginfo:GetDamageType() == DMG_BURN or target:IsOnFire() then
@@ -9,16 +14,26 @@ hook.Add("EntityTakeDamage", "alaln-enttakedamage", function(target, dmginfo)
 	local dmgpunch = dmginfo:GetDamage() * 0.6
 	target:BetterViewPunch(AngleRand(-dmgpunch, dmgpunch))
 	if dmginfo:GetDamageType() == 4 and dmginfo:GetDamage() >= 20 then dmginfo:ScaleDamage(0.85) end
-	if dmginfo:GetDamage() > 30 and dmginfo:IsFallDamage() then
-		if SERVER then util.ScreenShake(target:GetPos(), 1, 5, 5, 0) end
-		dmginfo:ScaleDamage(2)
-		if target:Armor() >= 1 then
-			target:EmitSound("physics/metal/metal_canister_impact_soft" .. math.random(1, 3) .. ".wav", 80, math.random(80, 95))
-			target:SetArmor(target:Armor() - dmginfo:GetDamage() * 0.6)
-		end
+	if dmginfo:GetDamage() > 30 then
+		if dmginfo:IsFallDamage() then
+			if SERVER then util.ScreenShake(target:GetPos(), 1, 5, 5, 0) end
+			dmginfo:ScaleDamage(2)
+			if target:Armor() >= 1 then
+				target:EmitSound("physics/metal/metal_canister_impact_soft" .. math.random(1, 3) .. ".wav", 80, math.random(80, 95))
+				target:SetArmor(target:Armor() - dmginfo:GetDamage() * 0.6)
+			end
 
-		target:BetterViewPunch(Angle(-50, 0, 0))
-		target:EmitSound("physics/body/body_medium_break4.wav", 100, math.random(90, 110))
+			target:BetterViewPunch(Angle(-50, 0, 0))
+			target:EmitSound("physics/body/body_medium_break4.wav", 100, math.random(90, 110))
+		end
+		if target:Alive() then
+			target:EmitSound(table.Random(painsounds), 120, math.random(90, 110))
+		end
+		if target:Alive() and target:GetNWBool("HasArmor", false) then
+			target:EmitSound("hl1/fvox/major_fracture.wav", 100, math.random(90, 110))
+		end
+	elseif dmginfo:GetDamage() <= 15 and target:Alive() and target:GetNWBool("HasArmor", false) then
+		target:EmitSound("hl1/fvox/minor_fracture.wav", 100, math.random(90, 110))
 	end
 
 	if dmginfo:IsExplosionDamage() and dmginfo:GetDamage() > 25 then

@@ -26,6 +26,7 @@ ENT.PartialUses = {
 	}
 }
 
+local math, table, Color = math, table, Color
 -- format: multiline
 local GarbageModels = {
 	"models/props_junk/garbage128_composite001a.mdl",
@@ -61,7 +62,7 @@ function ENT:IsProgressUsable()
 end
 
 if SERVER then
-	local GarbageLoot = {"alaln_food", "alaln_tranquilizator", "mann_ent_pm", "mann_ent_knife"}
+	local GarbageLoot = {"alaln_food", "alaln_tranquilizator", "mann_ent_pm", "mann_ent_knife", "alaln_strangepills"}
 	local upvec = Vector(0, 0, 24)
 	local color_green = Color(25, 225, 25)
 	function ENT:OnUseFinish(ply)
@@ -71,7 +72,7 @@ if SERVER then
 		ent:SetAngles(AngleRand(-64, 64))
 		ent:Spawn()
 		--self:EmitSound("physics/cardboard/cardboard_box_break1.wav", 75, math.random(95, 105))
-		BetterChatPrint(ply, "You finded " .. ent.PrintName or "something" .. ".", color_green)
+		BetterChatPrint(ply, "You found " .. ent.PrintName or "something" .. ".", color_green)
 		self.UseCD = CurTime() + 10
 	end
 

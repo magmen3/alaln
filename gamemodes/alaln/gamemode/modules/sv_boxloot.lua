@@ -8,9 +8,11 @@ ALALN_LootBoxTable = {
 	{"mann_ent_g17", 9},
 	{"mann_ent_hatchet", 16},
 	{"mann_ent_knife", 20},
+	{"mann_ent_hammer", 14},
 	{"mann_ent_pm", 10},
 	{"mann_ent_metalbat", 18},
 	{"mann_ent_sw686", 6},
+	{"alaln_flamethrower", 1},
 }
 
 ALALN_LootBoxModels = {
@@ -18,6 +20,15 @@ ALALN_LootBoxModels = {
 	["models/props_junk/wood_crate001a.mdl"] = true,
 	["models/props_junk/wood_crate001a_damaged.mdl"] = true,
 	["models/props_junk/wood_crate002a.mdl"] = true,
+	["models/props_junk/cardboard_box001a.mdl"] = true,
+	["models/props_junk/cardboard_box001b.mdl"] = true,
+	["models/props_junk/cardboard_box002a.mdl"] = true,
+	["models/props_junk/cardboard_box002b.mdl"] = true,
+	["models/props_junk/cardboard_box003a.mdl"] = true,
+	["models/props_junk/cardboard_box003b.mdl"] = true,
+	["models/props_lab/dogobject_wood_crate001a_damagedmax.mdl"] = true,
+	["models/props_c17/FurnitureDresser001a.mdl"] = true,
+	["models/props_c17/FurnitureDrawer001a.mdl"] = true
 }
 
 local function spawnLoot(ply, ent)
@@ -35,7 +46,7 @@ local function spawnLoot(ply, ent)
 		end
 
 		if math.random(1, 100) <= 10 then
-			for i = 1, 2 do
+			for i = 1, math.random(1, 3) do
 				local item = ents.Create(table.Random(ALALN_LootBoxTable)[1])
 				item:SetPos(ent:GetPos())
 				item:Spawn()
@@ -44,4 +55,8 @@ local function spawnLoot(ply, ent)
 	end
 end
 
-hook.Add("EntityTakeDamage", "alaln-lootboxes", function(ent, dmg) if ALALN_LootBoxModels[ent:GetModel()] and ent:Health() - dmg:GetDamage() <= 0 then spawnLoot(dmg:GetAttacker(), ent) end end)
+hook.Add("EntityTakeDamage", "alaln-lootboxes", function(ent, dmg)
+	if ALALN_LootBoxModels[ent:GetModel()] and ent:Health() - dmg:GetDamage() <= 0 then
+		spawnLoot(dmg:GetAttacker(), ent)
+	end
+end)

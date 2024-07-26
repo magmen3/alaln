@@ -9,13 +9,14 @@ SWEP.WorldModelPosition = Vector(5.5, -1.5, -1.5)
 SWEP.WorldModelAngle = Angle(180, 180, 0)
 SWEP.HolsterSlot = 2
 SWEP.Primary.DefaultClip = 3
+SWEP.Droppable = true
 if SERVER then
 	SWEP.Weight = 5
 	SWEP.AutoSwitchTo = false
 	SWEP.AutoSwitchFrom = false
 	SWEP.AdminOnly = true
 else
-	SWEP.Category = "Forsakened"
+	SWEP.Category = "! Forsakened"
 	SWEP.PrintName = "Flare Gun"
 	SWEP.Slot = 2
 	SWEP.SlotPos = 2
@@ -24,9 +25,13 @@ else
 	SWEP.DrawAmmo = false
 	SWEP.DrawSecondaryAmmo = false
 	SWEP.DrawCrosshair = false
-	SWEP.ViewModelFOV = 50
+	SWEP.ViewModelPositionOffset = Vector(-11, -0.5, 0)
+	SWEP.ViewModelAngleOffset = Angle(-5, 0, 0)
+	SWEP.ViewModelFOV = 110
 	SWEP.IconOverride = "editor/env_explosion"
 	SWEP.DrawWeaponInfoBox = true
+	SWEP.Author = ""
+	SWEP.Contact = ""
 	SWEP.Purpose = "PLACEHOLDER" --!!
 	SWEP.Instructions = "LMB to fire."
 	local color_red = Color(180, 0, 0)
@@ -50,8 +55,26 @@ else
 		end
 	end
 
+	local alpha_black = Color(25, 0, 0, 250)
+	function SWEP:PrintWeaponInfo(x, y, alpha)
+		if self.DrawWeaponInfoBox == false then return end
+		if self.InfoMarkup == nil then
+			local str
+			local title_color = "<color=185, 0, 0, 255>"
+			local text_color = "<color=165, 0, 0, 255>"
+			str = "<font=alaln-hudfontvsmall>"
+			if self.Purpose ~= "" then str = str .. title_color .. "Description:</color>\n" .. text_color .. self.Purpose .. "</color>\n\n" end
+			if self.Instructions ~= "" then str = str .. title_color .. "Instruction:</color>\n" .. text_color .. self.Instructions .. "</color>\n" end
+			str = str .. "</font>"
+			self.InfoMarkup = markup.Parse(str, 250)
+		end
+
+		draw.RoundedBox(5, x - 5, y - 6, 280, self.InfoMarkup:GetHeight() + 18, alpha_black)
+		self.InfoMarkup:Draw(x + 5, y + 5, nil, nil, 255)
+	end
+
 	function SWEP:DrawWeaponSelection(x, y, wide, tall, alpha)
-		if not PotatoMode:GetBool() then
+		--if not PotatoMode:GetBool() then
 			if not IsValid(DrawModel) then
 				DrawModel = ClientsideModel(self.WorldModel, RENDER_GROUP_OPAQUE_ENTITY)
 				DrawModel:SetNoDraw(true)
@@ -76,9 +99,27 @@ else
 				cam.IgnoreZ(false)
 				cam.End3D()
 			end
-		end
+		--end
 
 		self:PrintWeaponInfo(x + wide + 20, y + tall * 0.95, alpha)
+	end
+	
+	local Crouched = 0
+	function SWEP:CalcViewModelView(vm, oldpos, oldang, pos, ang)
+		local owner = self:GetOwner()
+		if not IsValid(owner) then return pos, ang end
+		if owner:KeyDown(IN_DUCK) then
+			Crouched = math.Clamp(Crouched + .05, 0, 2)
+		else
+			Crouched = math.Clamp(Crouched - .05, 0, 2)
+		end
+		local forward, right, up = self.ViewModelPositionOffset.x, self.ViewModelPositionOffset.y, self.ViewModelPositionOffset.z + Crouched
+		local angs = owner:EyeAngles()
+		--ang.pitch = -ang.pitch
+		ang:RotateAroundAxis(ang:Forward(), self.ViewModelAngleOffset.pitch)
+		ang:RotateAroundAxis(ang:Right(), self.ViewModelAngleOffset.roll)
+		ang:RotateAroundAxis(ang:Up(), self.ViewModelAngleOffset.yaw)
+		return pos + angs:Forward() * forward + angs:Right() * right + angs:Up() * up, ang
 	end
 
 	function SWEP:DrawWorldModel()

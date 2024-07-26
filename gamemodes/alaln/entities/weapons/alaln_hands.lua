@@ -4,15 +4,15 @@ SWEP.Base = "alaln_base"
 SWEP.Spawnable = true
 SWEP.UseHands = true
 SWEP.PrintName = "Hands"
-SWEP.Category = "Forsakened"
+SWEP.Category = "! Forsakened"
 SWEP.Purpose = "These are your hands, you can grab and drag objects with them, but you can't fight or defend yourself with them."
-SWEP.Instructions = "LMB to grab."
+SWEP.Instructions = "LMB to grab,\nRMB to grab with second hand when grabbing with LMB."
 SWEP.ViewModel = Model("models/weapons/c_arms_wbk_unarmed.mdl")
 SWEP.WorldModel = ""
 SWEP.DrawWorldModel = false
-SWEP.ViewModelPositionOffset = Vector(0, -1, -1)
-SWEP.ViewModelAngleOffset = Angle(0, 0, -1)
-SWEP.ViewModelFOV = 80
+SWEP.ViewModelPositionOffset = Vector(-3, 0, -1)
+SWEP.ViewModelAngleOffset = Angle(0, 2, -1)
+SWEP.ViewModelFOV = 120
 SWEP.BobScale = -2
 SWEP.SwayScale = -2
 SWEP.Primary.ClipSize = -1
@@ -26,7 +26,7 @@ SWEP.Secondary.Ammo = "none"
 SWEP.AutoSwitchTo = true
 SWEP.AutoSwitchFrom = true
 if CLIENT then SWEP.WepSelectIcon = surface.GetTextureID("vgui/hud/alaln_fists") end
-SWEP.IconOverride = "halflife/lab1_cmpm3000"
+SWEP.IconOverride = "editor/obsolete"
 SWEP.Slot = 0
 SWEP.SlotPos = 1
 SWEP.Droppable = false
@@ -198,15 +198,17 @@ function SWEP:Think()
 	end
 
 	if selftable.Drag and owner:GetPos():DistToSqr(selftable.Drag.Entity:GetPos()) > 9500 then selftable.Drag = nil end
-	if self.Drag then
+	if self.Drag and owner:KeyDown(IN_ATTACK2) then
 		self:SetHoldType("duel")
+	elseif self.Drag and not owner:KeyDown(IN_ATTACK2) then
+		self:SetHoldType("magic")
 	else
 		self:SetHoldType("normal")
 	end
 
 	if owner:KeyPressed(IN_JUMP) and owner:WaterLevel() < 2 and self.canWbkUseJumpAnim == true then
 		self.canWbkUseJumpAnim = false
-		if owner:IsSprinting() then
+		if owner:IsSprinting() and owner:KeyDown(IN_FORWARD) then
 			vm:SendViewModelMatchingSequence(vm:LookupSequence("WbkIdle_JumpRun"))
 		else
 			vm:SendViewModelMatchingSequence(vm:LookupSequence("WbkIdle_JumpStand"))
@@ -232,7 +234,7 @@ function SWEP:Think()
 			end
 		else
 			if owner:OnGround() then
-				if owner:IsSprinting() then
+				if owner:IsSprinting() and owner:KeyDown(IN_FORWARD) then
 					vm:SendViewModelMatchingSequence(vm:LookupSequence("WbKSprint"))
 					self:UpdateNextIdle()
 				else

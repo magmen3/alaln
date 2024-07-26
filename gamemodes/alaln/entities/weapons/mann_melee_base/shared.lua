@@ -23,7 +23,7 @@ AddCSLuaFile("client.lua")
 include("client.lua")
 SWEP.Base = "alaln_base"
 SWEP.PrintName = "Mann's Melee Weapon Base"
-SWEP.Category = "Forsakened"
+SWEP.Category = "! Forsakened"
 SWEP.Spawnable = false
 SWEP.AdminOnly = true
 SWEP.ViewModel = "models/weapons/v_knife.mdl"
@@ -78,6 +78,7 @@ SWEP.IdleAnim = "vm_knifeonly_idle"
 SWEP.DeployAnim = "vm_knifeonly_raise"
 SWEP.DeployAnimRate = 1
 SWEP.DeploySound = "player/weapon_draw_0" .. math.random(1, 5) .. ".wav"
+SWEP.PitchMul = 1
 -- SWEP.WMPos = Vector(2.5, -1, 0)
 -- SWEP.WMAng = Angle(80, -30, 180)
 SWEP.ENT = "mann_ent_base"
@@ -128,21 +129,43 @@ function SWEP:PrimaryAttack()
 	owner:SetAnimation(PLAYER_ATTACK1)
 	if self.SoundCL and CLIENT and owner ~= LocalPlayer() then
 		owner:EmitSound(self.Primary.Sound, 75, math.random(95, 105))
-	elseif not self.SoundCL then
+	elseif not self.SoundCL and SERVER then
 		owner:EmitSound(self.Primary.Sound, 75, math.random(95, 105))
 	end
 
 	owner:BetterViewPunch(self.PrimaryPunch)
 	self:DoBFSAnimation(self.PrimaryAnim)
 	owner:GetViewModel():SetPlaybackRate(self.PrimaryAnimRate or 1)
-	self:SetNextPrimaryFire(CurTime() + self.Primary.Delay)
-	self:SetNextSecondaryFire(CurTime() + self.Secondary.Delay)
+	local primdelay, secdelay = self.Primary.Delay, self.Secondary.Delay
+	if owner:GetAlalnState("class") == "Berserker" then
+		primdelay = primdelay * 0.7
+		secdelay = secdelay * 0.7
+	elseif owner:GetAlalnState("class") == "Gunslinger" then
+		primdelay = primdelay * 1.2
+		secdelay = secdelay * 1.2
+	end
+
+	self:SetNextPrimaryFire(CurTime() + primdelay)
+	self:SetNextSecondaryFire(CurTime() + secdelay)
+	local velmul = 1
+	if owner:GetAlalnState("class") == "Gunslinger" then
+		velmul = velmul * 0.6
+	elseif owner:GetAlalnState("class") == "Berserker" then
+		velmul = velmul * 1.3
+	end
+
+	if owner:OnGround() then
+		owner:SetVelocity(owner:GetAimVector() * 150 * velmul)
+	else
+		owner:SetVelocity(owner:GetAimVector() * 20)
+	end
+
 	if self.PrimaryTimer then
 		timer.Simple(self.PrimaryTimer, function()
 			if IsValid(self) then
 				self:SlashAttack()
-				self:SetNextPrimaryFire(CurTime() + self.Primary.Delay)
-				self:SetNextSecondaryFire(CurTime() + self.Secondary.Delay)
+				self:SetNextPrimaryFire(CurTime() + primdelay)
+				self:SetNextSecondaryFire(CurTime() + secdelay)
 			end
 		end)
 	else
@@ -163,7 +186,7 @@ function SWEP:SecondaryAttack()
 	owner:SetAnimation(PLAYER_ATTACK1)
 	if self.SoundCL and CLIENT and owner ~= LocalPlayer() then
 		owner:EmitSound(self.Secondary.Sound, 75, math.random(95, 105))
-	elseif not self.SoundCL then
+	elseif not self.SoundCL and SERVER then
 		owner:EmitSound(self.Secondary.Sound, 75, math.random(95, 105))
 	end
 
@@ -182,16 +205,38 @@ function SWEP:SecondaryAttack()
 		end)
 	end
 
+	local primdelay, secdelay = self.Primary.Delay, self.Secondary.Delay
+	if owner:GetAlalnState("class") == "Berserker" then
+		primdelay = primdelay * 0.7
+		secdelay = secdelay * 0.7
+	elseif owner:GetAlalnState("class") == "Gunslinger" then
+		primdelay = primdelay * 1.2
+		secdelay = secdelay * 1.2
+	end
+
 	owner:DoAnimationEvent(ACT_GMOD_GESTURE_MELEE_SHOVE_2HAND)
 	owner:GetViewModel():SetPlaybackRate(self.SecondaryAnimRate or 1)
-	self:SetNextPrimaryFire(CurTime() + self.Secondary.Delay)
-	self:SetNextSecondaryFire(CurTime() + self.Secondary.Delay)
+	self:SetNextPrimaryFire(CurTime() + secdelay)
+	self:SetNextSecondaryFire(CurTime() + secdelay)
+	local velmul = 1
+	if owner:GetAlalnState("class") == "Gunslinger" then
+		velmul = velmul * 0.6
+	elseif owner:GetAlalnState("class") == "Berserker" then
+		velmul = velmul * 1.3
+	end
+
+	if owner:OnGround() then
+		owner:SetVelocity(owner:GetAimVector() * 250 * velmul)
+	else
+		owner:SetVelocity(owner:GetAimVector() * 30)
+	end
+
 	if self.SecondaryTimer then
 		timer.Simple(self.SecondaryTimer, function()
 			if IsValid(self) then
 				self:StabAttack()
-				self:SetNextPrimaryFire(CurTime() + self.Secondary.Delay)
-				self:SetNextSecondaryFire(CurTime() + self.Secondary.Delay)
+				self:SetNextPrimaryFire(CurTime() + secdelay)
+				self:SetNextSecondaryFire(CurTime() + secdelay)
 			end
 		end)
 	else
@@ -201,15 +246,28 @@ end
 
 function SWEP:SlashAttack()
 	if CLIENT then return end
-	local ply = self:GetOwner()
+	local owner = self:GetOwner()
+	local velmul = 1
+	if owner:GetAlalnState("class") == "Gunslinger" then
+		velmul = velmul * 0.6
+	elseif owner:GetAlalnState("class") == "Berserker" then
+		velmul = velmul * 1.3
+	end
+
+	if owner:OnGround() then
+		owner:SetVelocity(owner:GetAimVector() * 250 * velmul)
+	else
+		owner:SetVelocity(owner:GetAimVector() * 40)
+	end
+
 	self:UpdateNextIdle()
-	ply:BetterViewPunch(self.AttPrimaryPunch)
-	ply:LagCompensation(true)
-	local tr = util.QuickTrace(ply:GetShootPos(), ply:GetAimVector() * self.ReachDistance, {ply})
+	owner:BetterViewPunch(self.AttPrimaryPunch)
+	owner:LagCompensation(true)
+	local tr = util.QuickTrace(owner:GetShootPos(), owner:GetAimVector() * self.ReachDistance, {owner})
 	local pos1 = tr.HitPos + tr.HitNormal
 	local pos2 = tr.HitPos - tr.HitNormal
-	if (tr.HitPos - ply:GetShootPos()):Length() < 80 then
-		if SERVER and tr.HitWorld then ply:EmitSound(self.HitWorldSound, 75, math.random(95, 105)) end
+	if (tr.HitPos - owner:GetShootPos()):Length() < 80 then
+		if SERVER and tr.HitWorld then owner:EmitSound(self.HitWorldSound, 75, math.random(95, 105) * self.PitchMul or 1) end
 		if self.DmgType == DMG_SLASH then
 			if IsValid(tr.Entity) and tr.Entity:GetClass() == "prop_ragdoll" then
 				local vPoint = tr.HitPos
@@ -227,39 +285,40 @@ function SWEP:SlashAttack()
 			end
 		end
 
+		--util.ScreenShake(tr.HitPos, 0.15, 0.15, 0.15, 0)
 		if IsValid(tr.Entity) and SERVER then
 			local dmginfo = DamageInfo()
 			dmginfo:SetDamageType(self.DmgType)
-			dmginfo:SetAttacker(ply)
+			dmginfo:SetAttacker(owner)
 			dmginfo:SetInflictor(self)
 			dmginfo:SetDamagePosition(tr.HitPos)
-			dmginfo:SetDamageForce(ply:GetForward() * self.Primary.Force)
-			local angle = ply:GetAngles().y - tr.Entity:GetAngles().y
+			dmginfo:SetDamageForce(owner:GetForward() * self.Primary.Force)
+			local angle = owner:GetAngles().y - tr.Entity:GetAngles().y
 			if angle < -180 then angle = 360 + angle end
 			if self.AllowBackStab and angle <= 90 and angle >= -90 then
-				dmginfo:SetDamage(self.Primary.Damage * self.BackStabMul * (ply:GetAlalnState("class") == "Berserker" and 1.8 or 1))
+				dmginfo:SetDamage(self.Primary.Damage * self.BackStabMul * (owner:GetAlalnState("class") == "Berserker" and 1.8 or 1))
 				DebugPrint("slash back DMG = " .. dmginfo:GetDamage())
 			else
-				dmginfo:SetDamage(self.Primary.Damage * (ply:GetAlalnState("class") == "Berserker" and 1.8 or 1))
+				dmginfo:SetDamage(self.Primary.Damage * (owner:GetAlalnState("class") == "Berserker" and 1.8 or 1))
 				DebugPrint("slash front DMG = " .. dmginfo:GetDamage())
 			end
 
 			if tr.Entity:IsNPC() or tr.Entity:IsPlayer() then
-				ply:EmitSound(self.SlashSound, 75, math.random(95, 105))
+				owner:EmitSound(self.SlashSound, 75, math.random(95, 105))
 			else
 				if IsValid(tr.Entity:GetPhysicsObject()) then
 					local dmginfo2 = DamageInfo()
 					dmginfo2:SetDamageType(self.DmgType)
-					dmginfo2:SetAttacker(ply)
+					dmginfo2:SetAttacker(owner)
 					dmginfo2:SetInflictor(self)
 					dmginfo2:SetDamagePosition(tr.HitPos)
-					dmginfo2:SetDamageForce(ply:GetForward() * self.Primary.Force * 7)
+					dmginfo2:SetDamageForce(owner:GetForward() * self.Primary.Force * 7)
 					dmginfo2:SetDamage(self.Primary.Damage / 4)
 					tr.Entity:TakeDamageInfo(dmginfo2)
 					if tr.Entity:GetClass() == "prop_ragdoll" then
-						ply:EmitSound(self.SlashSound, 75, math.random(95, 105))
+						owner:EmitSound(self.SlashSound, 75, math.random(95, 105))
 					else
-						ply:EmitSound(self.HitWorldSound, 75, math.random(95, 105))
+						owner:EmitSound(self.HitWorldSound, 75, math.random(95, 105))
 					end
 				end
 			end
@@ -268,20 +327,33 @@ function SWEP:SlashAttack()
 		end
 	end
 
-	ply:LagCompensation(false)
+	owner:LagCompensation(false)
 end
 
 function SWEP:StabAttack()
 	if CLIENT then return end
-	local ply = self:GetOwner()
+	local owner = self:GetOwner()
+	local velmul = 1
+	if owner:GetAlalnState("class") == "Gunslinger" then
+		velmul = velmul * 0.6
+	elseif owner:GetAlalnState("class") == "Berserker" then
+		velmul = velmul * 1.3
+	end
+
+	if owner:OnGround() then
+		owner:SetVelocity(owner:GetAimVector() * 400 * velmul)
+	else
+		owner:SetVelocity(owner:GetAimVector() * 40)
+	end
+
 	self:UpdateNextIdle()
-	ply:BetterViewPunch(self.AttSecondaryPunch)
-	ply:LagCompensation(true)
-	local tr = util.QuickTrace(ply:GetShootPos(), ply:GetAimVector() * self.ReachDistance, {ply})
+	owner:BetterViewPunch(self.AttSecondaryPunch)
+	owner:LagCompensation(true)
+	local tr = util.QuickTrace(owner:GetShootPos(), owner:GetAimVector() * self.ReachDistance, {owner})
 	local pos1 = tr.HitPos + tr.HitNormal
 	local pos2 = tr.HitPos - tr.HitNormal
-	if (tr.HitPos - ply:GetShootPos()):Length() < 80 then
-		if SERVER and tr.HitWorld then ply:EmitSound(self.HitWorldSound, 75, math.random(95, 105)) end
+	if (tr.HitPos - owner:GetShootPos()):Length() < 80 then
+		if SERVER and tr.HitWorld then owner:EmitSound(self.HitWorldSound, 75, math.random(95, 105) * self.PitchMul or 1) end
 		if self.DmgType == DMG_SLASH then
 			if IsValid(tr.Entity) and tr.Entity:GetClass() == "prop_ragdoll" then
 				local vPoint = tr.HitPos
@@ -299,39 +371,40 @@ function SWEP:StabAttack()
 			end
 		end
 
+		--util.ScreenShake(tr.HitPos, 0.25, 0.25, 0.25, 0)
 		if IsValid(tr.Entity) and SERVER then
 			local secdmginfo = DamageInfo()
 			secdmginfo:SetDamageType(self.DmgType)
-			secdmginfo:SetAttacker(ply)
+			secdmginfo:SetAttacker(owner)
 			secdmginfo:SetInflictor(self)
 			secdmginfo:SetDamagePosition(tr.HitPos)
-			secdmginfo:SetDamageForce(ply:GetForward() * self.Secondary.Force)
-			local angle = ply:GetAngles().y - tr.Entity:GetAngles().y
+			secdmginfo:SetDamageForce(owner:GetForward() * self.Secondary.Force)
+			local angle = owner:GetAngles().y - tr.Entity:GetAngles().y
 			if angle < -180 then angle = 360 + angle end
 			if self.AllowBackStab and angle <= 90 and angle >= -90 then
-				secdmginfo:SetDamage(self.Secondary.Damage * self.BackStabMul * (ply:GetAlalnState("class") == "Berserker" and 1.8 or 1))
+				secdmginfo:SetDamage(self.Secondary.Damage * self.BackStabMul * (owner:GetAlalnState("class") == "Berserker" and 1.8 or 1))
 				DebugPrint("stab back DMG = " .. secdmginfo:GetDamage())
 			else
-				secdmginfo:SetDamage(self.Secondary.Damage * (ply:GetAlalnState("class") == "Berserker" and 1.8 or 1))
+				secdmginfo:SetDamage(self.Secondary.Damage * (owner:GetAlalnState("class") == "Berserker" and 1.8 or 1))
 				DebugPrint("stab front DMG = " .. secdmginfo:GetDamage())
 			end
 
 			if tr.Entity:IsNPC() or tr.Entity:IsPlayer() then
-				ply:EmitSound(self.StabSound, 75, math.random(95, 105))
+				owner:EmitSound(self.StabSound, 75, math.random(95, 105))
 			else
 				if IsValid(tr.Entity:GetPhysicsObject()) then
 					local secdmginfo2 = DamageInfo()
 					secdmginfo2:SetDamageType(self.DmgType)
-					secdmginfo2:SetAttacker(ply)
+					secdmginfo2:SetAttacker(owner)
 					secdmginfo2:SetInflictor(self)
 					secdmginfo2:SetDamagePosition(tr.HitPos)
-					secdmginfo2:SetDamageForce(ply:GetForward() * self.Secondary.Force * 7)
+					secdmginfo2:SetDamageForce(owner:GetForward() * self.Secondary.Force * 7)
 					secdmginfo2:SetDamage(self.Secondary.Damage / 4)
 					tr.Entity:TakeDamageInfo(secdmginfo2)
 					if tr.Entity:GetClass() == "prop_ragdoll" then
-						ply:EmitSound(self.StabSound, 75, math.random(95, 105))
+						owner:EmitSound(self.StabSound, 75, math.random(95, 105))
 					else
-						ply:EmitSound(self.HitWorldSound, 75, math.random(95, 105))
+						owner:EmitSound(self.HitWorldSound, 75, math.random(95, 105))
 					end
 				end
 			end
@@ -340,7 +413,7 @@ function SWEP:StabAttack()
 		end
 	end
 
-	ply:LagCompensation(false)
+	owner:LagCompensation(false)
 end
 
 function SWEP:Reload()

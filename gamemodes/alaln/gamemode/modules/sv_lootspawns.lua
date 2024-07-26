@@ -5,18 +5,20 @@ ALALN_LootTable = {
 	{"alaln_garbage", 35},
 	{"alaln_armor", 25},
 	{"alaln_strangepills", 35},
+	{"alaln_phantomloot", 10},
 	-- Weapons
 	{"mann_ent_akm", 3},
 	{"mann_ent_pps43", 4},
 	{"mann_ent_m1911", 12},
 	{"mann_ent_db", 7},
 	{"mann_ent_g17", 8},
+	{"mann_ent_hammer", 14},
 	{"mann_ent_hatchet", 16},
 	{"mann_ent_knife", 20},
 	{"mann_ent_pm", 9},
 	{"mann_ent_metalbat", 18},
 	{"mann_ent_sw686", 7},
-	{"mann_ent_sako85", 6}
+	{"mann_ent_mosin", 6}
 }
 
 local SBOXMode = GetConVar("alaln_sboxmode")
@@ -43,7 +45,7 @@ local function spawnLoot()
 		item.IsLoot = true
 		print(item.PrintName or "none", item:GetClass() or "none")
 		lootCount = lootCount + 1
-		timer.Create("alaln-lootremove-" .. item:EntIndex(), 75, 1, function()
+		timer.Create("alaln-lootremove-" .. item:EntIndex(), 95, 1, function()
 			if not IsValid(item) or item:GetClass() == "alaln_garbage" then return end
 			item:Remove()
 		end)
