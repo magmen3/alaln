@@ -1,3 +1,4 @@
+local render, Material, hook, hook_Add, LocalPlayer, ScrW, ScrH, table, draw, surface, Color, Vector, timer, timer_Create, math, util, net = render, Material, hook, hook.Add, LocalPlayer, ScrW, ScrH, table, draw, surface, Color, Vector, timer, timer.Create, math, util, net
 ALALN_NPCTable = {
 	-- Monsters
 	{"npc_vj_cofr_slower1", 40},
@@ -17,6 +18,7 @@ local npcCount = 0
 local function spawnNPC()
 	if SBOXMode:GetBool() then return end
 	if NPCConVar:GetBool() then return end
+	if not navmesh.IsLoaded() then return end
 	if npcCount >= 24 then return end
 	local npc = table.Random(ALALN_NPCTable)
 	if math.random(100) <= npc[2] then
@@ -36,14 +38,14 @@ local function spawnNPC()
 		snpc:Spawn()
 		print(snpc.PrintName or "none", snpc:GetClass() or "none")
 		npcCount = npcCount + 1
-		timer.Create("alaln-npcremove-" .. snpc:EntIndex(), 85, 1, function()
+		timer.Create("alaln-npcremove-" .. snpc:EntIndex(), 120, 1, function()
 			if not IsValid(snpc) then return end
 			snpc:Remove()
 		end)
 	end
 end
 
-hook.Add("EntityRemoved", "alaln-npcremove", function(ent, fullUpdate)
+hook_Add("EntityRemoved", "alaln-npcremove", function(ent, fullUpdate)
 	if NPCConVar:GetBool() then return end
 	if fullUpdate then return end
 	if npcCount and ent:IsValid() then
@@ -53,6 +55,7 @@ hook.Add("EntityRemoved", "alaln-npcremove", function(ent, fullUpdate)
 end)
 
 local function spawnNPCTimer()
+	if not navmesh.IsLoaded() then return end
 	if NPCConVar:GetBool() then return end
 	for i = 1, 18 do
 		spawnNPC()

@@ -2,7 +2,7 @@ AddCSLuaFile()
 ENT.Type = "anim"
 ENT.Base = "mann_ent_base"
 ENT.PrintName = "Makarov PM"
-ENT.Category = "Forsakened"
+ENT.Category = "! Forsakened"
 ENT.SWEP = "mann_wep_pm"
 ENT.Model = Model("models/weapons/tfa_ins2/w_pm.mdl")
 ENT.Color = Color(200, 200, 200, 255)
@@ -13,3 +13,4 @@ ENT.AmmoAmt = 8
 ENT.AmmoType = "pistol"
 ENT.RSound = "items/ammo_pickup.wav"
 ENT.RSoundPitch = math.random(95, 105)
+ENT.IconOverride = "editor/ai_goal_standoff"

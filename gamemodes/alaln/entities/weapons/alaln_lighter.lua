@@ -111,8 +111,8 @@ end
 
 local randholstrings = {"I think it's a bad idea to put an open lighter in your pocket...", "Did you read the engraving?", "I should probably close it before put it in pocket..."}
 local randfirestrings = {"You've done yourself a little trolling.", "Seems like you should have been more careful to this thing."}
-local color_red = Color(165, 0, 0)
-local color_yellow = Color(255, 170, 0)
+local color_red = Color(185, 15, 15)
+local color_yellow = Color(210, 210, 110)
 function SWEP:Holster(wep)
 	local ply = self:GetOwner()
 	if not IsValid(ply) or not ply:Alive() then return end

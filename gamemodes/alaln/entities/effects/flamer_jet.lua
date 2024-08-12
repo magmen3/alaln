@@ -1,3 +1,4 @@
+local math, table, Color, Vector, Angle, IsValid = math, table, Color, Vector, Angle, IsValid
 -- Main function
 function EFFECT:Init(data)
 	self.Position = data:GetStart()

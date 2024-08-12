@@ -1,9 +1,6 @@
-local painsounds = {
-	"vo/npc/male01/pain07.wav",
-	"vo/npc/male01/pain08.wav",
-	"vo/npc/male01/pain09.wav"
-}
-hook.Add("EntityTakeDamage", "alaln-enttakedamage", function(target, dmginfo)
+local render, Material, hook, hook_Add, LocalPlayer, ScrW, ScrH, table, draw, surface, Color, Vector, timer, timer_Create, math, util, net = render, Material, hook, hook.Add, LocalPlayer, ScrW, ScrH, table, draw, surface, Color, Vector, timer, timer.Create, math, util, net
+local painsounds = {"vo/npc/male01/pain07.wav", "vo/npc/male01/pain08.wav", "vo/npc/male01/pain09.wav"}
+hook_Add("EntityTakeDamage", "alaln-enttakedamage", function(target, dmginfo)
 	if not target:IsPlayer() or (target:IsPlayer() and target:HasGodMode()) then return end
 	if dmginfo:GetDamageType() == DMG_BURN or target:IsOnFire() then
 		if SERVER then util.ScreenShake(target:GetPos(), 0.3, 3, 5, 0) end
@@ -26,12 +23,16 @@ hook.Add("EntityTakeDamage", "alaln-enttakedamage", function(target, dmginfo)
 			target:BetterViewPunch(Angle(-50, 0, 0))
 			target:EmitSound("physics/body/body_medium_break4.wav", 100, math.random(90, 110))
 		end
+
 		if target:Alive() then
-			target:EmitSound(table.Random(painsounds), 120, math.random(90, 110))
+			if target:GetAlalnState("class") ~= "Operative" then
+				target:EmitSound(table.Random(painsounds), 120, math.random(90, 110))
+			else
+				target:EmitSound("npc/metropolice/pain" .. math.random(1, 4) .. ".wav")
+			end
 		end
-		if target:Alive() and target:GetNWBool("HasArmor", false) then
-			target:EmitSound("hl1/fvox/major_fracture.wav", 100, math.random(90, 110))
-		end
+
+		if target:Alive() and target:GetNWBool("HasArmor", false) then target:EmitSound("hl1/fvox/major_fracture.wav", 100, math.random(90, 110)) end
 	elseif dmginfo:GetDamage() <= 15 and target:Alive() and target:GetNWBool("HasArmor", false) then
 		target:EmitSound("hl1/fvox/minor_fracture.wav", 100, math.random(90, 110))
 	end
@@ -58,7 +59,7 @@ hook.Add("EntityTakeDamage", "alaln-enttakedamage", function(target, dmginfo)
 end)
 
 local nextheadshot = 0
-hook.Add("ScalePlayerDamage", "alaln-headburnsound", function(ply, hitgroup, dmginfo)
+hook_Add("ScalePlayerDamage", "alaln-headburnsound", function(ply, hitgroup, dmginfo)
 	if dmginfo:GetDamage() > 1 and hitgroup == HITGROUP_HEAD and dmginfo:IsBulletDamage() and nextheadshot < CurTime() then
 		local headshotsound = CreateSound(ply, "player/general/flesh_burn.wav")
 		if SERVER then util.ScreenShake(ply:GetPos(), 1, 5, 4, 0) end
@@ -79,7 +80,7 @@ hook.Add("ScalePlayerDamage", "alaln-headburnsound", function(ply, hitgroup, dmg
 end)
 
 util.AddNetworkString("alaln-flinch")
-hook.Add("ScalePlayerDamage", "alaln-flinchplayers", function(ply, grp)
+hook_Add("ScalePlayerDamage", "alaln-flinchplayers", function(ply, grp)
 	if IsValid(ply) and ply:IsPlayer() and ply:Alive() and not ply:GetNoDraw() then
 		local group = nil
 		local hitpos = {
@@ -105,4 +106,4 @@ hook.Add("ScalePlayerDamage", "alaln-flinchplayers", function(ply, grp)
 	end
 end)
 
-hook.Add("GetFallDamage", "alaln-falldamage", function(ply, speed) return math.max(0, math.ceil(0.2418 * speed - 141.75)) end)
+hook_Add("GetFallDamage", "alaln-falldamage", function(ply, speed) return math.max(0, math.ceil(0.2418 * speed - 141.75)) end)

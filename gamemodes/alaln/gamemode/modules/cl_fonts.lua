@@ -1,3 +1,4 @@
+local render, Material, hook, hook_Add, LocalPlayer, ScrW, ScrH, table, draw, surface, Color, Vector = render, Material, hook, hook.Add, LocalPlayer, ScrW, ScrH, table, draw, surface, Color, Vector
 function ScrWidth(w)
 	return (w / 1920) * ScrW()
 end
@@ -81,4 +82,4 @@ local function CreateFonts()
 end
 
 CreateFonts()
-hook.Add("OnScreenSizeChanged", "alaln-fontsreload", function() CreateFonts() end)
+hook_Add("OnScreenSizeChanged", "alaln-fontsreload", function() CreateFonts() end)

@@ -14,7 +14,6 @@ SWEP.WepSelectIcon = surface.GetTextureID("editor/ai_goal_standoff")
 SWEP.IconOverride = "editor/ai_goal_standoff"
 local icon = "flags16/al.png" -- "games/16/insmod.png"
 list.Set("ContentCategoryIcons", "! Forsakened", icon)
-
 function SWEP:DrawHUD()
 end
 
@@ -63,9 +62,20 @@ local alpha_black = Color(25, 0, 0, 250)
 function SWEP:PrintWeaponInfo(x, y, alpha)
 	if self.DrawWeaponInfoBox == false then return end
 	if self.InfoMarkup == nil then
-		local str
-		local title_color = "<color=185, 0, 0, 255>"
-		local text_color = "<color=165, 0, 0, 255>"
+		local str, title_color, text_color
+		local ply = LocalPlayer()
+		local class = ply:GetAlalnState("class")
+		if class ~= "Operative" and class ~= "Human" then
+			title_color = "<color=185, 0, 0, 255>"
+			text_color = "<color=165, 0, 0, 255>"
+		elseif class == "Human" then
+			title_color = "<color=0, 180, 0, 255>"
+			text_color = "<color=0, 200, 0, 255>"
+		elseif class == "Operative" then
+			title_color = "<color=0, 0, 210, 255>"
+			text_color = "<color=0, 0, 290, 255>"
+		end
+
 		str = "<font=alaln-hudfontvsmall>"
 		if self.Purpose ~= "" then str = str .. title_color .. "Description:</color>\n" .. text_color .. self.Purpose .. "</color>\n\n" end
 		if self.Instructions ~= "" then str = str .. title_color .. "Instruction:</color>\n" .. text_color .. self.Instructions .. "</color>\n" end
@@ -73,7 +83,7 @@ function SWEP:PrintWeaponInfo(x, y, alpha)
 		self.InfoMarkup = markup.Parse(str, 250)
 	end
 
-	draw.RoundedBox(5, x - 5, y - 6, 280, self.InfoMarkup:GetHeight() + 18, alpha_black)
+	draw.RoundedBox(6, x - 5, y - 6, 280, self.InfoMarkup:GetHeight() + 18, alpha_black)
 	self.InfoMarkup:Draw(x + 5, y + 5, nil, nil, 255)
 end
 

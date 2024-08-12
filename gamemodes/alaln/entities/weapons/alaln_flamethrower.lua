@@ -1,3 +1,4 @@
+local render, Material, hook, hook_Add, LocalPlayer, ScrW, ScrH, table, draw, surface, Color, Vector, timer, timer_Create, math, util, net = render, Material, hook, hook.Add, LocalPlayer, ScrW, ScrH, table, draw, surface, Color, Vector, timer, timer.Create, math, util, net
 if SERVER then
 	AddCSLuaFile()
 else
@@ -11,7 +12,7 @@ else
 	SWEP.SwayScale = -2
 	language.Add("hydrogen_peroxide", "Hydrogen Peroxide")
 	language.Add("hydrogen_peroxide_ammo", "Hydrogen Peroxide")
-	local color_red = Color(180, 0, 0)
+	local color_red = Color(185, 15, 15)
 	function SWEP:DrawHUD()
 		local owner = self:GetOwner()
 		if not IsValid(owner) then return end
@@ -30,24 +31,6 @@ else
 			draw.NoTexture()
 			Circle(traceResult.HitPos:ToScreen().x, traceResult.HitPos:ToScreen().y, math.min(20, 5 / frac), 3)
 		end
-	end
-
-	local alpha_black = Color(25, 0, 0, 250)
-	function SWEP:PrintWeaponInfo(x, y, alpha)
-		if self.DrawWeaponInfoBox == false then return end
-		if self.InfoMarkup == nil then
-			local str
-			local title_color = "<color=185, 0, 0, 255>"
-			local text_color = "<color=165, 0, 0, 255>"
-			str = "<font=alaln-hudfontvsmall>"
-			if self.Purpose ~= "" then str = str .. title_color .. "Description:</color>\n" .. text_color .. self.Purpose .. "</color>\n\n" end
-			if self.Instructions ~= "" then str = str .. title_color .. "Instruction:</color>\n" .. text_color .. self.Instructions .. "</color>\n" end
-			str = str .. "</font>"
-			self.InfoMarkup = markup.Parse(str, 250)
-		end
-
-		draw.RoundedBox(5, x - 5, y - 6, 280, self.InfoMarkup:GetHeight() + 18, alpha_black)
-		self.InfoMarkup:Draw(x + 5, y + 5, nil, nil, 255)
 	end
 
 	function SWEP:DrawWeaponSelection(x, y, wide, tall, alpha)
@@ -195,13 +178,10 @@ function SWEP:Reload()
 		surface.PlaySound("forsakened/imgonnaflameyourass.mp3")
 		--self:EmitSound("forsakened/imgonnaflameyourass.mp3", 65, 100)
 	end
+
 	self:SetNextPrimaryFire(CurTime() + self:SequenceDuration())
 	self:NextThink(CurTime() + self:SequenceDuration())
-	timer.Simple(self:SequenceDuration(), function()
-		if IsValid(self) and IsValid(self:GetOwner()) then
-			self:SendWeaponAnim(ACT_VM_DRAW)
-		end
-	end)
+	timer.Simple(self:SequenceDuration(), function() if IsValid(self) and IsValid(self:GetOwner()) then self:SendWeaponAnim(ACT_VM_DRAW) end end)
 	self:SetNextPrimaryFire(CurTime() + self:SequenceDuration())
 end
 
@@ -374,13 +354,15 @@ function SWEP:Holster()
 	end
 
 	if IsValid(self) then self:EmitSound("weapons/smod_flamethrower/undeploy.wav", 65, math.random(90, 110)) end
-
-	if CLIENT and self:GetOwner() == LocalPlayer() then
-		for i = 0, 2 do
-			LocalPlayer():StopSound("forsakened/imgonnaflameyourass.mp3")
+	if CLIENT then
+		local lply = LocalPlayer()
+		if self:GetOwner() == lply then
+			for i = 0, 2 do
+				if not IsValid(lply) then return end
+				lply:StopSound("forsakened/imgonnaflameyourass.mp3")
+			end
 		end
 	end
-
 	return true
 end
 
@@ -439,7 +421,7 @@ function SWEP:DoBoom(attacker, time)
 	end)
 end
 
-hook.Add("DoPlayerDeath", "alaln-flamersnd", function(v, a, dmg)
+hook_Add("DoPlayerDeath", "alaln-flamersnd", function(v, a, dmg)
 	if IsValid(v) then
 		if IsValid(v:GetActiveWeapon()) then
 			local gun = v:GetActiveWeapon()
@@ -459,7 +441,7 @@ hook.Add("DoPlayerDeath", "alaln-flamersnd", function(v, a, dmg)
 end)
 
 if SERVER then
-	hook.Add("EntityTakeDamage", "alaln-flamer_mg", function(target, dmg)
+	hook_Add("EntityTakeDamage", "alaln-flamer_mg", function(target, dmg)
 		if target:IsPlayer() then
 			if IsValid(target:GetActiveWeapon()) and target:GetActiveWeapon():GetClass() == "alaln_flamethrower" then
 				if IsValid(dmg:GetAttacker()) and dmg:GetAttacker() ~= target then
@@ -542,7 +524,7 @@ else -- client
 		WorldModel:DrawModel()
 	end
 
-	hook.Add("PostPlayerDraw", "SMOD_Flamer_Pack_Draw", function(ply)
+	hook_Add("PostPlayerDraw", "SMOD_Flamer_Pack_Draw", function(ply)
 		local wep = ply:GetWeapon("alaln_flamethrower")
 		if not IsValid(wep) or not wep == ply:GetActiveWeapon() then return end
 		if ply:GetActiveWeapon():IsValid() then

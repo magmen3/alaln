@@ -2,9 +2,10 @@ AddCSLuaFile()
 ENT.Type = "anim"
 ENT.PrintName = "Strange Pills"
 ENT.Spawnable = true
-ENT.Category = "Forsakened"
+ENT.Category = "! Forsakened"
 ENT.UseCD = 0
-local math, Color = math, Color
+ENT.IconOverride = "editor/obsolete"
+local math, table, Color, Vector, Angle, IsValid = math, table, Color, Vector, Angle, IsValid
 local color_pills = Color(110, 110, 0)
 function ENT:Initialize()
 	if not SERVER then return end
@@ -32,32 +33,47 @@ function ENT:PhysicsCollide(data, ent)
 	end
 end
 
-local color_green = Color(25, 225, 25)
-local color_red = Color(165, 0, 0)
+local color_green = Color(110, 210, 110)
+local color_red = Color(185, 15, 15)
 function ENT:Use(ply)
-	if CLIENT or self.UseCD > CurTime() then return end
-	self.UseCD = CurTime() + 1
-	local rnd = math.random(1, 2)
-	if rnd == 1 then
-		for i = 1, 4 do
-			ply:TakeDamage(math.random(2, 5), ply, ply)
+	if self.UseCD > CurTime() then return end
+	if SERVER then
+		self.UseCD = CurTime() + 1
+		local rnd = math.random(1, 2)
+		if rnd == 1 then
+			for i = 1, 4 do
+				ply:TakeDamage(math.random(2, 5), ply, ply)
+			end
+
+			BetterChatPrint(ply, "You feel yourself bad.", color_red)
+		elseif rnd == 2 and ply:Health() < ply:GetMaxHealth() then
+			for i = 1, 5 do
+				ply:SetHealth(ply:Health() + math.random(1, 5))
+			end
+
+			BetterChatPrint(ply, "You feel yourself better.", color_green)
 		end
 
-		BetterChatPrint(ply, "You feel yourself bad.", color_red)
-	elseif rnd == 2 and ply:Health() < ply:GetMaxHealth() then
-		for i = 1, 5 do
-			ply:SetHealth(ply:Health() + math.random(1, 5))
-		end
-
-		BetterChatPrint(ply, "You feel good.", color_green)
+		ply:SetNWInt("DrugUses", ply:GetNWInt("DrugUses", 0) + 1)
+		ply:EmitSound("vj_cofr/aom/pills/pills_use.wav", 55, math.random(90, 110))
+		ply:BetterViewPunch(AngleRand(-8, 8))
+		self:Remove()
 	end
 
-	ply:EmitSound("vj_cofr/aom/pills/pills_use.wav", 55, math.random(90, 110))
-	self:Remove()
+	if ply:GetNWInt("DrugUses", 0) >= math.random(2, 3) then
+		if CLIENT and ply == LocalPlayer() then
+			surface.PlaySound("forsakened/addiction.mp3")
+		end
+		ply:AddAlalnState("crazyness", math.random(4, 16))
+		ply:SetNWInt("DrugUses", 0)
+	end
 end
 
 if CLIENT then
 	function ENT:Draw()
+		local Closeness = LocalPlayer():GetFOV() * EyePos():Distance(self:GetPos())
+		local DetailDraw = Closeness < 300000
+		if not DetailDraw then return end
 		self:DrawModel()
 	end
 end

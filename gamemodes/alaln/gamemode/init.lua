@@ -1,10 +1,11 @@
+local render, Material, hook, hook_Add, LocalPlayer, ScrW, ScrH, table, draw, surface, Color, Vector, timer, timer_Create, math, util, net = render, Material, hook, hook.Add, LocalPlayer, ScrW, ScrH, table, draw, surface, Color, Vector, timer, timer.Create, math, util, net
 AddCSLuaFile("cl_init.lua")
 AddCSLuaFile("shared.lua")
 AddCSLuaFile("loader.lua")
 include("loader.lua")
 include("shared.lua")
 resource.AddFile("resource/fonts/SMODGUI.ttf") -- I hope this thing works
-local color_red = Color(180, 0, 0)
+local color_red = Color(185, 15, 15)
 util.AddNetworkString("alaln-navmeshnotfound")
 util.AddNetworkString("alaln-setclass")
 function GM:Initialize()
@@ -30,7 +31,7 @@ RunConsoleCommand("sv_rollangle", "-4")
 RunConsoleCommand("sbox_maxnpcs", "128")
 RunConsoleCommand("mp_show_voice_icons", "0")
 local usecd = 0
-hook.Add("KeyPress", "alaln-keypress", function(ply, key)
+hook_Add("KeyPress", "alaln-keypress", function(ply, key)
 	if key == IN_ZOOM and not ply:IsTyping() and usecd < CurTime() then
 		ply:DoAnimationEvent(ACT_GMOD_GESTURE_ITEM_DROP)
 		ply:ConCommand("checkammo")
@@ -87,7 +88,7 @@ function GM:ShowTeam(ply)
 	net.Send(ply)
 end
 
-hook.Add("PlayerDisconnected", "alaln-returnconcommands", function(ply)
+hook_Add("PlayerDisconnected", "alaln-returnconcommands", function(ply)
 	ply:ConCommand("sv_rollangle 0")
 	ply:ConCommand("cl_drawownshadow 0")
 end)

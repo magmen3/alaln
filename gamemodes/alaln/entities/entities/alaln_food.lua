@@ -2,9 +2,10 @@ AddCSLuaFile()
 ENT.Type = "anim"
 ENT.PrintName = "Food"
 ENT.Spawnable = true
-ENT.Category = "Forsakened"
+ENT.Category = "! Forsakened"
 ENT.UseCD = 0
-local math, table, Color = math, table, Color
+ENT.IconOverride = "editor/obsolete"
+local math, table, Color, Vector, Angle, IsValid = math, table, Color, Vector, Angle, IsValid
 -- format: multiline
 local FoodModels = {
 	"models/props_junk/garbage_milkcarton002a.mdl",
@@ -13,7 +14,8 @@ local FoodModels = {
 	"models/props_junk/garbage_takeoutcarton001a.mdl",
 	"models/props_junk/garbage_metalcan001a.mdl",
 	"models/props_junk/garbage_metalcan002a.mdl",
-	"models/props_junk/PopCan01a.mdl"
+	"models/props_junk/PopCan01a.mdl",
+	"models/gibs/humans/mgib_02.mdl"
 }
 
 function ENT:Initialize()
@@ -41,33 +43,45 @@ function ENT:PhysicsCollide(data, ent)
 	end
 end
 
-local color_green = Color(25, 225, 25)
-local color_yellow = Color(255, 235, 0)
+local color_green = Color(110, 210, 110)
+local color_yellow = Color(210, 210, 110)
 function ENT:Use(ply)
 	if CLIENT or self.UseCD > CurTime() then return end
 	self.UseCD = CurTime() + 1
-	if ply:GetAlalnState("class") == "Cannibal" then
+	if ply:GetAlalnState("class") == "Cannibal" or ply:GetAlalnState("class") == "Operative" then
 		BetterChatPrint(ply, "You don't wan't to eat this.", color_yellow)
 		return
 	end
 
-	if ply:GetAlalnState("hunger") <= 90 then
-		ply:AddAlalnState("hunger", math.random(15, 25))
-		--ply:ChatPrint("You ate food, now your hunger is " .. math.Round(ply:GetAlalnState("hunger"), 0) .. ".")
-		BetterChatPrint(ply, "You ate food, now your hunger is " .. math.Round(ply:GetAlalnState("hunger"), 0) .. ".", color_green)
-		ply:EmitSound("npc/barnacle/barnacle_gulp" .. math.random(1, 2) .. ".wav", 55, math.random(90, 110))
-		ply:AddAlalnState("score", 0.3)
-		if ply:Health() < ply:GetMaxHealth() * 0.75 then
-			ply:SetHealth(ply:Health() + math.random(5, 15))
+	if not SBOXMode:GetBool() then
+		if ply:GetAlalnState("hunger") <= 90 then
+			ply:AddAlalnState("hunger", math.random(15, 25))
+			BetterChatPrint(ply, "You ate food, now your hunger is " .. math.Round(ply:GetAlalnState("hunger"), 0) .. ".", color_green)
+			ply:EmitSound("npc/barnacle/barnacle_gulp" .. math.random(1, 2) .. ".wav", 55, math.random(90, 110))
+			ply:AddAlalnState("score", 0.3)
+			if ply:Health() <= ply:GetMaxHealth() * 0.75 then ply:SetHealth(ply:Health() + math.random(5, 15)) end
+			ply:BetterViewPunch(AngleRand(-8, 8))
+			self:Remove()
+		else
+			BetterChatPrint(ply, "You are fed.", color_yellow)
 		end
-		self:Remove()
 	else
-		BetterChatPrint(ply, "You are fed.", color_yellow)
+		if ply:Health() <= ply:GetMaxHealth() * 0.85 then
+			ply:SetHealth(ply:Health() + math.random(5, 15))
+			ply:EmitSound("npc/barnacle/barnacle_gulp" .. math.random(1, 2) .. ".wav", 55, math.random(90, 110))
+			ply:BetterViewPunch(AngleRand(-8, 8))
+			self:Remove()
+		else
+			BetterChatPrint(ply, "You are fed.", color_yellow)
+		end
 	end
 end
 
 if CLIENT then
 	function ENT:Draw()
+		local Closeness = LocalPlayer():GetFOV() * EyePos():Distance(self:GetPos())
+		local DetailDraw = Closeness < 300000
+		if not DetailDraw then return end
 		self:DrawModel()
 	end
 end

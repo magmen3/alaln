@@ -67,6 +67,8 @@ SWEP.AimPos = Vector(1.75, 0, 1.22) -- позиция оружия в прице
 SWEP.FuckedWorldModel = true -- веселуха
 SWEP.FuckedWorldModelForward = 1 -- веселуха 2
 SWEP.FuckedWorldModelUp = 1 -- короче идите все на
+SWEP.FuckedWorldModelAngFW = 180
+SWEP.FuckedWorldModelAngR = 10
 SWEP.FuckedWorldModelRight = 1 -- Pizdets
 SWEP.ENT = "mann_ent_base" -- энтити оружия (в основном используется при выбрасывании)
 SWEP.ShellType = "ShellEject" -- эффект выпадения гильзы (лучше не трогать)
@@ -194,8 +196,9 @@ function SWEP:PrimaryAttack()
 	local owner = self:GetOwner()
 	if self:Clip1() <= 0 then
 		self:EmitSound("weapons/firearms/hndg_glock17/glock17_dryfire.wav")
-		self:SetNextPrimaryFire(CurTime() + (self.Primary.Automatic and .35 or .25))
+		self:SetNextPrimaryFire(CurTime() + (self.Primary.Automatic and .4 or .3))
 		if self.DryFireAnim then self:DoBFSAnimation(self.DryFireAnim) end
+		if SERVER and math.random(1, 2) == 2 and owner:GetActiveWeapon():GetClass() == self:GetClass() then owner:ConCommand("checkammo") end
 		return
 	end
 
@@ -212,7 +215,7 @@ function SWEP:PrimaryAttack()
 	local WaterMul = 1
 	if owner:GetAlalnState("class") == "Berserker" then
 		WaterMul = .9
-	elseif owner:GetAlalnState("class") == "Gunslinger" then
+	elseif owner:GetAlalnState("class") == "Gunslinger" or owner:GetAlalnState("class") == "Operative" then
 		WaterMul = 1.5
 	end
 
@@ -220,7 +223,7 @@ function SWEP:PrimaryAttack()
 	local dmgAmt, InAcc = self.Primary.Damage * math.Rand(.9, 1.1) * WaterMul, 1 - self.Accuracy
 	if owner:GetAlalnState("class") == "Berserker" then
 		InAcc = (1.05 - self.Accuracy) * 1.5
-	elseif owner:GetAlalnState("class") == "Gunslinger" then
+	elseif owner:GetAlalnState("class") == "Gunslinger" or owner:GetAlalnState("class") == "Operative" then
 		InAcc = (1 - self.Accuracy) * 0.5
 	end
 
@@ -238,7 +241,7 @@ function SWEP:PrimaryAttack()
 	bullet.Callback = function(ply, tr) ply:GetActiveWeapon():BulletCallbackFunc(dmgAmt, ply, tr, dmg, false, true, false) end
 	owner:FireBullets(bullet)
 	if self.Supersonic then self:BallisticSnap(BulletTraj) end
-	if owner:GetAlalnState("class") ~= "Gunslinger" and CLIENT then self:Stun() end
+	if (owner:GetAlalnState("class") ~= "Gunslinger" and owner:GetAlalnState("class") ~= "Operative") and CLIENT then self:Stun() end
 	if (self:Clip1() == 1) and self.LastFireAnim then
 		self:DoBFSAnimation(self.LastFireAnim)
 	elseif self:Clip1() > 0 then
@@ -289,7 +292,7 @@ function SWEP:PrimaryAttack()
 	end
 
 	local Ang, Rec = owner:EyeAngles(), self.Primary.Recoil
-	if owner:GetAlalnState("class") == "Gunslinger" then
+	if owner:GetAlalnState("class") == "Gunslinger" or owner:GetAlalnState("class") == "Operative" then
 		Rec = Rec * 0.5
 	elseif owner:GetAlalnState("class") == "Berserker" then
 		Rec = Rec * 1.2
@@ -305,7 +308,7 @@ function SWEP:PrimaryAttack()
 	local Extra = 0
 	if owner:WaterLevel() >= 3 then Extra = 1 end
 	local trigdelay, velmul = self.TriggerDelay, 1
-	if owner:GetAlalnState("class") == "Gunslinger" then
+	if owner:GetAlalnState("class") == "Gunslinger" or owner:GetAlalnState("class") == "Operative" then
 		trigdelay = trigdelay * 0.7
 		velmul = velmul * 0.6
 	elseif owner:GetAlalnState("class") == "Berserker" then
@@ -318,34 +321,36 @@ function SWEP:PrimaryAttack()
 end
 
 function SWEP:SecondaryAttack()
-	if self:GetReady() and self:GetAiming() <= 50 and not self:GetOwner():IsSprinting() and self:GetOwner():OnGround() then
-		self:EmitSound("weapons/ins2/uni/uni_ads_in_0" .. math.random(1, 6) .. ".wav", 30, math.random(95, 105))
+	local owner = self:GetOwner()
+	if self:GetReady() and self:GetAiming() <= 50 and not owner:IsSprinting() and owner:OnGround() then
+		self:EmitSound("weapons/ins2/uni/uni_ads_in_0" .. math.random(1, 6) .. ".wav", 45, math.random(95, 105))
 		self:SetNextSecondaryFire(CurTime() + 0.4)
 	end
 end
 
 function SWEP:Think()
 	if SERVER then
+		local owner = self:GetOwner()
 		if (self.ReloadType == "individual") and self:GetReloading() and self.VReloadTime < CurTime() then
-			if (self:Clip1() < self.Primary.ClipSize) and (self:GetOwner():GetAmmoCount(self.Primary.Ammo) > 0) and not self.ReloadInterrupted then
+			if (self:Clip1() < self.Primary.ClipSize) and (owner:GetAmmoCount(self.Primary.Ammo) > 0) and not self.ReloadInterrupted then
 				self:SetClip1(self:Clip1() + 1)
-				self:GetOwner():RemoveAmmo(1, self.Primary.Ammo)
+				owner:RemoveAmmo(1, self.Primary.Ammo)
 				self:StallAnimation(self.ReloadAnim, 1)
 				timer.Simple(.01, function() self:ReadyAfterAnim(self.InsertAnim) end)
-				sound.Play(self.ReloadSound, self:GetOwner():GetShootPos(), 55, 100)
+				sound.Play(self.ReloadSound, owner:GetShootPos(), 55, 100)
 			else
 				self:SetReloading(false)
 				self:ReadyAfterAnim(self.AfterReloadAnim)
-				timer.Simple(.25, function() if IsValid(self) and IsValid(self:GetOwner()) then self:EmitSound(self.CycleSound, 55, 90) end end)
-				timer.Simple(.5, function() if IsValid(self) and IsValid(self:GetOwner()) then self:SetReady(true) end end)
+				timer.Simple(.25, function() if IsValid(self) and IsValid(owner) then self:EmitSound(self.CycleSound, 55, 90) end end)
+				timer.Simple(.5, function() if IsValid(self) and IsValid(owner) then self:SetReady(true) end end)
 			end
 		end
 
-		local Sprintin, Aimin, AimAmt, SprintAmt = self:GetOwner():IsSprinting(), self:GetOwner():KeyDown(IN_ATTACK2), self:GetAiming(), self:GetSprinting()
+		local Sprintin, Aimin, AimAmt, SprintAmt = owner:IsSprinting(), owner:KeyDown(IN_ATTACK2), self:GetAiming(), self:GetSprinting()
 		if (Sprintin or self:FrontBlocked()) and self:GetReady() then
 			self:SetSprinting(math.Clamp(SprintAmt + 40 * (1 / self.BearTime), 0, 100))
 			self:SetAiming(math.Clamp(AimAmt - 40 * (1 / self.AimTime), 0, 100))
-		elseif Aimin and self:GetOwner():OnGround() and not ((self.CycleType == "manual") and (self.LastFire + .75 > CurTime())) then
+		elseif Aimin and owner:OnGround() and not ((self.CycleType == "manual") and (self.LastFire + .75 > CurTime())) then
 			self:SetAiming(math.Clamp(AimAmt + 20 * (1 / self.AimTime), 0, 100))
 			self:SetSprinting(math.Clamp(SprintAmt - 20 * (1 / self.BearTime), 0, 100))
 		else
@@ -356,7 +361,7 @@ function SWEP:Think()
 		local HoldType = self.HipHoldType
 		if SprintAmt > 90 then
 			HoldType = self.DownHoldType
-		elseif Aimin and not self:GetOwner():KeyDown(IN_DUCK) then
+		elseif Aimin and not owner:KeyDown(IN_DUCK) then
 			HoldType = self.AimHoldType
 		else
 			HoldType = self.HipHoldType
@@ -369,13 +374,15 @@ end
 function SWEP:Reload()
 	self.ReloadInterrupted = false
 	if not IsFirstTimePredicted() then return end
-	if not (IsValid(self) and IsValid(self:GetOwner())) then return end
+	local owner = self:GetOwner()
+	if not (IsValid(self) and IsValid(owner)) then return end
 	if not self:GetReady() then return end
 	if self:GetSprinting() > 0 then return end
-	if (self:Clip1() < self.Primary.ClipSize) and (self:GetOwner():GetAmmoCount(self.Primary.Ammo) > 0) then
+	if (self:Clip1() < self.Primary.ClipSize) and (owner:GetAmmoCount(self.Primary.Ammo) > 0) then
 		local TacticalReload = self:Clip1() > 0
 		self:SetReady(false)
-		self:GetOwner():SetAnimation(PLAYER_RELOAD)
+		owner:SetAnimation(PLAYER_RELOAD)
+		if owner:GetAlalnState("class") == "Operative" and math.random(1, 2) == 2 then owner:EmitSound("placenta/death/arrhythmiavoice" .. math.random(1, 10) .. ".wav") end
 		if (self.ReloadType == "clip") or (self.ReloadType == "magazine") then
 			if TacticalReload and self.TacticalReloadAnim then
 				self:DoBFSAnimation(self.TacticalReloadAnim)
@@ -383,17 +390,17 @@ function SWEP:Reload()
 				self:DoBFSAnimation(self.ReloadAnim)
 			end
 
-			self:GetOwner():GetViewModel():SetPlaybackRate(self.ReloadRate)
+			owner:GetViewModel():SetPlaybackRate(self.ReloadRate)
 			self:EmitSound(self.ReloadSound, 65, 100)
 			if SERVER then
 				if self.CycleType == "revolving" then
 					timer.Simple(self.ReloadTime / 3, function()
-						if IsValid(self) and IsValid(self:GetOwner()) and self.ShellType and self.ShellType ~= "" then
+						if IsValid(self) and IsValid(owner) and self.ShellType and self.ShellType ~= "" then
 							for i = 1, self.Primary.ClipSize - self:Clip1() do
 								local effectdata = EffectData()
-								effectdata:SetOrigin(self:GetOwner():GetBonePosition(self:GetOwner():LookupBone("ValveBiped.Bip01_R_Forearm")))
+								effectdata:SetOrigin(owner:GetBonePosition(owner:LookupBone("ValveBiped.Bip01_R_Forearm")))
 								effectdata:SetAngles((-vector_up):Angle())
-								effectdata:SetEntity(self:GetOwner())
+								effectdata:SetEntity(owner)
 								util.Effect(self.ShellType, effectdata, true, true)
 							end
 						end
@@ -403,22 +410,25 @@ function SWEP:Reload()
 				local ReloadAdd = 0
 				if not TacticalReload then ReloadAdd = .2 end
 				timer.Simple(self.ReloadTime + ReloadAdd, function()
-					if IsValid(self) and IsValid(self:GetOwner()) then
+					if IsValid(self) and IsValid(owner) then
 						self:SetReady(true)
-						local Missing, Have = self.Primary.ClipSize - self:Clip1(), self:GetOwner():GetAmmoCount(self.Primary.Ammo)
+						local Missing, Have = self.Primary.ClipSize - self:Clip1(), owner:GetAmmoCount(self.Primary.Ammo)
 						if Missing <= Have then
-							self:GetOwner():RemoveAmmo(Missing, self.Primary.Ammo)
+							owner:RemoveAmmo(Missing, self.Primary.Ammo)
 							self:SetClip1(self.Primary.ClipSize)
 						elseif Missing > Have then
 							self:SetClip1(self:Clip1() + Have)
-							self:GetOwner():RemoveAmmo(Have, self.Primary.Ammo)
+							owner:RemoveAmmo(Have, self.Primary.Ammo)
 						end
+
+						if SERVER and owner:GetActiveWeapon():GetClass() == self:GetClass() then owner:ConCommand("checkammo") end
 					end
 				end)
 			end
 		elseif self.ReloadType == "individual" then
 			self:SetReloading(true)
 			self:ReadyAfterAnim(self.ReloadAnim)
+			if SERVER and owner:GetActiveWeapon():GetClass() == self:GetClass() then owner:ConCommand("checkammo") end
 		end
 	end
 end
@@ -431,21 +441,27 @@ function SWEP:ReadyAfterAnim(anim)
 end
 
 function SWEP:Deploy()
-	if IsValid(self) and IsValid(self:GetOwner()) then
+	local owner = self:GetOwner()
+	if IsValid(self) and IsValid(owner) then
 		if not IsFirstTimePredicted() then
 			self:DoBFSAnimation(self.DrawAnim)
-			self:GetOwner():GetViewModel():SetPlaybackRate(.1)
+			owner:GetViewModel():SetPlaybackRate(.1)
 			return
 		end
 
 		self:DoBFSAnimation(self.DrawAnim)
-		self:GetOwner():GetViewModel():SetPlaybackRate(.5)
+		owner:GetViewModel():SetPlaybackRate(.5)
 		self:SetReady(false)
-		self:GetOwner():DoAnimationEvent(ACT_GMOD_GESTURE_ITEM_PLACE)
+		owner:DoAnimationEvent(ACT_GMOD_GESTURE_ITEM_PLACE)
 		self:EmitSound("weapons/firearms/holster_out" .. math.random(1, 5) .. ".wav", 70, self.HandlingPitch or 100)
 		self:EnforceHolsterRules(self)
-		self:GetOwner():GetViewModel():StopParticles()
-		timer.Simple(1.5, function() if IsValid(self) then self:SetReady(true) end end)
+		owner:GetViewModel():StopParticles()
+		timer.Simple(1.5, function()
+			if IsValid(self) then
+				self:SetReady(true)
+				if SERVER and owner:GetActiveWeapon():GetClass() == self:GetClass() then owner:ConCommand("checkammo") end
+			end
+		end)
 		return true
 	end
 end
@@ -606,7 +622,7 @@ function SWEP:OnDrop()
 			Ent:Spawn()
 			Ent:Activate()
 			Ent.RoundsInMag = self:Clip1()
-			Ent:GetPhysicsObject():SetVelocity(self:GetVelocity() / 2)
+			if IsValid(Ent:GetPhysicsObject()) then Ent:GetPhysicsObject():SetVelocity(self:GetVelocity() / 2) end
 		end
 
 		self:Remove()
@@ -654,9 +670,9 @@ if CLIENT then
 		if not IsValid(self:GetOwner()) then return pos, ang end
 		--pos = pos + self.IdlePos
 		local FT = FrameTime()
-		local SprintGotten = Lerp(.1, LastSprintGotten, self:GetSprinting())
+		local SprintGotten = Lerp(.04, LastSprintGotten, self:GetSprinting())
 		LastSprintGotten = SprintGotten
-		local AimGotten = Lerp(.1, LastAimGotten, self:GetAiming())
+		local AimGotten = Lerp(.04, LastAimGotten, self:GetAiming())
 		LastAimGotten = AimGotten
 		local Aim, Sprint, Up, Forward, Right = AimGotten, SprintGotten / 100, ang:Up(), ang:Forward(), ang:Right()
 		local ExtraAim = 0
@@ -684,9 +700,9 @@ if CLIENT then
 
 		pos = pos + Vec.x * Right + Vec.y * Forward + Vec.z * Up
 		if self:GetOwner():KeyDown(IN_DUCK) then
-			Crouched = math.Clamp(Crouched + .05, 0, 1)
+			Crouched = math.Clamp(Crouched + .03, 0, 1)
 		else
-			Crouched = math.Clamp(Crouched - .05, 0, 1)
+			Crouched = math.Clamp(Crouched - .03, 0, 1)
 		end
 
 		Crouched = Crouched * (1 - (Aim / 100))
@@ -706,8 +722,8 @@ if CLIENT then
 					local pos, ang = self:GetOwner():GetBonePosition(self:GetOwner():LookupBone("ValveBiped.Bip01_R_Hand"))
 					if pos and ang then
 						self.WModel:SetRenderOrigin(pos + ang:Right() * self.FuckedWorldModelRight + ang:Up() * self.FuckedWorldModelUp + ang:Forward() * self.FuckedWorldModelForward)
-						ang:RotateAroundAxis(ang:Forward(), 180)
-						ang:RotateAroundAxis(ang:Right(), 10)
+						ang:RotateAroundAxis(ang:Forward(), self.FuckedWorldModelAngFW or 180)
+						ang:RotateAroundAxis(ang:Right(), self.FuckedWorldModelAngR or 10)
 						self.WModel:SetRenderAngles(ang)
 						self.WModel:DrawModel()
 					end
@@ -715,6 +731,8 @@ if CLIENT then
 			else
 				self:DrawModel()
 			end
+		else
+			self:DrawModel()
 		end
 	end
 

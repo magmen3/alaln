@@ -8,50 +8,50 @@ if CLIENT then
 	SWEP.ViewModelAngleOffset = Angle(0, 0, 0)
 	SWEP.Slot = 1
 	SWEP.SlotPos = 0
-	SWEP.SwayScale = -2
-	SWEP.BobScale = -2
+	SWEP.SwayScale = -2.5
+	SWEP.BobScale = -3.5
 	SWEP.IconOverride = "editor/ai_goal_police"
 	function SWEP:DrawWeaponSelection(x, y, wide, tall, alpha)
 		--if not PotatoMode:GetBool() then
-			if not IsValid(DrawModel) then
-				if self.VModelForSelector then
-					DrawModel = ClientsideModel(self.ViewModel, RENDER_GROUP_OPAQUE_ENTITY)
-				else
-					DrawModel = ClientsideModel(self.WorldModel, RENDER_GROUP_OPAQUE_ENTITY)
-				end
-
-				DrawModel:SetNoDraw(true)
+		if not IsValid(DrawModel) then
+			if self.VModelForSelector then
+				DrawModel = ClientsideModel(self.ViewModel, RENDER_GROUP_OPAQUE_ENTITY)
 			else
-				if self.VModelForSelector then
-					DrawModel:SetModel(self.ViewModel)
-				else
-					DrawModel:SetModel(self.WorldModel)
-				end
-
-				local vec = Vector(55, 55, 55)
-				local ang = Vector(-48, -48, -48):Angle()
-				cam.Start3D(vec, ang, 20, x, y + 35, wide, tall, 5, 4096)
-				cam.IgnoreZ(true)
-				render.SuppressEngineLighting(true)
-				render.SetLightingOrigin(self:GetPos())
-				render.ResetModelLighting(50 / 255, 50 / 255, 50 / 255)
-				render.SetColorModulation(1, 1, 1)
-				render.SetBlend(255)
-				render.SetModelLighting(4, 1, 1, 1)
-				DrawModel:SetRenderAngles(Angle(0, RealTime() * 30 % 360, 0))
-				DrawModel:DrawModel()
-				DrawModel:SetRenderAngles()
-				render.SetColorModulation(1, 1, 1)
-				render.SetBlend(1)
-				render.SuppressEngineLighting(false)
-				cam.IgnoreZ(false)
-				cam.End3D()
+				DrawModel = ClientsideModel(self.WorldModel, RENDER_GROUP_OPAQUE_ENTITY)
 			end
-		--end
 
+			DrawModel:SetNoDraw(true)
+		else
+			if self.VModelForSelector then
+				DrawModel:SetModel(self.ViewModel)
+			else
+				DrawModel:SetModel(self.WorldModel)
+			end
+
+			local vec = Vector(55, 55, 55)
+			local ang = Vector(-48, -48, -48):Angle()
+			cam.Start3D(vec, ang, 20, x, y + 35, wide, tall, 5, 4096)
+			cam.IgnoreZ(true)
+			render.SuppressEngineLighting(true)
+			render.SetLightingOrigin(self:GetPos())
+			render.ResetModelLighting(50 / 255, 50 / 255, 50 / 255)
+			render.SetColorModulation(1, 1, 1)
+			render.SetBlend(255)
+			render.SetModelLighting(4, 1, 1, 1)
+			DrawModel:SetRenderAngles(Angle(0, RealTime() * 30 % 360, 0))
+			DrawModel:DrawModel()
+			DrawModel:SetRenderAngles()
+			render.SetColorModulation(1, 1, 1)
+			render.SetBlend(1)
+			render.SuppressEngineLighting(false)
+			cam.IgnoreZ(false)
+			cam.End3D()
+		end
+
+		--end
 		self:PrintWeaponInfo(x + wide + 20, y + tall * 0.95, alpha)
 	end
-	
+
 	local Crouched = 0
 	function SWEP:CalcViewModelView(vm, oldpos, oldang, pos, ang)
 		local owner = self:GetOwner()
@@ -61,6 +61,7 @@ if CLIENT then
 		else
 			Crouched = math.Clamp(Crouched - .05, 0, 2)
 		end
+
 		local forward, right, up = self.ViewModelPositionOffset.x, self.ViewModelPositionOffset.y, self.ViewModelPositionOffset.z + Crouched
 		local angs = owner:EyeAngles()
 		--ang.pitch = -ang.pitch
@@ -71,7 +72,7 @@ if CLIENT then
 	end
 
 	function SWEP:DrawWorldModel()
-		if self:GetOwner():IsValid() then
+		if IsValid(self:GetOwner()) then
 			local Pos, Ang = self:GetOwner():GetBonePosition(self:GetOwner():LookupBone("ValveBiped.Bip01_R_Hand"))
 			if self.DatWorldModel then
 				if Pos and Ang then
@@ -88,10 +89,12 @@ if CLIENT then
 				self.DatWorldModel:SetNoDraw(true)
 				self.DatWorldModel:SetModelScale(1, 0)
 			end
+		else
+			self:DrawModel()
 		end
 	end
 
-	local color_red = Color(180, 0, 0)
+	local color_red = Color(185, 15, 15)
 	function SWEP:DrawHUD()
 		local owner = self:GetOwner()
 		local tr = {}

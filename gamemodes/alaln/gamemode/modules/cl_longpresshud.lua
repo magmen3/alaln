@@ -1,4 +1,4 @@
-local EMPTY_KEY = Material("gui/key.png")
+local render, Material, hook, hook_Add, LocalPlayer, ScrW, ScrH, table, draw, surface, Color, Vector = render, Material, hook, hook.Add, LocalPlayer, ScrW, ScrH, table, draw, surface, Color, Vector
 function draw.Arc(cx, cy, radius, thickness, startang, endang, roughness, color)
 	surface.SetDrawColor(color)
 	surface.DrawArc(surface.PrecacheArc(cx, cy, radius, thickness, startang, endang, roughness))
@@ -67,7 +67,7 @@ end
 
 local clr_circle = Color(150, 0, 0, 120)
 --local hudfontvsmall = "alaln-hudfontsmall"
-hook.Add("HUDPaint", "DrawUsablePrompt", function()
+hook_Add("HUDPaint", "DrawUsablePrompt", function()
 	local useable = LocalPlayer():GetUseEntity()
 	if useable.IsProgressUsable and useable:IsProgressUsable() then
 		if useable:GetDrawProgress() and useable:GetUser() == LocalPlayer() and LocalPlayer():KeyDown(IN_USE) and CurTime() < useable:GetEndTime() then
@@ -78,7 +78,6 @@ hook.Add("HUDPaint", "DrawUsablePrompt", function()
 		end
 		--[[if useable:GetDrawKeyPrompt() then
 			surface.SetDrawColor(150, 0, 0, 60)
-			--surface.SetMaterial(EMPTY_KEY)
 			surface.DrawTexturedRect(ScrW() / 2 - 16, ScrH() / 2 - 16, 32, 32)
 			surface.SetFont(hudfontvsmall)
 			surface.SetTextColor(150, 0, 0)

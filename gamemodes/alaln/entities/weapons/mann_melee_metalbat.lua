@@ -16,7 +16,7 @@ SWEP.HoldType = "melee2"
 SWEP.MeleeHolsterSlot = 1
 SWEP.SoundCL = false
 SWEP.Primary.Sound = Sound("weapons/slam/throw.wav")
-SWEP.Primary.Damage = 85
+SWEP.Primary.Damage = 80
 SWEP.Primary.Delay = 0.9
 SWEP.Primary.Force = 400
 SWEP.PrimaryAnim = "attack_quick"
@@ -27,7 +27,7 @@ SWEP.AttPrimaryPunch = Angle(0, -25, 0)
 SWEP.PrimaryTimer = 0.2
 SWEP.Secondary.Sound = ""
 SWEP.Secondary2Sound = Sound("weapons/slam/throw.wav")
-SWEP.Secondary.Damage = 130
+SWEP.Secondary.Damage = 100
 SWEP.Secondary.Delay = 1.2
 SWEP.Secondary.Force = 400
 SWEP.AllowSecondAttack = true
@@ -37,7 +37,7 @@ SWEP.SecAnimTwoDelay = 0.6
 SWEP.SecondaryAnimDelay = .6
 SWEP.SecondaryAnimRate = 1.3
 SWEP.SecondaryPunch = angle_zero
-SWEP.AttSecondaryPunch = Angle(-20, 5, 0)
+SWEP.AttSecondaryPunch = Angle(30, 5, 0)
 SWEP.SecondaryTimer = 0.8
 SWEP.DmgType = DMG_CLUB
 SWEP.AllowBackStab = true
@@ -57,6 +57,8 @@ SWEP.ENT = "mann_ent_metalbat"
 SWEP.Droppable = true
 SWEP.NoHolster = true
 SWEP.IconOverride = "editor/ai_goal_police"
+SWEP.MaxHP = 80
+SWEP.HP = 80
 if CLIENT then
 	local Crouched = 0
 	-- tried to make viewmodel like in The Forest
@@ -74,7 +76,6 @@ if CLIENT then
 		local vm_origin, vm_angles = EyePos + sitvec, eye.Ang + Angle(0, -5, -10)
 		return vm_origin, vm_angles
 	end]]
-
 	function SWEP:DrawWorldModel()
 		if self:GetOwner():IsValid() then
 			local Pos, Ang = self:GetOwner():GetBonePosition(self:GetOwner():LookupBone("ValveBiped.Bip01_R_Hand"))
@@ -93,6 +94,8 @@ if CLIENT then
 				self.DatWorldModel:SetNoDraw(true)
 				self.DatWorldModel:SetModelScale(1, 0)
 			end
+		else
+			self:DrawModel()
 		end
 	end
 end

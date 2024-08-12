@@ -11,7 +11,7 @@ SWEP.ViewModelFOV = 130
 SWEP.ViewModelPositionOffset = Vector(-18, 0, 0)
 SWEP.ViewModelAngleOffset = Angle(-3, 0, 0)
 SWEP.UseHands = true
-SWEP.HoldType = "melee"
+SWEP.HoldType = "alaln_melee"
 SWEP.MeleeHolsterSlot = 1
 SWEP.SoundCL = false
 SWEP.Primary.Sound = Sound("weapons/slam/throw.wav")
@@ -41,7 +41,7 @@ SWEP.BackStabMul = 2
 SWEP.SlashSound = Sound("nmrihimpact/sharp_heavy1.wav")
 SWEP.StabSound = Sound("nmrihimpact/sharp_heavy5.wav")
 SWEP.HitWorldSound = Sound("nmrihimpact/concrete/concrete_impact_bullet5.wav")
-SWEP.ReachDistance = 74
+SWEP.ReachDistance = 79
 SWEP.VModelForSelector = false
 SWEP.IdleAnim = "idle"
 SWEP.DeployAnim = "draw"
@@ -51,6 +51,8 @@ SWEP.DeploySound = Sound("player/weapon_draw_0" .. math.random(1, 5) .. ".wav")
 SWEP.ENT = "mann_ent_hatchet"
 SWEP.Droppable = true
 SWEP.IconOverride = "editor/ai_goal_police"
+SWEP.MaxHP = 65
+SWEP.HP = 65
 if CLIENT then
 	local Crouched = 0
 	-- tried to make viewmodel like in The Forest
@@ -68,16 +70,15 @@ if CLIENT then
 		local vm_origin, vm_angles = EyePos + sitvec, eye.Ang + Angle(0, -5, 0)
 		return vm_origin, vm_angles
 	end]]
-
 	function SWEP:DrawWorldModel()
 		if self:GetOwner():IsValid() then
 			local Pos, Ang = self:GetOwner():GetBonePosition(self:GetOwner():LookupBone("ValveBiped.Bip01_R_Hand"))
 			if self.DatWorldModel then
 				if Pos and Ang then
-					self.DatWorldModel:SetRenderOrigin(Pos + Ang:Forward() * 3.5 + Ang:Right() - Ang:Up() * 5)
+					self.DatWorldModel:SetRenderOrigin(Pos + Ang:Forward() * 3 + Ang:Right() - Ang:Up() * 6)
 					Ang:RotateAroundAxis(Ang:Up(), -20)
-					Ang:RotateAroundAxis(Ang:Forward(), 190)
-					Ang:RotateAroundAxis(Ang:Right(), 0)
+					Ang:RotateAroundAxis(Ang:Forward(), 180)
+					Ang:RotateAroundAxis(Ang:Right(), -5)
 					self.DatWorldModel:SetRenderAngles(Ang)
 					self.DatWorldModel:DrawModel()
 				end
@@ -88,6 +89,8 @@ if CLIENT then
 				self.DatWorldModel:SetNoDraw(true)
 				self.DatWorldModel:SetModelScale(1, 0)
 			end
+		else
+			self:DrawModel()
 		end
 	end
 end

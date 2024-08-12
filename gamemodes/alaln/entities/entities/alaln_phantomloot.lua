@@ -2,8 +2,9 @@ AddCSLuaFile()
 ENT.Type = "anim"
 ENT.PrintName = "Phantom Loot"
 ENT.Spawnable = true
-ENT.Category = "Forsakened"
-local math, table, Color = math, table, Color
+ENT.Category = "! Forsakened"
+ENT.IconOverride = "editor/obsolete"
+local math, table, Color, Vector, Angle, IsValid = math, table, Color, Vector, Angle, IsValid
 -- format: multiline
 local FoodModels = {
 	"models/w_models/weapons/w_smg_a.mdl",
@@ -16,14 +17,14 @@ local FoodModels = {
 	"models/weapons/w_km2000_knife.mdl",
 	"models/props_junk/garbage_metalcan001a.mdl",
 	"models/props_junk/garbage_metalcan002a.mdl",
-	"models/props_junk/PopCan01a.mdl",
-	"models/props_junk/garbage128_composite001a.mdl",
-	"models/props_junk/garbage128_composite001b.mdl",
-	"models/props_junk/garbage128_composite001c.mdl",
-	"models/props_junk/garbage128_composite001d.mdl"
+	"models/props_junk/PopCan01a.mdl"
 }
 
-local clr_distort = Color(30, 0, 0)
+--[["models/props_junk/garbage128_composite001a.mdl",
+	"models/props_junk/garbage128_composite001b.mdl",
+	"models/props_junk/garbage128_composite001c.mdl",
+	"models/props_junk/garbage128_composite001d.mdl"]]
+local clr_distort = Color(40, 0, 0)
 function ENT:Initialize()
 	if not SERVER then return end
 	self:SetModel(table.Random(FoodModels))
@@ -36,6 +37,7 @@ function ENT:Initialize()
 	self:SetRenderFX(15)
 	self:SetRenderMode(RENDERMODE_GLOW)
 	self:SetColor(clr_distort)
+	self:DrawShadow(false)
 	local phys = self:GetPhysicsObject()
 	if IsValid(phys) then
 		phys:SetContents(CONTENTS_SOLID)
@@ -49,12 +51,12 @@ function ENT:PhysicsCollide(data, ent)
 	if data.DeltaTime > .1 then self:GetPhysicsObject():SetVelocity(self:GetPhysicsObject():GetVelocity() * 0) end
 end
 
-local color_red = Color(165, 0, 0)
+local color_red = Color(185, 15, 15)
 local randomphrase = {"Wait.. What was that?", "It's... Not real?", "Am i tripping?", "Huh...", "What the..."}
 function ENT:Use(ply)
 	if CLIENT then return end
-	ply:EmitSound("ambient/levels/citadel/strange_talk" .. math.random(1, 11) .. ".wav")
-	if ply:GetAlalnState("crazyness") <= 20 then
+	ply:EmitSound("ambient/levels/citadel/strange_talk" .. math.random(1, 11) .. ".wav", 60, math.random(95, 105))
+	if ply:GetAlalnState("crazyness") <= 50 and ply:GetAlalnState("class") ~= "Operative" and ply:GetAlalnState("class") ~= "Human" then
 		ply:AddAlalnState("crazyness", math.random(4, 16))
 		BetterChatPrint(ply, table.Random(randomphrase), color_red)
 		ply:AddAlalnState("score", 0.2)
@@ -69,6 +71,9 @@ end
 
 if CLIENT then
 	function ENT:Draw()
+		local Closeness = LocalPlayer():GetFOV() * EyePos():Distance(self:GetPos())
+		local DetailDraw = Closeness < 100000
+		if not DetailDraw then return end
 		self:DrawModel()
 	end
 end

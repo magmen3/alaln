@@ -1,16 +1,15 @@
+-- Original code by SweptThrone, modified by Mannytko
 AddCSLuaFile()
 ENT.Type = "anim"
 ENT.Base = "base_anim"
 ENT.PrintName = "Progress Usable"
-ENT.Author = "SweptThrone"
-ENT.Spawnable = true
-ENT.AdminSpawnable = false
+ENT.Category = "! Forsakened"
+ENT.Spawnable = false
 ENT.AutomaticFrameAdvance = true
+ENT.IconOverride = "editor/obsolete"
 ENT.ProgPerTick = 0 -- used internally, this should not be changed
 ENT.TimeToUse = ENT.TimeToUse or 1.5 -- the user can edit this
 ENT.PartialUse = 1 -- used internally, this should not be changed
---ENT.DrawKeyPrompt = true -- deprecated, use self:SetDrawKeyPrompt( b )
---ENT.DrawProgress = true -- deprecated, use self:SetProgress( b )
 ENT.PartialUses = {}
 --[[ this is an example of a filled-in PartialUses table
 	 make sure they're in chronological order, or they may not be called
@@ -26,7 +25,7 @@ ENT.PartialUses = {
 	{ prog = 99, func = function( ent ) ent:EmitSound( "buttons/blip1.wav", 75, 100 ) end }
 }
 ]]
-local math, table, Color = math, table, Color
+local math, table, Color, Vector, Angle, IsValid = math, table, Color, Vector, Angle, IsValid
 function ENT:SetupDataTables()
 	self:NetworkVar("Float", 0, "EndTime")
 	self:NetworkVar("Entity", 0, "User")
@@ -95,6 +94,9 @@ end
 
 if CLIENT then
 	function ENT:Draw()
+		local Closeness = LocalPlayer():GetFOV() * EyePos():Distance(self:GetPos())
+		local DetailDraw = Closeness < 700000
+		if not DetailDraw then return end
 		self:DrawModel()
 	end
 end

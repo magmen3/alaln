@@ -1,3 +1,4 @@
+local render, Material, hook, hook_Add, LocalPlayer, ScrW, ScrH, table, draw, surface, Color, Vector, timer, timer_Create, math, util, net = render, Material, hook, hook.Add, LocalPlayer, ScrW, ScrH, table, draw, surface, Color, Vector, timer, timer.Create, math, util, net
 local plyMeta = FindMetaTable("Player")
 function plyMeta:GetAlalnState(type)
 	if type == "hunger" then
@@ -13,16 +14,51 @@ function plyMeta:GetAlalnState(type)
 	end
 end
 
+local color_yellow = Color(210, 210, 110)
 function plyMeta:SetAlalnState(type, amt)
 	if type == "hunger" then
 		self:SetNWFloat("alaln-hunger", math.Clamp(amt, 0, 100))
 	elseif type == "crazyness" then
 		self:SetNWFloat("alaln-crazyness", math.Clamp(amt, 0, 100))
 	elseif type == "class" then
-		net.Start("alaln-setclass")
-		net.WritePlayer(ply)
-		net.WriteString(amt)
-		net.SendToServer()
+		if CLIENT then
+			net.Start("alaln-setclass")
+			net.WritePlayer(ply)
+			net.WriteString(amt or "Psychopath")
+			net.SendToServer()
+		else
+			self:SetNWString("alaln-class", amt or "Psychopath")
+			local score
+			local text
+			if amt == "Cannibal" and self:GetAlalnState("score") >= 45 then -- Stupid shit
+				score = 45
+				text = "You changed your class, you need to respawn to apply it."
+			elseif amt == "Berserker" and self:GetAlalnState("score") >= 75 then
+				score = 75
+				text = "You changed your class, you need to respawn to apply it."
+			elseif amt == "Psychopath" or class == "Faster" then
+				score = 0
+				text = "You changed your class, you need to respawn to apply it."
+			elseif amt == "Gunslinger" and self:GetAlalnState("score") >= 95 then
+				score = 95
+				text = "You changed your class, you need to respawn to apply it."
+			elseif amt == "Operative" then
+				score = 0
+				text = ""
+			elseif amt == "Human" then
+				score = 0
+				text = ""
+			else
+				score = 0
+				text = ""
+			end
+
+			if text and text ~= "" then BetterChatPrint(self, text, color_yellow) end
+			self:AddAlalnState("score", -score)
+			if amt ~= "Operative" and self:Alive() and SERVER then self:Kill() end
+		end
+
+		self:SetNWString("alaln-class", amt or "Psychopath")
 	elseif type == "score" then
 		self:SetNWFloat("alaln-score", math.Clamp(amt, 0, 6666))
 	elseif type == "stamina" then
@@ -42,6 +78,40 @@ function plyMeta:AddAlalnState(type, amt)
 	end
 end
 
+net.Receive("alaln-setclass", function(len, ply)
+	local netply = net.ReadPlayer()
+	local class = net.ReadString()
+	netply:SetNWString("alaln-class", class)
+	local score --!! TODO: Переделать это в виде таблицы
+	local text
+	if class == "Cannibal" and ply:GetAlalnState("score") >= 45 then -- Stupid shit
+		score = 45
+		text = "You changed your class, you need to respawn to apply it."
+	elseif class == "Berserker" and ply:GetAlalnState("score") >= 75 then
+		score = 75
+		text = "You changed your class, you need to respawn to apply it."
+	elseif class == "Psychopath" or class == "Faster" then
+		score = 0
+		text = "You changed your class, you need to respawn to apply it."
+	elseif class == "Gunslinger" and ply:GetAlalnState("score") >= 95 then
+		score = 95
+		text = "You changed your class, you need to respawn to apply it."
+	elseif class == "Operative" then
+		score = 0
+		text = ""
+	elseif class == "Human" then
+		score = 0
+		text = ""
+	else
+		score = 0
+		text = ""
+	end
+
+	if text and text ~= "" then BetterChatPrint(ply, text, color_yellow) end
+	netply:AddAlalnState("score", -score)
+	if class ~= "Operative" and class ~= "Human" and netply:Alive() and SERVER then netply:Kill() end
+end)
+------------------------------------------------------------------- LEGACY: Need to remove
 --[[function plyMeta:GetHunger()
 	return self:GetNWFloat("alaln-hunger", 0)
 end
@@ -91,30 +161,6 @@ end
 function plyMeta:GetAlalnClass()
 	return self:GetNWString("alaln-class", "Psychopath")
 end]]
-local color_yellow = Color(255, 235, 0)
-net.Receive("alaln-setclass", function(len, ply)
-	local netply = net.ReadPlayer()
-	local class = net.ReadString()
-	netply:SetNWString("alaln-class", class)
-	local score --!! TODO: Переделать это в виде таблицы
-	if class == "Cannibal" and ply:GetAlalnState("score") >= 45 then -- Stupid shit
-		score = 45
-		BetterChatPrint(ply, "You changed your class, you need to respawn to apply it.", color_yellow)
-	elseif class == "Berserker" and ply:GetAlalnState("score") >= 75 then
-		score = 75
-		BetterChatPrint(ply, "You changed your class, you need to respawn to apply it.", color_yellow)
-	elseif class == "Psychopath" or class == "Faster" then
-		score = 0
-		BetterChatPrint(ply, "You changed your class, you need to respawn to apply it.", color_yellow)
-	elseif class == "Gunslinger" and ply:GetAlalnState("score") >= 95 then
-		score = 95
-		BetterChatPrint(ply, "You changed your class, you need to respawn to apply it.", color_yellow)
-	else
-		score = 0
-	end
-
-	netply:AddAlalnState("score", -score)
-end)
 -- Score
 --[[function plyMeta:GetAlalnScore()
 	return self:GetNWFloat("alaln-score", 0)

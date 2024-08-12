@@ -1,3 +1,4 @@
+local render, Material, hook, hook_Add, LocalPlayer, ScrW, ScrH, table, draw, surface, Color, Vector, timer, timer_Create, math, util, net = render, Material, hook, hook.Add, LocalPlayer, ScrW, ScrH, table, draw, surface, Color, Vector, timer, timer.Create, math, util, net
 ALALN_LootBoxTable = {
 	-- Items
 	{"alaln_food", 80},
@@ -11,8 +12,10 @@ ALALN_LootBoxTable = {
 	{"mann_ent_hammer", 14},
 	{"mann_ent_pm", 10},
 	{"mann_ent_metalbat", 18},
+	{"mann_ent_fireaxe", 13},
 	{"mann_ent_sw686", 6},
-	{"alaln_flamethrower", 1},
+	{"mann_wep_flaregun", 2},
+	{"alaln_flamethrower", 1}
 }
 
 ALALN_LootBoxModels = {
@@ -55,8 +58,10 @@ local function spawnLoot(ply, ent)
 	end
 end
 
-hook.Add("EntityTakeDamage", "alaln-lootboxes", function(ent, dmg)
+hook_Add("EntityTakeDamage", "alaln-lootboxes", function(ent, dmg)
+	--
 	if ALALN_LootBoxModels[ent:GetModel()] and ent:Health() - dmg:GetDamage() <= 0 then
+		--
 		spawnLoot(dmg:GetAttacker(), ent)
 	end
 end)

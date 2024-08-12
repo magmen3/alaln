@@ -1,5 +1,6 @@
 -- Rubat moment https://github.com/Facepunch/garrysmod/pull/1590
 --if engine.ActiveGamemode() ~= "alaln" then return end
+local render, Material, hook, hook_Add, LocalPlayer, ScrW, ScrH, table, draw, surface, Color, Vector, timer, timer_Create, math, util, net = render, Material, hook, hook.Add, LocalPlayer, ScrW, ScrH, table, draw, surface, Color, Vector, timer, timer.Create, math, util, net
 OUTLINE_MODE_BOTH = 0 -- Render always
 OUTLINE_MODE_NOTVISIBLE = 1
 OUTLINE_MODE_VISIBLE = 2
@@ -181,6 +182,6 @@ local function RenderOutlines()
 	List, ListSize = {}, 0
 end
 
-hook.Add("PreDrawViewModels", "RenderOutlines", function() if RenderType == OUTLINE_RENDERTYPE_BEFORE_VM then RenderOutlines() end end)
-hook.Add("PreDrawEffects", "RenderOutlines", function() if RenderType == OUTLINE_RENDERTYPE_BEFORE_EF then RenderOutlines() end end)
-hook.Add("PostDrawEffects", "RenderOutlines", function() if RenderType == OUTLINE_RENDERTYPE_AFTER_EF then RenderOutlines() end end)
+hook_Add("PreDrawViewModels", "RenderOutlines", function() if RenderType == OUTLINE_RENDERTYPE_BEFORE_VM then RenderOutlines() end end)
+hook_Add("PreDrawEffects", "RenderOutlines", function() if RenderType == OUTLINE_RENDERTYPE_BEFORE_EF then RenderOutlines() end end)
+hook_Add("PostDrawEffects", "RenderOutlines", function() if RenderType == OUTLINE_RENDERTYPE_AFTER_EF then RenderOutlines() end end)

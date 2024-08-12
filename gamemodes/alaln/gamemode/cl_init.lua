@@ -1,3 +1,4 @@
+local render, Material, hook, hook_Add, LocalPlayer, ScrW, ScrH, table, draw, surface, Color, Vector, timer, timer_Create, math, util, concommand = render, Material, hook, hook.Add, LocalPlayer, ScrW, ScrH, table, draw, surface, Color, Vector, timer, timer.Create, math, util, concommand
 include("shared.lua")
 include("loader.lua")
 CreateClientConVar("alaln_potatomode", 0, true, false, "Enable low-end PC mode?", 0, 1)
@@ -14,41 +15,47 @@ function GM:ChatText(index, name, text, type)
 	return BadType[type]
 end
 
-hook.Add("DrawDeathNotice", "alaln-hidekillfeed", function()
+hook_Add("DrawDeathNotice", "alaln-hidekillfeed", function()
 	return false -- return 0, 0
 end)
 
-hook.Add("PlayerStartVoice", "alaln-hideimageonvoice", function() return true end)
+hook_Add("PlayerStartVoice", "alaln-hideimageonvoice", function() return true end)
 gameevent.Listen("player_spawn")
-hook.Add("player_spawn", "alaln-networkplyhull", function(data)
+hook_Add("player_spawn", "alaln-networkplyhull", function(data)
 	local ply = Player(data.userid)
+	if ply:GetAlalnState("class") == "Operative" then
+		if math.random(1, 2) == 2 then
+			surface.PlaySound("in3_l7_feedback_01.mp3")
+		else
+			surface.PlaySound("in3_l7_transmission.mp3")
+		end
+	end
+
 	--[[if BRANCH ~= "x86-64" then
 		for i = 1, 10 do
 			ply:ChatPrint("Поставь x64 бету")
 		end
 	end]]
-
 	ply:SetDSP(0)
-	if ply.SetHull then
-		ply:SetHull(ply:GetNWVector("HullMin"), ply:GetNWVector("Hull"))
-		ply:SetHullDuck(ply:GetNWVector("HullMin"), ply:GetNWVector("HullDuck"))
-	end
 end)
 
-local color_yellow = Color(255, 235, 0)
+local color_yellow = Color(210, 210, 110)
 concommand.Add("checkammo", function()
 	local ply = LocalPlayer()
 	local wep = ply:GetActiveWeapon()
-	if not (IsValid(wep) and IsValid(ply) and ply:Alive()) then return end
+	if not (IsValid(wep) or IsValid(ply) or ply:Alive()) then return end
 	local ammo, ammobag = wep:GetMaxClip1(), wep:Clip1()
-	if ammo <= 0 then return end
-	--surface.PlaySound("common/wpn_denyselect.wav")
-	--chat.AddText(Color(255, 235, 0), "You can't check ammo on this weapon.")
+	if ammo <= 0 then
+		--[[surface.PlaySound("common/wpn_denyselect.wav")
+		chat.AddText(color_yellow, "You can't check ammo on this weapon.")]]
+		return
+	end
+
 	surface.PlaySound("physics/metal/weapon_footstep" .. math.random(1, 2) .. ".wav")
 	local text
 	if ammobag > ammo - 1 then
 		text = "Full magazine."
-	elseif ammobag > ammo - ammo / 3 then
+	elseif ammobag > ammo - (ammo / 3) then
 		text = "~ Almost full magazine."
 	elseif ammobag > ammo / 3 then
 		text = "~ Half magazine."
@@ -61,8 +68,8 @@ concommand.Add("checkammo", function()
 	BetterChatPrint(text, color_yellow)
 end, nil, "Check your current gun ammo", FCVAR_NONE)
 
-local color_button = Color(165, 0, 0)
-local color_ui = Color(0, 0, 0, 150)
+local color_button = Color(165, 0, 0, 180)
+local color_ui = Color(0, 0, 0, 180)
 net.Receive("alaln-navmeshnotfound", function()
 	local navframe = vgui.Create("DFrame")
 	navframe:SetSize(500, 500)
@@ -72,7 +79,7 @@ net.Receive("alaln-navmeshnotfound", function()
 	navframe:ShowCloseButton(true)
 	navframe:MakePopup()
 	navframe.Paint = function(self, w, h)
-		draw.RoundedBox(5, 0, 0, w, h, color_ui)
+		draw.RoundedBox(6, 0, 0, w, h, color_ui)
 		draw.SimpleText("Navmesh not found!", hudfontsmall, 245, 30, color_text, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
 	end
 
@@ -81,7 +88,7 @@ net.Receive("alaln-navmeshnotfound", function()
 	button1:SetPos(170, 100)
 	button1:SetSize(150, 100)
 	button1.Paint = function(self, w, h)
-		draw.RoundedBox(5, 0, 0, w, h, color_button)
+		draw.RoundedBox(6, 0, 0, w, h, color_button)
 		draw.SimpleText("Change map in main menu", hudfontsmall, 75, 50, color_text, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
 	end
 
@@ -123,7 +130,7 @@ local color = Color(150, 0, 0, 250)
 local hudfont = "alaln-hudfontbig"
 local randomstrings = {"RUN", "LIVER FAILURE FOREVER", "YOU'RE ALREADY DEAD", "KILL OR DIE"}
 local text
-hook.Add("HUDPaint", "alaln-roundstartscreen", function()
+hook_Add("HUDPaint", "alaln-roundstartscreen", function()
 	local ply = LocalPlayer()
 	local startRound = roundTimeStart + 10 - CurTime()
 	if startRound > 0 and ply:Alive() then

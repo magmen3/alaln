@@ -3,36 +3,38 @@ AddCSLuaFile()
 SWEP.Base = "alaln_base"
 SWEP.Spawnable = true
 SWEP.UseHands = true
-SWEP.PrintName = "Berserker Fists"
+SWEP.PrintName = "Fists"
 SWEP.Category = "! Forsakened"
 SWEP.Purpose = "These are your hands. They're no energy sword, but they still pack a wallop, and can kick someone ass."
 SWEP.Instructions = "R to upper/lower fists,\nLMB with uppered fists to swing,\nRMB with uppered fists to block,\nRMB with lowered fists to grab."
 SWEP.ViewModel = Model("models/weapons/v_fist.mdl")
 SWEP.WorldModel = ""
 SWEP.DrawWorldModel = false
-SWEP.ViewModelPositionOffset = Vector(-3, 0, -1)
-SWEP.ViewModelAngleOffset = Angle(0, 2, -1)
+SWEP.ViewModelPositionOffset = Vector(-5, 0, -2)
+SWEP.ViewModelAngleOffset = Angle(4, 2, 2)
 SWEP.ViewModelFOV = 120
 SWEP.BobScale = -2
 SWEP.SwayScale = -2
 SWEP.Primary.ClipSize = -1
 SWEP.Primary.DefaultClip = -1
-SWEP.Primary.Automatic = true
+SWEP.Primary.Automatic = false
 SWEP.Primary.Ammo = "none"
 SWEP.Secondary.ClipSize = -1
 SWEP.Secondary.DefaultClip = -1
-SWEP.Secondary.Automatic = true
+SWEP.Secondary.Automatic = false
 SWEP.Secondary.Ammo = "none"
 SWEP.AutoSwitchTo = true
-SWEP.AutoSwitchFrom = true
+SWEP.AutoSwitchFrom = false
 if CLIENT then SWEP.WepSelectIcon = surface.GetTextureID("vgui/hud/alaln_fists") end
-SWEP.IconOverride = "halflife/lab1_cmpm3000"
+SWEP.IconOverride = "editor/obsolete"
 SWEP.Slot = 0
 SWEP.SlotPos = 1
 SWEP.AllowViewAttachment = true
 SWEP.HitDistance = 75
 SWEP.Range = 85
 SWEP.Droppable = false
+SWEP.Drag = false
+--!! TODO: Переделать систему подбирания потому что это кал с нексторена
 local HitSound = Sound("Flesh.ImpactHard")
 local SwingSound = Sound("weapons/slam/throw.wav")
 function SWEP:Initialize()
@@ -56,6 +58,7 @@ function SWEP:CalcViewModelView(vm, oldpos, oldang, pos, ang)
 	else
 		Crouched = math.Clamp(Crouched - .05, 0, 2)
 	end
+
 	local forward, right, up = self.ViewModelPositionOffset.x, self.ViewModelPositionOffset.y, self.ViewModelPositionOffset.z + Crouched
 	local angs = owner:EyeAngles()
 	--ang.pitch = -ang.pitch
@@ -84,7 +87,7 @@ function SWEP:PrimaryAttack(right)
 		local vm = self:GetOwner():GetViewModel()
 		vm:SetWeaponModel("models/weapons/v_fist.mdl", self)
 		vm:SendViewModelMatchingSequence(vm:LookupSequence("draw"))
-		self:EmitSound("weapons/wbk/PF_Osm_3.wav")
+		self:EmitSound("weapons/melee/fists/fist_draw.wav")
 		owner:BetterViewPunch(Angle(-4.4, 0, 1.5))
 		self:SetNextPrimaryFire(CurTime() + 0.3)
 		self:SetNextSecondaryFire(CurTime() + 0.3)
@@ -97,20 +100,16 @@ function SWEP:PrimaryAttack(right)
 		if currentPunchAnim == "punch_hit" or currentPunchAnim == "draw" or not owner:OnGround() then anim = "punch_hard" end
 		local vm = owner:GetViewModel()
 		vm:SendViewModelMatchingSequence(vm:LookupSequence(anim))
-		if anim == "punch_hard" then
-			self:GetOwner():BetterViewPunch(Angle(-9, -11, 1))
-		end
+		if anim == "punch_hard" then self:GetOwner():BetterViewPunch(Angle(-9, -11, 1)) end
 		self:EmitSound(SwingSound)
 		local velmul = 1
-		if owner:GetAlalnState("class") == "Gunslinger" then 
+		if owner:GetAlalnState("class") == "Gunslinger" then
 			velmul = velmul * 0.6
 		elseif owner:GetAlalnState("class") == "Berserker" then
 			velmul = velmul * 1.3
 		end
 
-		if owner:OnGround() then
-			owner:SetVelocity(owner:GetAimVector() * 250 * velmul)
-		end
+		if owner:OnGround() then owner:SetVelocity(owner:GetAimVector() * 250 * velmul) end
 		self:UpdateNextIdle()
 		self:SetNextMeleeAttack(CurTime() + 0.14)
 		self:GetOwner():BetterViewPunch(Angle(0, -8.5, -2.5))
@@ -134,7 +133,7 @@ function SWEP:Reload()
 		local vm = self:GetOwner():GetViewModel()
 		vm:SetWeaponModel("models/weapons/v_fist.mdl", self)
 		vm:SendViewModelMatchingSequence(vm:LookupSequence("draw"))
-		self:EmitSound("weapons/wbk/PF_Osm_3.wav")
+		self:EmitSound("weapons/melee/fists/fist_draw.wav")
 		self:GetOwner():BetterViewPunch(Angle(-2, 0, 1))
 		self:SetNextPrimaryFire(CurTime() + 0.5)
 		self:SetNextSecondaryFire(CurTime() + vm:SequenceDuration())
@@ -148,26 +147,27 @@ function SWEP:Reload()
 		self:GetOwner():BetterViewPunch(Angle(2, 0, 1))
 		self:SetNextPrimaryFire(CurTime() + 0.5)
 		self:SetNextSecondaryFire(CurTime() + 0.3)
-		self:EmitSound("weapons/wbk/PF_Osm_2.wav")
+		self:EmitSound("weapons/melee/fists/fist_holster.wav")
 	end
 end
 
 local phys_pushscale = GetConVar("phys_pushscale")
 function SWEP:DealDamage()
-	local anim = self:GetSequenceName(self:GetOwner():GetViewModel():GetSequence())
-	self:GetOwner():LagCompensation(true)
+	local owner = self:GetOwner()
+	local anim = self:GetSequenceName(owner:GetViewModel():GetSequence())
+	owner:LagCompensation(true)
 	local tr = util.TraceLine({
-		start = self:GetOwner():GetShootPos(),
-		endpos = self:GetOwner():GetShootPos() + self:GetOwner():GetAimVector() * self.HitDistance,
-		filter = self:GetOwner(),
+		start = owner:GetShootPos(),
+		endpos = owner:GetShootPos() + owner:GetAimVector() * self.HitDistance,
+		filter = owner,
 		mask = MASK_SHOT_HULL
 	})
 
 	if not IsValid(tr.Entity) then
 		tr = util.TraceHull({
-			start = self:GetOwner():GetShootPos(),
-			endpos = self:GetOwner():GetShootPos() + self:GetOwner():GetAimVector() * self.HitDistance,
-			filter = self:GetOwner(),
+			start = owner:GetShootPos(),
+			endpos = owner:GetShootPos() + owner:GetAimVector() * self.HitDistance,
+			filter = owner,
 			mins = Vector(-10, -10, -8),
 			maxs = Vector(10, 10, 8),
 			mask = MASK_SHOT_HULL
@@ -180,7 +180,7 @@ function SWEP:DealDamage()
 			self:SetNextPrimaryFire(CurTime() + 1.3)
 			self:SetNextSecondaryFire(CurTime() + 1.3)
 			timer.Simple(0.08, function()
-				local vm = self:GetOwner():GetViewModel()
+				local vm = owner:GetViewModel()
 				vm:SendViewModelMatchingSequence(vm:LookupSequence("draw"))
 				self:EmitSound(HitSound)
 				self:SetNextPrimaryFire(CurTime() + 0.6)
@@ -196,30 +196,30 @@ function SWEP:DealDamage()
 	local scale = phys_pushscale:GetFloat()
 	if SERVER and IsValid(tr.Entity) and (tr.Entity:IsNPC() or tr.Entity:IsPlayer() or tr.Entity:Health() > 0) then
 		local dmginfo = DamageInfo()
-		local attacker = self:GetOwner()
+		local attacker = owner
 		if not IsValid(attacker) then attacker = self end
 		dmginfo:SetAttacker(attacker)
 		dmginfo:SetInflictor(self)
 		dmginfo:SetDamage(math.random(25, 55))
 		if anim == "punch_hit" then
-			dmginfo:SetDamageForce(self:GetOwner():GetRight() * 4912 * scale + self:GetOwner():GetForward() * 9998 * scale) -- Yes we need those specific numbers
+			dmginfo:SetDamageForce(owner:GetRight() * 4912 * scale + owner:GetForward() * 9998 * scale) -- Yes we need those specific numbers
 		elseif anim == "punch_miss" then
-			dmginfo:SetDamageForce(self:GetOwner():GetRight() * -4912 * scale + self:GetOwner():GetForward() * 9989 * scale)
+			dmginfo:SetDamageForce(owner:GetRight() * -4912 * scale + owner:GetForward() * 9989 * scale)
 		elseif anim == "punch_hard" then
-			dmginfo:SetDamageForce(self:GetOwner():GetUp() * 5158 * scale + self:GetOwner():GetForward() * 10012 * scale)
+			dmginfo:SetDamageForce(owner:GetUp() * 5158 * scale + owner:GetForward() * 10012 * scale)
 			dmginfo:SetDamage(math.random(12, 18))
-			timer.Simple(0.1, function() self:GetOwner():BetterViewPunch(Angle(12.5, 0, 8.5)) end)
+			timer.Simple(0.1, function() owner:BetterViewPunch(Angle(12.5, 0, 8.5)) end)
 		end
 
 		SuppressHostEvents(NULL) -- Let the breakable gibs spawn in multiplayer on client
 		tr.Entity:TakeDamageInfo(dmginfo)
-		SuppressHostEvents(self:GetOwner())
+		SuppressHostEvents(owner)
 		hit = true
 	end
 
 	if IsValid(tr.Entity) then
 		local phys = tr.Entity:GetPhysicsObject()
-		if IsValid(phys) then phys:ApplyForceOffset(self:GetOwner():GetAimVector() * 80 * phys:GetMass() * scale, tr.HitPos) end
+		if IsValid(phys) then phys:ApplyForceOffset(owner:GetAimVector() * 80 * phys:GetMass() * scale, tr.HitPos) end
 	end
 
 	if SERVER then
@@ -230,7 +230,7 @@ function SWEP:DealDamage()
 		end
 	end
 
-	self:GetOwner():LagCompensation(false)
+	owner:LagCompensation(false)
 end
 
 function SWEP:OnDrop()
@@ -381,12 +381,8 @@ function SWEP:SecondaryAttack()
 	end
 end
 
-function SWEP:OnDrop()
-	self:Remove()
-end
-
 if CLIENT then
-	local color_red = Color(180, 0, 0)
+	local color_red = Color(185, 15, 15)
 	function SWEP:DrawHUD()
 		local owner = self:GetOwner()
 		local tr = {}
@@ -440,12 +436,12 @@ function SWEP:Think()
 		vm:SetWeaponModel("models/weapons/c_arms_wbk_unarmed.mdl", self)
 		vm:SendViewModelMatchingSequence(vm:LookupSequence("WbkCrouch"))
 	else]]
-		if self.fistsOut and not self.isInBlockDam and vm:GetModel() == "models/weapons/c_arms_wbk_unarmed.mdl" then
-			vm:SetWeaponModel("models/weapons/v_fist.mdl", self)
-			vm:SendViewModelMatchingSequence(vm:LookupSequence("draw"))
-		end
-	--end
+	if self.fistsOut and not self.isInBlockDam and vm:GetModel() == "models/weapons/c_arms_wbk_unarmed.mdl" then
+		vm:SetWeaponModel("models/weapons/v_fist.mdl", self)
+		vm:SendViewModelMatchingSequence(vm:LookupSequence("draw"))
+	end
 
+	--end
 	--[[if owner:KeyPressed(IN_JUMP) and owner:WaterLevel() < 2 and self.canWbkUseJumpAnim == true and self.fistsOut == false then
 		self.canWbkUseJumpAnim = false
 		if owner:IsSprinting() then
@@ -467,7 +463,7 @@ function SWEP:Think()
 		self:SetHoldType("normal")
 		vm:SetWeaponModel("models/weapons/c_arms.mdl", self)
 		vm:SendViewModelMatchingSequence(vm:LookupSequence("fists_holster"))
-		self:EmitSound("weapons/wbk/PF_Osm_2.wav")
+		self:EmitSound("weapons/melee/fists/fist_holster.wav")
 	end]]
 	if self.fistsOut == false and idletime > 0 and CurTime() > idletime then
 		if owner:WaterLevel() >= 2 then
@@ -478,7 +474,7 @@ function SWEP:Think()
 				vm:SendViewModelMatchingSequence(vm:LookupSequence("WbkIdle_Lowered"))
 				self:UpdateNextIdle()
 			end
-			else
+		else
 			if owner:OnGround() then
 				if owner:IsSprinting() then
 					vm:SendViewModelMatchingSequence(vm:LookupSequence("WbKSprint"))

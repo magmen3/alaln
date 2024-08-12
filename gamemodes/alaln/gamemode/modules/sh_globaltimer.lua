@@ -1,56 +1,59 @@
-local timer_Create, math, Color, Vector = timer.Create, math, Color, Vector
+local render, Material, hook, hook_Add, LocalPlayer, ScrW, ScrH, table, draw, surface, Color, Vector, timer, timer_Create, math, util, net = render, Material, hook, hook.Add, LocalPlayer, ScrW, ScrH, table, draw, surface, Color, Vector, timer, timer.Create, math, util, net
 local crazyeffectcd = 0
-local color_red = Color(165, 0, 0)
-local color_yellow = Color(255, 170, 0)
-local color_yellow2 = Color(255, 235, 0)
+local color_red = Color(185, 15, 15)
+local color_yellow = Color(210, 210, 110)
 local agonysounds = {"vo/npc/male01/runforyourlife02.wav", "vo/npc/male01/pain07.wav", "vo/npc/male01/pain09.wav", "vo/npc/male01/no02.wav", "vo/npc/male01/strider_run.wav"}
 local panicsounds = {"vo/npc/male01/runforyourlife02.wav", "vo/npc/male01/no02.wav", "vo/npc/male01/strider_run.wav"}
 local randagonystrings = {"OH SHIT", "IM HURT", "FUUUUUCK", "SOMEONE HELP ME", "PLEASE HELP ME"}
 local charplemat = "models/charple/charple2_sheet"
 local berserkmat = "models/in/other/corpse1_player_charple"
-local cannibalmat = "models/in/other/corpse1_player_charple"
+local cannibalmat = "models/screamer/corpse9"
 -- good alternative for stuff that needs think hook
 timer_Create("alaln-globalenttimer", 0.5, 0, function()
-	--local entys = ents.GetAll()
 	for _, ply in player.Iterator() do
 		if IsValid(ply) and ply:Alive() then
+			local hunger, crazyness = ply:GetAlalnState("hunger"), ply:GetAlalnState("crazyness")
 			-------- Hunger --------
-			if SERVER and SBOXMode:GetBool() == false then
-				if ply:GetAlalnState("hunger") < 50 and ply:GetAlalnState("hunger") > 49.95 then
-					BetterChatPrint(ply, "You are starving.", color_yellow2)
-					if CLIENT and ply == LocalPlayer() then surface.PlaySound("common/warning.wav") end
-				elseif ply:GetAlalnState("hunger") < 30 and ply:GetAlalnState("hunger") > 29.95 then
+			if SBOXMode:GetBool() == false then
+				if hunger < 50 and hunger > 49.95 then
 					BetterChatPrint(ply, "You are starving.", color_yellow)
 					if CLIENT and ply == LocalPlayer() then surface.PlaySound("common/warning.wav") end
-				elseif ply:GetAlalnState("hunger") < 1 and ply:GetAlalnState("hunger") > 0.95 then
+				elseif hunger < 30 and hunger > 29.95 then
+					BetterChatPrint(ply, "You are starving.", color_yellow)
+					if CLIENT and ply == LocalPlayer() then surface.PlaySound("common/warning.wav") end
+				elseif hunger < 1 and hunger > 0.95 then
 					BetterChatPrint(ply, "You started starving to death.", color_red)
 					if CLIENT and ply == LocalPlayer() then surface.PlaySound("common/warning.wav") end
 				end
 
-				if ply:GetAlalnState("hunger") <= 15 then
-					ply:AddAlalnState("crazyness", 0.2)
-					util.ScreenShake(ply:GetPos(), 0.1, 0.1, 0.1, 0)
+				if SERVER then
+					if hunger <= 15 then
+						ply:AddAlalnState("crazyness", 0.2)
+						util.ScreenShake(ply:GetPos(), 0.1, 0.1, 0.1, 0)
+					end
+
+					if hunger >= 80 and ply:Health() <= 70 then
+						ply:SetHealth(ply:Health() + 1)
+						ply:AddAlalnState("hunger", -0.2)
+						ply:AddAlalnState("crazyness", -0.005)
+					elseif hunger <= 0 then
+						ply:TakeDamage(math.random(3, 6))
+						ply:AddAlalnState("crazyness", 0.25)
+						ply:EmitSound("player/pl_pain" .. math.random(5, 7) .. ".wav", 50, math.random(90, 110), 0.5)
+					elseif hunger >= 0 then
+						ply:AddAlalnState("hunger", -0.05)
+					end
 				end
 
-				if ply:GetAlalnState("hunger") >= 80 and ply:Health() <= 70 then
-					ply:SetHealth(ply:Health() + 1)
-					ply:AddAlalnState("hunger", -0.2)
-					ply:AddAlalnState("crazyness", -0.005)
-				elseif ply:GetAlalnState("hunger") <= 0 then
-					ply:TakeDamage(math.random(3, 6))
-					ply:AddAlalnState("crazyness", 0.25)
-					ply:EmitSound("player/pl_pain" .. math.random(5, 7) .. ".wav", 50, math.random(90, 110), 0.5)
-				elseif ply:GetAlalnState("hunger") >= 0 then
-					ply:AddAlalnState("hunger", -0.05)
-				end
-
-				------------------------
 				-------- Crazyness --------
-				if ply:GetAlalnState("crazyness") >= 0 then ply:AddAlalnState("crazyness", -0.005) end
-				if ply:GetAlalnState("crazyness") == 10 then BetterChatPrint(ply, "You are feeling yourself strange...", color_red) end
-				if ply:GetAlalnState("crazyness") >= 50 and math.random(1, 4) == 2 then ply:EmitSound("kidneydagger/scramble" .. math.random(1, 10) .. ".wav") end
+				if crazyness >= 0 then ply:AddAlalnState("crazyness", -0.005) end
+				if crazyness == 10 then BetterChatPrint(ply, "You are feeling yourself strange...", color_red) end
+				if crazyness >= 50 and math.random(1, 4) == 2 then ply:EmitSound("kidneydagger/scramble" .. math.random(1, 10) .. ".wav") end
+			elseif SBOXMode:GetBool() == true and crazyness >= 1 then
+				ply:SetAlalnState("crazyness", 0)
 			end
 
+			-------- Noclip nodraw --------
 			local movetype = ply:GetMoveType()
 			if movetype ~= MOVETYPE_NOCLIP or ply:InVehicle() then
 				ply:SetNoDraw(false)
@@ -65,18 +68,27 @@ timer_Create("alaln-globalenttimer", 0.5, 0, function()
 					ply:SetNoTarget(true)
 				end
 			end
+			
+			local class = ply:GetAlalnState("class")
+			-------- Drop on death (works like crap) --------
+			if SERVER and ply:Health() <= 1 and ply:Alive() then
+				if class ~= "Operative" and ply:GetActiveWeapon().Droppable then ply:DropWeapon() end
+			end
 
-			if movetype ~= MOVETYPE_NOCLIP and not ply:InVehicle() and ply:GetVelocity()[3] <= -750 and crazyeffectcd < CurTime() and ply:Alive() then
+			-------- Falling screams --------
+			if movetype ~= MOVETYPE_NOCLIP and not ply:InVehicle() and ply:GetVelocity()[3] <= -900 and crazyeffectcd < CurTime() and ply:Alive() and class ~= "Operative" then
 				ply:EmitSound(table.Random(panicsounds), 95, math.random(95, 100))
 				crazyeffectcd = CurTime() + 3
 			end
 
+			-------- Stamina --------
 			if movetype ~= MOVETYPE_NOCLIP and movetype ~= MOVETYPE_LADDER and ply:IsSprinting() and ply:GetAlalnState("stamina") >= 25 and ply:Alive() then
 				ply:AddAlalnState("stamina", -0.3)
 			elseif not ply:IsSprinting() and ply:GetAlalnState("stamina") < 50 and ply:Alive() then
 				ply:AddAlalnState("stamina", 0.8)
 			end
 
+			-------- Stamina breath (broken) --------
 			--[[if ply:Alive() and ply:GetAlalnState("stamina") <= 40 then --!! Сломанное говнище
 				local sfx = CreateSound(ply, "player/breathe1.wav")
 				sfx:PlayEx(1, 100)
@@ -84,33 +96,42 @@ timer_Create("alaln-globalenttimer", 0.5, 0, function()
 			elseif not ply:Alive() and sfx or ply:GetAlalnState("stamina") >= 40 and sfx then
 				sfx:Stop()
 			end]]
-			if ply:IsOnFire() and ply:Health() <= ply:GetMaxHealth() / 20 then
+
+			-------- Change playermodel on fire --------
+			if ply:IsOnFire() and ply:Health() <= ply:GetMaxHealth() / 20 and class ~= "Operative" then
 				ply:SetModel(Model("models/player/charple.mdl"))
 				ply:SetMaterial(charplemat)
 			else
-				if ply:GetAlalnState("class") == "Cannibal" then ply:SetSubMaterial(0, cannibalmat) end
-				if ply:GetAlalnState("class") == "Berserker" or ply:GetAlalnState("class") == "Gunslinger" then ply:SetSubMaterial(0, berserkmat) end
+				if class == "Cannibal" then ply:SetSubMaterial(0, cannibalmat) end
+				if class == "Berserker" or class == "Gunslinger" then ply:SetSubMaterial(0, berserkmat) end
 			end
 
-			if ply:GetNWBool("HasArmor", true) and ply:Armor() < 1 and ply:GetModel() ~= "models/player/charple.mdl" then
+			-------- Reset material with armor --------
+			if ply:GetNWBool("HasArmor", true) and ply:Armor() < 1 and ply:GetModel() ~= "models/player/charple.mdl" and class ~= "Operative" then
 				ply:SetModel(Model("models/player/corpse1.mdl"))
 				ply:SetSkin(0)
 				ply:SetSubMaterial()
-				ply:SetupHands()
-				if ply:GetAlalnState("class") == "Cannibal" then ply:SetSubMaterial(0, cannibalmat) end
-				if ply:GetAlalnState("class") == "Berserker" or ply:GetAlalnState("class") == "Gunslinger" then ply:SetSubMaterial(0, berserkmat) end
+				if SERVER then ply:SetupHands() end
+				if class == "Cannibal" then ply:SetSubMaterial(0, cannibalmat) end
+				if class == "Berserker" or class == "Gunslinger" then ply:SetSubMaterial(0, berserkmat) end
 				ply:SetNWBool("HasArmor", false)
 			end
 
-			if ply:IsOnFire() and crazyeffectcd < CurTime() and ply:Alive() then
+			-------- Chat scream when on fire --------
+			if ply:IsOnFire() and crazyeffectcd < CurTime() and ply:Alive() and class ~= "Operative" then
 				ply:EmitSound(table.Random(agonysounds), 95, math.random(95, 100))
 				crazyeffectcd = CurTime() + 3
 				if SERVER then ply:Say(table.Random(randagonystrings), false) end
 			end
 
+			-------- Passive score add --------
 			ply:AddAlalnState("score", 0.01)
+			
+			-------- Extinguish in water --------
 			if ply:WaterLevel() >= 2 and ply:IsOnFire() and SERVER then ply:Extinguish() end
-			if CLIENT and ply == LocalPlayer() and ply:GetAlalnState("crazyness") >= 60 and math.random(1, 15) == 5 and crazyeffectcd < CurTime() and ply:Alive() then
+			
+			-------- Crazyness sounds --------
+			if CLIENT and ply == LocalPlayer() and crazyness >= 60 and math.random(1, 15) == 5 and crazyeffectcd < CurTime() and ply:Alive() and class ~= "Operative" then
 				local rnd = math.random(1, 3)
 				if rnd == 1 then
 					surface.PlaySound("npc/barnacle/barnacle_pull" .. math.random(1, 4) .. ".wav")
@@ -130,6 +151,7 @@ timer_Create("alaln-globalenttimer", 0.5, 0, function()
 		end
 	end
 
+	-------- Ignite other objects when on fire --------
 	for _, ent in ents.Iterator() do
 		if IsValid(ent) and ent:IsOnFire() then
 			local entinsphere = ents.FindInSphere(ent:GetPos(), 80)

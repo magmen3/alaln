@@ -1,0 +1,37 @@
+"alaln"
+{
+	"base"		 "base"
+	"title"		 "Forsakened: Day's Cut"
+	"category"	 "pve"
+	"menusystem" "1"
+	"version"	 "0.8"
+
+	"settings"
+	{
+		1
+		{
+			"name"		"alaln_sboxmode"
+			"text"		"Sandbox Mode"
+			"help"		"Enable sandbox mode? (q menu, context menu, noclip, etc.)"
+			"type"		"CheckBox"
+			"default"	"0"
+		}
+
+		2
+		{
+			"name"		"alaln_dark_light"
+			"text"		"Dark Lighting (experimental)"
+			"help"		"Enable darkest lighting in maps? (experimental, not recommended)"
+			"type"		"CheckBox"
+			"default"	"0"
+		}
+		3
+		{
+			"name"		"alaln_disable_monsters"
+			"text"		"Disable Monsters"
+			"help"		"Disables monsters if you wan't to do"
+			"type"		"CheckBox"
+			"default"	"0"
+		}
+	}
+}

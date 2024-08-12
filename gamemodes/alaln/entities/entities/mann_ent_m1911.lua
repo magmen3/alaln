@@ -2,7 +2,7 @@ AddCSLuaFile()
 ENT.Type = "anim"
 ENT.Base = "mann_ent_base"
 ENT.PrintName = "Colt M1911"
-ENT.Category = "Forsakened"
+ENT.Category = "! Forsakened"
 ENT.SWEP = "mann_wep_m1911"
 ENT.Model = Model("models/weapons/tfa_doi/w_m1911.mdl")
 ENT.Color = Color(200, 200, 150, 255)
@@ -13,3 +13,4 @@ ENT.AmmoAmt = 7
 ENT.AmmoType = "Pistol"
 ENT.RSound = "items/ammo_pickup.wav"
 ENT.RSoundPitch = math.random(95, 105)
+ENT.IconOverride = "editor/ai_goal_standoff"

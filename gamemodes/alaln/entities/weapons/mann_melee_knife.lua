@@ -11,7 +11,7 @@ SWEP.ViewModelFOV = 120
 SWEP.ViewModelPositionOffset = Vector(-10, 0, 0)
 SWEP.ViewModelAngleOffset = Angle(3, 0, 2)
 SWEP.UseHands = true
-SWEP.HoldType = "knife"
+SWEP.HoldType = "alaln_knife"
 SWEP.MeleeHolsterSlot = 1
 SWEP.Primary.Sound = Sound("weapons/tfa_tannenberg_type30/hatchet_melee_05.wav")
 SWEP.Primary.Damage = 65
@@ -24,7 +24,7 @@ SWEP.PrimaryPunch = Angle(0, 10, 0)
 SWEP.AttPrimaryPunch = Angle(0, -15, 0)
 SWEP.PrimaryTimer = 0.1
 SWEP.Secondary.Sound = Sound("weapons/tfa_tannenberg_type30/hatchet_melee_05.wav")
-SWEP.Secondary.Damage = 85
+SWEP.Secondary.Damage = 78
 SWEP.Secondary.Delay = 0.9
 SWEP.Secondary.Force = 400
 SWEP.AllowSecondAttack = true
@@ -51,6 +51,8 @@ SWEP.PitchMul = 0.96
 SWEP.ENT = "mann_ent_knife"
 SWEP.Droppable = true
 SWEP.IconOverride = "editor/ai_goal_police"
+SWEP.MaxHP = 50
+SWEP.HP = 50
 if CLIENT then
 	local Crouched = 0
 	-- tried to make viewmodel like in The Forest
@@ -68,16 +70,15 @@ if CLIENT then
 		local vm_origin, vm_angles = EyePos + sitvec, eye.Ang + Angle(0, -5, 0)
 		return vm_origin, vm_angles
 	end]]
-
 	function SWEP:DrawWorldModel()
 		if self:GetOwner():IsValid() then
 			local Pos, Ang = self:GetOwner():GetBonePosition(self:GetOwner():LookupBone("ValveBiped.Bip01_R_Hand"))
 			if self.DatWorldModel then
 				if Pos and Ang then
-					self.DatWorldModel:SetRenderOrigin(Pos + Ang:Forward() * 2.5 + Ang:Right() - Ang:Up() * -3)
+					self.DatWorldModel:SetRenderOrigin(Pos + Ang:Forward() * 3 + Ang:Right() - Ang:Up() * -3)
 					Ang:RotateAroundAxis(Ang:Up(), -20)
-					Ang:RotateAroundAxis(Ang:Forward(), 190)
-					Ang:RotateAroundAxis(Ang:Right(), 0)
+					Ang:RotateAroundAxis(Ang:Forward(), 180)
+					Ang:RotateAroundAxis(Ang:Right(), 10)
 					self.DatWorldModel:SetRenderAngles(Ang)
 					self.DatWorldModel:DrawModel()
 				end
@@ -88,6 +89,8 @@ if CLIENT then
 				self.DatWorldModel:SetNoDraw(true)
 				self.DatWorldModel:SetModelScale(1, 0)
 			end
+		else
+			self:DrawModel()
 		end
 	end
 end

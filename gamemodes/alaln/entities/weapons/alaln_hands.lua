@@ -24,13 +24,15 @@ SWEP.Secondary.DefaultClip = -1
 SWEP.Secondary.Automatic = true
 SWEP.Secondary.Ammo = "none"
 SWEP.AutoSwitchTo = true
-SWEP.AutoSwitchFrom = true
+SWEP.AutoSwitchFrom = false
 if CLIENT then SWEP.WepSelectIcon = surface.GetTextureID("vgui/hud/alaln_fists") end
 SWEP.IconOverride = "editor/obsolete"
 SWEP.Slot = 0
 SWEP.SlotPos = 1
 SWEP.Droppable = false
 SWEP.Range = 90
+SWEP.Drag = false
+--!! TODO: Переделать систему подбирания потому что это кал с нексторена
 function SWEP:Initialize()
 	self.Time = 0
 	self:SetHoldType("normal")
@@ -74,6 +76,7 @@ function SWEP:Deploy()
 	self:SetHoldType("normal")
 	local vm = self:GetOwner():GetViewModel()
 	vm:SetWeaponModel("models/weapons/c_arms.mdl", self)
+	self:SetNextPrimaryFire(CurTime() + 0.3)
 	self:SetNextSecondaryFire(CurTime() + 0.3)
 	self:UpdateNextIdle()
 	return true
@@ -83,7 +86,7 @@ function SWEP:Holster()
 	return true
 end
 
-function SWEP:SecondaryAttack()
+function SWEP:PrimaryAttack()
 	local owner = self:GetOwner()
 	local Pos = owner:GetShootPos()
 	local Aim = owner:GetAimVector()
@@ -131,6 +134,7 @@ function SWEP:SecondaryAttack()
 			end
 
 			if HitEnt:GetNWEntity("PlayerCarrying") == owner then timer.Remove("RemoveOwner_" .. HitEnt:EntIndex()) end
+			--if SERVER then owner:EmitSound("Flesh.ImpactSoft") end
 		end
 	end
 
@@ -156,12 +160,13 @@ function SWEP:SecondaryAttack()
 	end
 end
 
-function SWEP:PrimaryAttack()
-	self:SecondaryAttack()
+function SWEP:SecondaryAttack()
+	local owner = self:GetOwner()
+	if owner:KeyDown(IN_ATTACK) then self:PrimaryAttack() end
 end
 
 if CLIENT then
-	local color_red = Color(180, 0, 0)
+	local color_red = Color(185, 15, 15)
 	function SWEP:DrawHUD()
 		local owner = self:GetOwner()
 		local tr = {}
@@ -218,7 +223,7 @@ function SWEP:Think()
 	end
 
 	if owner:OnGround() and self.canWbkUseJumpAnim == false then self.canWbkUseJumpAnim = true end
-	if not owner:OnGround() and owner:WaterLevel() == 0 and idletime > 0 and CurTime() > idletime then
+	if not owner:OnGround() and owner:GetMoveType() ~= MOVETYPE_LADDER and owner:WaterLevel() == 0 and idletime > 0 and CurTime() > idletime then
 		vm:SendViewModelMatchingSequence(vm:LookupSequence("WbKInAir"))
 		self:UpdateNextIdle()
 	end

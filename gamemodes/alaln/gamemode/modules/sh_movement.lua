@@ -1,4 +1,13 @@
-local hook_Add, math = hook.Add, math
+local render, Material, hook, hook_Add, LocalPlayer, ScrW, ScrH, table, draw, surface, Color, Vector, timer, timer_Create, math, util, net = render, Material, hook, hook.Add, LocalPlayer, ScrW, ScrH, table, draw, surface, Color, Vector, timer, timer.Create, math, util, net
+-- Player's hull vectors, made it global to easy use
+HullVector = {
+	Min = Vector(-12, -12, 0),
+	Max = Vector(12, 12, 64),
+	Duck = Vector(12, 12, 42),
+	Offset = Vector(0, 0, 64),
+	DuckOffset = Vector(0, 0, 42)
+}
+
 -- antibhop & sprint
 hook_Add("OnPlayerHitGround", "alaln-antibhop", function(ply, water, floater, speed)
 	if not IsValid(ply) or not ply:Alive() then return end
@@ -15,7 +24,7 @@ hook_Add("Move", "alaln-sprint", function(ply, mv)
 	if not ply.CurrentSprint then ply.CurrentSprint = ply:GetWalkSpeed() end
 	local walking, notforward = ply:KeyDown(IN_FORWARD), not ply:KeyDown(IN_FORWARD) and (ply:KeyDown(IN_MOVELEFT) or ply:KeyDown(IN_MOVERIGHT) or ply:KeyDown(IN_BACK))
 	local staminamul, classmul = math.Clamp(ply:GetAlalnState("stamina") / 50, 0.6, 1.5), ply:GetAlalnState("class") == "Faster" and 1.15 or 1
-	local armormul, armormuljump = (ply:GetNWBool("HasArmor", false) and 0.95 or 1), (ply:GetNWBool("HasArmor", false) and 0.8 or 1)
+	local armormul, armormuljump = ply:GetNWBool("HasArmor", false) and 0.95 or 1, ply:GetNWBool("HasArmor", false) and 0.8 or 1
 	if walking and not notforward then
 		ply.CurrentWalk = math.Clamp(ply.CurrentWalk + 3, 5, 140 * classmul * armormul * staminamul)
 	elseif not walking and notforward then
@@ -160,7 +169,16 @@ hook_Add("PlayerFootstep", "alaln-plyfootstep", function(ply, pos, foot, sound, 
 
 	if (CLIENT and ply == LocalPlayer()) or not IsValid(ply) then return end
 	-- server only part
-	if ply:Armor() < 1 then ply:EmitSound("npc/footsteps/hardboot_generic" .. math.random(1, 6) .. ".wav", (ply:KeyDown(IN_DUCK) or ply:KeyDown(IN_WALK)) and 40 or 60, math.random(90, 110)) end
+	if ply:Armor() < 1 then
+		if ply:GetAlalnState("class") ~= "Human" and ply:GetAlalnState("class") ~= "Operative" then
+			ply:EmitSound("npc/footsteps/hardboot_generic" .. math.random(1, 6) .. ".wav", (ply:KeyDown(IN_DUCK) or ply:KeyDown(IN_WALK)) and 40 or 60, math.random(90, 110))
+		elseif ply:GetAlalnState("class") == "Human" then
+			ply:EmitSound("vj_cofr/cof/simon/footsteps/concrete" .. math.random(1, 4) .. ".wav", (ply:KeyDown(IN_DUCK) or ply:KeyDown(IN_WALK)) and 35 or 45, math.random(90, 110))
+		elseif ply:GetAlalnState("class") == "Operative" then
+			ply:EmitSound("npc/combine_soldier/gear" .. math.random(1, 6) .. ".wav", (ply:KeyDown(IN_DUCK) or ply:KeyDown(IN_WALK)) and 35 or 40, math.random(90, 110))
+		end
+	end
+
 	if (ply:IsSprinting() or ply:KeyDown(IN_DUCK)) and ply:Armor() < 1 then ply:EmitSound("npc/footsteps/softshoe_generic6.wav", 35, math.random(90, 110)) end
 	if ply:Armor() >= 1 then
 		ply:EmitSound("npc/combine_soldier/gear" .. math.random(1, 6) .. ".wav", (ply:KeyDown(IN_DUCK) or ply:KeyDown(IN_WALK)) and 35 or 40, math.random(90, 110))
@@ -168,3 +186,23 @@ hook_Add("PlayerFootstep", "alaln-plyfootstep", function(ply, pos, foot, sound, 
 	end
 	return true
 end)
+
+hook_Add("OnPlayerJump", "alaln-playerjump", function(ply, speed)
+	local class = ply:GetAlalnState("class")
+	if SERVER and ply:Alive() and class ~= "Operative" and class ~= "Human" then
+		--print(1)
+		ply:EmitSound("placenta/speech/jump.wav", 60, math.random(95, 105))
+	end
+end)
+
+function GM:HandlePlayerLanding(ply, velocity, WasOnGround)
+	if ply:GetMoveType() == MOVETYPE_NOCLIP then return end
+	if ply:IsOnGround() and not WasOnGround then
+		ply:AnimRestartGesture(GESTURE_SLOT_JUMP, ACT_LAND, true)
+		local class = ply:GetAlalnState("class")
+		if SERVER and ply:Alive() and class ~= "Operative" and class ~= "Human" then
+			--print(1)
+			ply:EmitSound("placenta/speech/land.wav", 60, math.random(95, 105))
+		end
+	end
+end

@@ -40,7 +40,7 @@ SWEP.Primary.Damage = 20
 SWEP.Primary.Ammo = "none"
 SWEP.Primary.DefaultClip = -1
 SWEP.Primary.ClipSize = -1
-SWEP.Primary.Automatic = true
+SWEP.Primary.Automatic = false
 SWEP.Primary.Delay = 0.6
 SWEP.Primary.Force = 400
 SWEP.PrimaryAnim = "vm_knifeonly_swipe"
@@ -54,7 +54,7 @@ SWEP.Secondary.Damage = 40
 SWEP.Secondary.Ammo = "none"
 SWEP.Secondary.DefaultClip = -1
 SWEP.Secondary.ClipSize = -1
-SWEP.Secondary.Automatic = true
+SWEP.Secondary.Automatic = false
 SWEP.Secondary.Delay = 0.8
 SWEP.Secondary.Force = 400
 SWEP.SecondaryAnim2 = false
@@ -83,6 +83,8 @@ SWEP.PitchMul = 1
 -- SWEP.WMAng = Angle(80, -30, 180)
 SWEP.ENT = "mann_ent_base"
 SWEP.Droppable = true
+SWEP.MaxHP = 70
+SWEP.HP = 70
 function SWEP:Initialize()
 	self:SetNextIdle(CurTime() + 1.5)
 	self:SetHoldType(self.HoldType)
@@ -137,7 +139,7 @@ function SWEP:PrimaryAttack()
 	self:DoBFSAnimation(self.PrimaryAnim)
 	owner:GetViewModel():SetPlaybackRate(self.PrimaryAnimRate or 1)
 	local primdelay, secdelay = self.Primary.Delay, self.Secondary.Delay
-	if owner:GetAlalnState("class") == "Berserker" then
+	if owner:GetAlalnState("class") == "Berserker" or owner:GetAlalnState("class") == "Operative" then
 		primdelay = primdelay * 0.7
 		secdelay = secdelay * 0.7
 	elseif owner:GetAlalnState("class") == "Gunslinger" then
@@ -150,7 +152,7 @@ function SWEP:PrimaryAttack()
 	local velmul = 1
 	if owner:GetAlalnState("class") == "Gunslinger" then
 		velmul = velmul * 0.6
-	elseif owner:GetAlalnState("class") == "Berserker" then
+	elseif owner:GetAlalnState("class") == "Berserker" or owner:GetAlalnState("class") == "Operative" then
 		velmul = velmul * 1.3
 	end
 
@@ -206,7 +208,7 @@ function SWEP:SecondaryAttack()
 	end
 
 	local primdelay, secdelay = self.Primary.Delay, self.Secondary.Delay
-	if owner:GetAlalnState("class") == "Berserker" then
+	if owner:GetAlalnState("class") == "Berserker" or owner:GetAlalnState("class") == "Operative" then
 		primdelay = primdelay * 0.7
 		secdelay = secdelay * 0.7
 	elseif owner:GetAlalnState("class") == "Gunslinger" then
@@ -221,7 +223,7 @@ function SWEP:SecondaryAttack()
 	local velmul = 1
 	if owner:GetAlalnState("class") == "Gunslinger" then
 		velmul = velmul * 0.6
-	elseif owner:GetAlalnState("class") == "Berserker" then
+	elseif owner:GetAlalnState("class") == "Berserker" or owner:GetAlalnState("class") == "Operative" then
 		velmul = velmul * 1.3
 	end
 
@@ -250,7 +252,7 @@ function SWEP:SlashAttack()
 	local velmul = 1
 	if owner:GetAlalnState("class") == "Gunslinger" then
 		velmul = velmul * 0.6
-	elseif owner:GetAlalnState("class") == "Berserker" then
+	elseif owner:GetAlalnState("class") == "Berserker" or owner:GetAlalnState("class") == "Operative" then
 		velmul = velmul * 1.3
 	end
 
@@ -285,8 +287,7 @@ function SWEP:SlashAttack()
 			end
 		end
 
-		--util.ScreenShake(tr.HitPos, 0.15, 0.15, 0.15, 0)
-		if IsValid(tr.Entity) and SERVER then
+		if SERVER and IsValid(tr.Entity) then
 			local dmginfo = DamageInfo()
 			dmginfo:SetDamageType(self.DmgType)
 			dmginfo:SetAttacker(owner)
@@ -296,10 +297,10 @@ function SWEP:SlashAttack()
 			local angle = owner:GetAngles().y - tr.Entity:GetAngles().y
 			if angle < -180 then angle = 360 + angle end
 			if self.AllowBackStab and angle <= 90 and angle >= -90 then
-				dmginfo:SetDamage(self.Primary.Damage * self.BackStabMul * (owner:GetAlalnState("class") == "Berserker" and 1.8 or 1))
+				dmginfo:SetDamage(self.Primary.Damage * self.BackStabMul * ((owner:GetAlalnState("class") == "Berserker" or owner:GetAlalnState("class") == "Operative") and 1.8 or 1))
 				DebugPrint("slash back DMG = " .. dmginfo:GetDamage())
 			else
-				dmginfo:SetDamage(self.Primary.Damage * (owner:GetAlalnState("class") == "Berserker" and 1.8 or 1))
+				dmginfo:SetDamage(self.Primary.Damage * ((owner:GetAlalnState("class") == "Berserker" or owner:GetAlalnState("class") == "Operative") and 1.8 or 1))
 				DebugPrint("slash front DMG = " .. dmginfo:GetDamage())
 			end
 
@@ -325,6 +326,8 @@ function SWEP:SlashAttack()
 
 			tr.Entity:TakeDamageInfo(dmginfo)
 		end
+
+		if SERVER and (tr.HitWorld or IsValid(tr.Entity)) then self.HP = self.HP - (self.Primary.Damage / 30) end
 	end
 
 	owner:LagCompensation(false)
@@ -336,7 +339,7 @@ function SWEP:StabAttack()
 	local velmul = 1
 	if owner:GetAlalnState("class") == "Gunslinger" then
 		velmul = velmul * 0.6
-	elseif owner:GetAlalnState("class") == "Berserker" then
+	elseif owner:GetAlalnState("class") == "Berserker" or owner:GetAlalnState("class") == "Operative" then
 		velmul = velmul * 1.3
 	end
 
@@ -382,10 +385,10 @@ function SWEP:StabAttack()
 			local angle = owner:GetAngles().y - tr.Entity:GetAngles().y
 			if angle < -180 then angle = 360 + angle end
 			if self.AllowBackStab and angle <= 90 and angle >= -90 then
-				secdmginfo:SetDamage(self.Secondary.Damage * self.BackStabMul * (owner:GetAlalnState("class") == "Berserker" and 1.8 or 1))
+				secdmginfo:SetDamage(self.Secondary.Damage * self.BackStabMul * ((owner:GetAlalnState("class") == "Berserker" or owner:GetAlalnState("class") == "Operative") and 1.8 or 1))
 				DebugPrint("stab back DMG = " .. secdmginfo:GetDamage())
 			else
-				secdmginfo:SetDamage(self.Secondary.Damage * (owner:GetAlalnState("class") == "Berserker" and 1.8 or 1))
+				secdmginfo:SetDamage(self.Secondary.Damage * ((owner:GetAlalnState("class") == "Berserker" or owner:GetAlalnState("class") == "Operative") and 1.8 or 1))
 				DebugPrint("stab front DMG = " .. secdmginfo:GetDamage())
 			end
 
@@ -411,6 +414,8 @@ function SWEP:StabAttack()
 
 			tr.Entity:TakeDamageInfo(secdmginfo)
 		end
+
+		if SERVER and (tr.HitWorld or IsValid(tr.Entity)) then self.HP = self.HP - (self.Secondary.Damage / 35) end
 	end
 
 	owner:LagCompensation(false)
@@ -459,7 +464,7 @@ function SWEP:OnDrop()
 			Ent:SetAngles(self:GetAngles())
 			Ent:Spawn()
 			Ent:Activate()
-			Ent:GetPhysicsObject():SetVelocity(self:GetVelocity() / 2)
+			if IsValid(Ent:GetPhysicsObject()) then Ent:GetPhysicsObject():SetVelocity(self:GetVelocity() / 2) end
 		end
 
 		self:Remove()
@@ -471,5 +476,11 @@ function SWEP:Think()
 	if self:GetNextIdle() < Time then
 		self:DoBFSAnimation(self.IdleAnim)
 		self:UpdateNextIdle()
+	end
+
+	--if SERVER then DebugPrint("hp" .. self.HP .. " maxhp " .. self.MaxHP) end
+	if SERVER and self.HP <= 1 then
+		self:GetOwner():EmitSound("physics/metal/metal_box_break" .. math.random(1, 2) .. ".wav", 55, math.random(95, 105))
+		self:Remove()
 	end
 end

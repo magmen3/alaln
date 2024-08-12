@@ -2,7 +2,7 @@ AddCSLuaFile()
 ENT.Type = "anim"
 ENT.Base = "base_anim"
 ENT.PrintName = "Mann's Entity Base"
-ENT.Category = "Forsakened"
+ENT.Category = "! Forsakened"
 ENT.SWEP = "mann_wep_base"
 ENT.Model = Model("models/weapons/w_pist_usp.mdl")
 ENT.ImpactSound = "Drywall.ImpactHard"
@@ -16,11 +16,12 @@ ENT.Color = Color(200, 200, 200, 255)
 -- ENT.PhysBox 	= {Vector(0, 0, 0), Vector(0, 0, 0)}
 -- ENT.CBounds 	= {Vector(0, 0, 0), Vector(0, 0, 0)}
 ENT.Spawnable = false
-ENT.EntMass = 25
+ENT.EntMass = 35
 ENT.AmmoAmt = 13
 ENT.AmmoType = "Pistol"
 ENT.RSound = "items/ammo_pickup.wav"
 ENT.RSoundPitch = math.random(95, 105)
+ENT.IconOverride = "editor/ai_goal_standoff"
 if SERVER then
 	function ENT:Initialize()
 		self:SetModel(self.Model)
@@ -47,7 +48,7 @@ if SERVER then
 		local phys = self:GetPhysicsObject()
 		if IsValid(phys) then
 			phys:SetContents(CONTENTS_SOLID)
-			phys:SetMass(self.Mass or 20)
+			phys:SetMass(self.Mass or 35)
 			phys:Wake()
 			phys:EnableMotion(true)
 		end
@@ -91,6 +92,9 @@ if SERVER then
 	end
 else
 	function ENT:Draw()
+		local Closeness = LocalPlayer():GetFOV() * EyePos():Distance(self:GetPos())
+		local DetailDraw = Closeness < 250000
+		if not DetailDraw then return end
 		self:DrawModel()
 	end
 end

@@ -1,3 +1,4 @@
+local render, Material, hook, hook_Add, LocalPlayer, ScrW, ScrH, table, draw, surface, Color, Vector, timer, timer_Create, math, util, net = render, Material, hook, hook.Add, LocalPlayer, ScrW, ScrH, table, draw, surface, Color, Vector, timer, timer.Create, math, util, net
 util.AddNetworkString("alaln-ragplayercolor")
 local plyMeta = FindMetaTable("Player")
 local entMeta = FindMetaTable("Entity")
@@ -75,7 +76,7 @@ function plyMeta:CreateRagdoll()
 			ent:SetFlexWeight(i, self:GetFlexWeight(i))
 		end
 	else
-		phys:SetVelocity(plyvel * 2)
+		if phys:IsValid() then phys:SetVelocity(plyvel * 1.6) end
 	end
 
 	if self:IsOnFire() then ent:Ignite(math.random(3, 6), 140) end

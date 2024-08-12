@@ -1,3 +1,4 @@
+local render, Material, hook, hook_Add, LocalPlayer, ScrW, ScrH, table, draw, surface, Color, Vector, timer, timer_Create, math, util, net = render, Material, hook, hook.Add, LocalPlayer, ScrW, ScrH, table, draw, surface, Color, Vector, timer, timer.Create, math, util, net
 if SERVER then
 	util.AddNetworkString("alaln-viewpunch")
 	local plyMeta = FindMetaTable("Player")
@@ -19,7 +20,7 @@ if CLIENT then
 	local vp_punch_angle = Angle()
 	local vp_punch_angle_velocity = Angle()
 	local vp_punch_angle_last = vp_punch_angle
-	hook.Add("Think", "alaln-viewpunchdecay", function()
+	hook_Add("Think", "alaln-viewpunchdecay", function()
 		local ft = FrameTime()
 		if not vp_punch_angle:IsZero() or not vp_punch_angle_velocity:IsZero() then
 			vp_punch_angle = vp_punch_angle + vp_punch_angle_velocity * ft
@@ -36,10 +37,11 @@ if CLIENT then
 		end
 	end)
 
-	hook.Add("Think", "alaln-viewpunchapply", function()
+	hook_Add("Think", "alaln-viewpunchapply", function()
+		local ply = LocalPlayer()
 		if vp_punch_angle:IsZero() and vp_punch_angle_velocity:IsZero() then return end
-		if LocalPlayer():InVehicle() then return end
-		LocalPlayer():SetEyeAngles(LocalPlayer():EyeAngles() + vp_punch_angle - vp_punch_angle_last)
+		if ply:InVehicle() then return end
+		ply:SetEyeAngles(ply:EyeAngles() + vp_punch_angle - vp_punch_angle_last)
 		vp_punch_angle_last = vp_punch_angle
 	end)
 
@@ -61,6 +63,7 @@ if CLIENT then
 
 	local plyMeta = FindMetaTable("Player")
 	function plyMeta:BetterViewPunch(angle)
+		if LocalPlayer() ~= self then return end
 		Viewpunch(angle)
 	end
 

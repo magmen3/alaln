@@ -1,3 +1,4 @@
+local render, Material, hook, hook_Add, LocalPlayer, ScrW, ScrH, table, draw, surface, Color, Vector, timer, timer_Create, math, util, net = render, Material, hook, hook.Add, LocalPlayer, ScrW, ScrH, table, draw, surface, Color, Vector, timer, timer.Create, math, util, net
 ALALN_LootTable = {
 	-- Items
 	{"alaln_food", 85},
@@ -17,8 +18,10 @@ ALALN_LootTable = {
 	{"mann_ent_knife", 20},
 	{"mann_ent_pm", 9},
 	{"mann_ent_metalbat", 18},
+	{"mann_ent_fireaxe", 10},
 	{"mann_ent_sw686", 7},
-	{"mann_ent_mosin", 6}
+	{"mann_ent_mosin", 6},
+	{"mann_wep_flaregun", 4}
 }
 
 local SBOXMode = GetConVar("alaln_sboxmode")
@@ -26,6 +29,7 @@ local lootCount = 0
 local function spawnLoot()
 	if SBOXMode:GetBool() then return end
 	if lootCount >= 80 then return end
+	if not navmesh.IsLoaded() then return end
 	local loot = table.Random(ALALN_LootTable)
 	if math.random(100) <= loot[2] then
 		local item = ents.Create(loot[1])
@@ -52,7 +56,7 @@ local function spawnLoot()
 	end
 end
 
-hook.Add("EntityRemoved", "alaln-lootremove", function(ent, fullUpdate)
+hook_Add("EntityRemoved", "alaln-lootremove", function(ent, fullUpdate)
 	if fullUpdate then return end
 	if lootCount and ent:IsValid() and ent.IsLoot then
 		lootCount = lootCount - 1
@@ -65,7 +69,7 @@ local function spawnLootTimer()
 		spawnLoot()
 	end
 
-	if lootCount >= 8 then
+	if lootCount >= 80 then
 		timer.Create("alaln-lootspawn", 64, 0, spawnLootTimer)
 	else
 		timer.Create("alaln-lootspawn", math.random(12, 32), 0, spawnLootTimer)
@@ -74,6 +78,7 @@ end
 
 spawnLootTimer()
 local function RandArea()
+	if not navmesh.IsLoaded() then return end
 	local navAreas = navmesh.GetAllNavAreas()
 	local indoorAreas = {}
 	for _, area in ipairs(navAreas) do
@@ -96,7 +101,8 @@ local function RandArea()
 	end
 end
 
-hook.Add("PlayerSpawn", "alaln-randplyspawn", function(ply)
+hook_Add("PlayerSpawn", "alaln-randplyspawn", function(ply)
+	if not navmesh.IsLoaded() then return end
 	local pos = RandArea()
 	ply:SetPos(pos + Vector(math.random(-5, 5), math.random(-5, 5), 10))
 end)

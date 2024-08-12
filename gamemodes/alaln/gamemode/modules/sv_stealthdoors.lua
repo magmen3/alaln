@@ -1,4 +1,11 @@
+local render, Material, hook, hook_Add, LocalPlayer, ScrW, ScrH, table, draw, surface, Color, Vector, timer, timer_Create, math, util, net = render, Material, hook, hook.Add, LocalPlayer, ScrW, ScrH, table, draw, surface, Color, Vector, timer, timer.Create, math, util, net
 local entMeta = FindMetaTable("Entity")
+local DoorClass = {"prop_door", "prop_door_rotating", "func_door", "func_door_rotating", "door", "func_breakable"}
+function entMeta:IsDoor()
+	local Class = self:GetClass()
+	return DoorClass[Class] -- table.HasValue(DoorClass, Class)
+end
+
 function entMeta:StealthOpenDoor()
 	if not self.stealthopen then
 		self.stealthopen = true
@@ -22,14 +29,8 @@ function entMeta:StealthOpenDoor()
 	end
 end
 
-local DoorClass = {"prop_door", "prop_door_rotating", "func_door", "func_door_rotating", "door", "func_breakable"}
-function entMeta:SDOIsDoor()
-	local Class = self:GetClass()
-	return DoorClass[Class] -- table.HasValue(DoorClass, Class)
-end
-
-hook.Add("AcceptInput", "alaln-stealthdoors", function(ent, inp, act, ply, val)
-	if inp == "Use" and ent:SDOIsDoor() and (ply:Crouching() or ply:KeyDown(IN_WALK)) then
+hook_Add("AcceptInput", "alaln-stealthdoors", function(ent, inp, act, ply, val)
+	if inp == "Use" and ent:IsDoor() and (ply:Crouching() or ply:KeyDown(IN_WALK)) then
 		ent:StealthOpenDoor()
 		if ent:GetInternalVariable("slavename") then
 			for k, v in pairs(ents.FindByName(ent:GetInternalVariable("slavename"))) do
@@ -42,13 +43,13 @@ hook.Add("AcceptInput", "alaln-stealthdoors", function(ent, inp, act, ply, val)
 			if ent == v:GetInternalVariable("m_hMaster") then v:StealthOpenDoor() end
 		end
 
-		if ent:GetInternalVariable("m_hMaster") and IsValid(ent:GetInternalVariable("m_hMaster")) and ent:GetInternalVariable("m_hMaster"):SDOIsDoor() then ent:GetInternalVariable("m_hMaster"):StealthOpenDoor() end
+		if ent:GetInternalVariable("m_hMaster") and IsValid(ent:GetInternalVariable("m_hMaster")) and ent:GetInternalVariable("m_hMaster"):IsDoor() then ent:GetInternalVariable("m_hMaster"):StealthOpenDoor() end
 	end
 end)
 
-hook.Add("EntityEmitSound", "alaln-stealthdoorssnd", function(data)
-	if IsValid(data.Entity) and data.Entity:SDOIsDoor() and data.Entity.stealthopen then
-		data.Volume = data.Volume * 0.25
+hook_Add("EntityEmitSound", "alaln-stealthdoorssnd", function(data)
+	if IsValid(data.Entity) and data.Entity:IsDoor() and data.Entity.stealthopen then
+		data.Volume = data.Volume * 0.2
 		return true
 	end
 end)

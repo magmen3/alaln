@@ -11,7 +11,7 @@ SWEP.ViewModelFOV = 110
 SWEP.ViewModelPositionOffset = Vector(-12, -1, 1)
 SWEP.ViewModelAngleOffset = Angle(-10, 0, -5)
 SWEP.UseHands = true
-SWEP.HoldType = "melee"
+SWEP.HoldType = "alaln_melee"
 SWEP.MeleeHolsterSlot = 1
 SWEP.SoundCL = false
 SWEP.Primary.Sound = Sound("weapons/slam/throw.wav")
@@ -19,7 +19,7 @@ SWEP.Primary.Damage = 80
 SWEP.Primary.Delay = 1
 SWEP.Primary.Force = 400
 SWEP.PrimaryAnim = "attack_quick_2"
-SWEP.PrimaryAnimDelay = .5
+SWEP.PrimaryAnimDelay = 0.5
 SWEP.PrimaryAnimRate = 1
 SWEP.PrimaryPunch = Angle(0, 15, 0)
 SWEP.AttPrimaryPunch = Angle(0, -20, 0)
@@ -31,7 +31,7 @@ SWEP.Secondary.Force = 400
 SWEP.Secondary.Automatic = true
 SWEP.AllowSecondAttack = false
 SWEP.SecondaryAnim = "attack_quick_1"
-SWEP.SecondaryAnimDelay = .5
+SWEP.SecondaryAnimDelay = 0.5
 SWEP.SecondaryAnimRate = 1.3
 SWEP.SecondaryPunch = Angle(3, 0, 0)
 SWEP.DmgType = DMG_CLUB
@@ -52,6 +52,8 @@ SWEP.ENT = "mann_ent_hammer"
 SWEP.Droppable = true
 SWEP.IconOverride = "editor/ai_goal_police"
 game.AddDecal("alaln-naildecal", "decals/alaln_naildecal")
+SWEP.MaxHP = 60
+SWEP.HP = 60
 do
 	local function BindObjects(ent1, pos1, ent2, pos2, power)
 		local Strength, CheckEnt, OtherEnt = 1, ent1, ent2
@@ -70,7 +72,7 @@ do
 	end
 
 	-- bind items/lock doors
-	local color_yellow = Color(255, 235, 0)
+	local color_yellow = Color(210, 210, 110)
 	function SWEP:SecondaryAttack()
 		local owner = self:GetOwner()
 		if not IsFirstTimePredicted() then
@@ -87,7 +89,7 @@ do
 				if self:CanNail(NewTr) then
 					if not NewTr.HitSky then NewEnt = NewTr.Entity end
 					if NewEnt and (IsValid(NewEnt) or NewEnt:IsWorld()) and not (NewEnt:IsPlayer() or NewEnt:IsNPC() or (NewEnt == Tr.Entity)) then
-						if Tr.Entity:SDOIsDoor() then
+						if Tr.Entity:IsDoor() then
 							if not IsFirstTimePredicted() then
 								self:DoBFSAnimation(self.SecondaryAnim)
 								owner:GetViewModel():SetPlaybackRate(self.SecondaryAnimRate or 1)
@@ -112,13 +114,14 @@ do
 							owner:BetterViewPunch(self.SecondaryPunch)
 							owner:GetViewModel():SetPlaybackRate(self.SecondaryAnimRate or 1)
 						end
+
+						self.HP = self.HP - (self.Primary.Damage / 35)
+						self:SetNextSecondaryFire(CurTime() + 1)
+						self:SetNextPrimaryFire(CurTime() + 1)
 					end
 				end
 			end
 		end
-
-		self:SetNextSecondaryFire(CurTime() + 2.5)
-		self:SetNextPrimaryFire(CurTime() + 2.5)
 	end
 end
 
@@ -150,8 +153,8 @@ do
 end
 
 if CLIENT then
-	local color_red = Color(180, 0, 0)
-	local color_green = Color(0, 180, 0)
+	local color_red = Color(185, 15, 15)
+	local color_green = Color(110, 210, 110)
 	function SWEP:DrawHUD()
 		local owner = self:GetOwner()
 		local tr = {}
@@ -194,15 +197,14 @@ if CLIENT then
 		local vm_origin, vm_angles = EyePos + sitvec, eye.Ang + Angle(0, -2, 0)
 		return vm_origin, vm_angles
 	end]]
-
 	function SWEP:DrawWorldModel()
 		if self:GetOwner():IsValid() then
 			local Pos, Ang = self:GetOwner():GetBonePosition(self:GetOwner():LookupBone("ValveBiped.Bip01_R_Hand"))
 			if self.DatWorldModel then
 				if Pos and Ang then
-					self.DatWorldModel:SetRenderOrigin(Pos + Ang:Forward() * 3.5 + Ang:Right() - Ang:Up())
+					self.DatWorldModel:SetRenderOrigin(Pos + Ang:Forward() * 3 + Ang:Right() * 1.5 - Ang:Up())
 					Ang:RotateAroundAxis(Ang:Up(), -20)
-					Ang:RotateAroundAxis(Ang:Forward(), 190)
+					Ang:RotateAroundAxis(Ang:Forward(), 180)
 					Ang:RotateAroundAxis(Ang:Right(), 0)
 					self.DatWorldModel:SetRenderAngles(Ang)
 					self.DatWorldModel:DrawModel()
@@ -214,6 +216,8 @@ if CLIENT then
 				self.DatWorldModel:SetNoDraw(true)
 				self.DatWorldModel:SetModelScale(1, 0)
 			end
+		else
+			self:DrawModel()
 		end
 	end
 end
