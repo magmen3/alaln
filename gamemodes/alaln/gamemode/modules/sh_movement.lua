@@ -8,12 +8,12 @@ HullVector = {
 	DuckOffset = Vector(0, 0, 42)
 }
 
--- antibhop & sprint
+-- antibhop
 hook_Add("OnPlayerHitGround", "alaln-antibhop", function(ply, water, floater, speed)
 	if not IsValid(ply) or not ply:Alive() then return end
 	local vel = ply:GetVelocity()
-	vel.z = -5
-	ply:SetVelocity(-vel * 2)
+	vel.z = 100
+	ply:SetVelocity(-vel * 1.5)
 	--if ply:GetAlalnState("stamina") > 25 then ply:AddAlalnState("stamina", -5) end
 end)
 
@@ -88,7 +88,7 @@ hook_Add("SetupMove", "alaln-overridemovement", function(ply, mv, cmd)
 	if ply:KeyPressed(IN_DUCK) and IsFirstTimePredicted() then pl.PlayCrouchSound = true end
 	if pl.PlayCrouchSound then
 		if ply:WaterLevel() <= 1 then
-			if ply:Armor() >= 1 then
+			if ply:Armor() >= 1 and ply:GetNWBool("HasArmor", false) == true then
 				ply:EmitSound("npc/metropolice/gear" .. math.random(1, 6) .. ".wav", 40, 100, 1, CHAN_STATIC)
 			else
 				ply:EmitSound("npc/footsteps/softshoe_generic6.wav", 40, 100, 1, CHAN_STATIC)
@@ -101,7 +101,7 @@ hook_Add("SetupMove", "alaln-overridemovement", function(ply, mv, cmd)
 
 	if pl.PlayUnCrouchSoundLater and not ducking then
 		if ply:WaterLevel() <= 1 then
-			if ply:Armor() >= 1 then
+			if ply:Armor() >= 1 and ply:GetNWBool("HasArmor", false) == true then
 				ply:EmitSound("npc/combine_soldier/gear" .. math.random(1, 6) .. ".wav", 40, 100, 1, CHAN_STATIC)
 			else
 				ply:EmitSound("npc/footsteps/softshoe_generic6.wav", 40, 100, 1, CHAN_STATIC)
@@ -114,8 +114,7 @@ end)
 
 -- player animations
 hook_Add("CalcMainActivity", "alaln-playeranims", function(ply, vel)
-	local plyvel = vel:Length2D()
-	local wep = ply:GetActiveWeapon()
+	local plyvel, wep = vel:Length2D(), ply:GetActiveWeapon()
 	local unarmed = (IsValid(wep) and wep:GetHoldType() == "normal") or not IsValid(wep)
 	local isstanding = plyvel <= 0 and not ply:IsSprinting() and not ply:KeyDown(IN_DUCK) and ply:IsOnGround() and unarmed
 	local isrunning = unarmed and plyvel > ply:GetRunSpeed() - 15 and ply:IsOnGround() and ply:IsSprinting()
@@ -180,7 +179,7 @@ hook_Add("PlayerFootstep", "alaln-plyfootstep", function(ply, pos, foot, sound, 
 	end
 
 	if (ply:IsSprinting() or ply:KeyDown(IN_DUCK)) and ply:Armor() < 1 then ply:EmitSound("npc/footsteps/softshoe_generic6.wav", 35, math.random(90, 110)) end
-	if ply:Armor() >= 1 then
+	if ply:Armor() >= 1 and ply:GetNWBool("HasArmor", false) == true then
 		ply:EmitSound("npc/combine_soldier/gear" .. math.random(1, 6) .. ".wav", (ply:KeyDown(IN_DUCK) or ply:KeyDown(IN_WALK)) and 35 or 40, math.random(90, 110))
 		ply:EmitSound("physics/metal/metal_canister_impact_soft" .. math.random(1, 3) .. ".wav", (ply:KeyDown(IN_DUCK) or ply:KeyDown(IN_WALK)) and 35 or 40, math.random(90, 110))
 	end
@@ -188,9 +187,11 @@ hook_Add("PlayerFootstep", "alaln-plyfootstep", function(ply, pos, foot, sound, 
 end)
 
 hook_Add("OnPlayerJump", "alaln-playerjump", function(ply, speed)
+	if not ply:Alive() then return end
 	local class = ply:GetAlalnState("class")
-	if SERVER and ply:Alive() and class ~= "Operative" and class ~= "Human" then
-		--print(1)
+	local vel = ply:GetVelocity()
+	ply:SetVelocity(-vel * 0.5)
+	if SERVER and class ~= "Operative" and class ~= "Human" then
 		ply:EmitSound("placenta/speech/jump.wav", 60, math.random(95, 105))
 	end
 end)

@@ -14,12 +14,12 @@ ALALN_NPCTable = {
 
 local NPCConVar = GetConVar("alaln_disable_monsters")
 local SBOXMode = GetConVar("alaln_sboxmode")
-local npcCount = 0
+npcCount = 0
 local function spawnNPC()
 	if SBOXMode:GetBool() then return end
 	if NPCConVar:GetBool() then return end
 	if not navmesh.IsLoaded() then return end
-	if npcCount >= 24 then return end
+	if npcCount >= 28 then return end
 	local npc = table.Random(ALALN_NPCTable)
 	if math.random(100) <= npc[2] then
 		local snpc = ents.Create(npc[1])
@@ -38,7 +38,7 @@ local function spawnNPC()
 		snpc:Spawn()
 		print(snpc.PrintName or "none", snpc:GetClass() or "none")
 		npcCount = npcCount + 1
-		timer.Create("alaln-npcremove-" .. snpc:EntIndex(), 120, 1, function()
+		timer.Create("alaln-npcremove-" .. snpc:EntIndex(), 140, 1, function()
 			if not IsValid(snpc) then return end
 			snpc:Remove()
 		end)
@@ -61,8 +61,8 @@ local function spawnNPCTimer()
 		spawnNPC()
 	end
 
-	if npcCount >= 24 then
-		timer.Create("alaln-npcspawn", 64, 0, spawnNPCTimer)
+	if npcCount >= 28 then
+		timer.Create("alaln-npcspawn", 42, 0, spawnNPCTimer)
 	else
 		timer.Create("alaln-npcspawn", math.random(12, 32), 0, spawnNPCTimer)
 	end

@@ -44,6 +44,13 @@ DATA.Translations[ ACT_MP_SPRINT ] = {
 	{ Sequence = "r_runidle_mg", Weight = 1 }, -- r_runidle_mg
 }
 
-DATA.Translations[ ACT_MP_JUMP ] = nil
+DATA.Translations[ ACT_MP_JUMP ] = {
+	{ Sequence = "jump_ar", Weight = 1 },
+} --nil
+
+DATA.Translations[ ACT_LAND ] = {
+	{ Sequence = "wos_bs_shared_jump_land", Weight = 1 },
+	{ Sequence = "jump_land", Weight = 1 },
+}
 
 wOS.AnimExtension:RegisterHoldtype( DATA )

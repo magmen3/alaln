@@ -20,10 +20,12 @@ end
 function SWEP:DrawWeaponSelection(x, y, wide, tall, alpha)
 	surface.SetDrawColor(255, 255, 255, alpha or 255)
 	surface.SetTexture(self.WepSelectIcon)
+	local fsin = 0
+	fsin = math.sin(CurTime() * 4) * 2
 	y = y + 10
 	x = x + 10
 	wide = wide - 20
-	surface.DrawTexturedRect(x, y, wide, wide / 2)
+	surface.DrawTexturedRect(x + fsin, y - fsin, wide - fsin * 2, (wide / 2) + fsin)
 	self:PrintWeaponInfo(x + wide + 20, y + tall * 0.95, alpha)
 end
 

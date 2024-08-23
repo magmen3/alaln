@@ -17,6 +17,7 @@ function ENT:Initialize()
 	self:SetUseType(SIMPLE_USE)
 	self:SetCollisionGroup(COLLISION_GROUP_WEAPON)
 	self:SetAngles(AngleRand(-90, 90))
+	self:SetModelScale(0.7, 0)
 	local phys = self:GetPhysicsObject()
 	if IsValid(phys) then
 		phys:SetContents(CONTENTS_SOLID)
@@ -36,6 +37,8 @@ end
 local color_green = Color(110, 210, 110)
 local color_red = Color(185, 15, 15)
 function ENT:Use(ply)
+	ply:PickupObject(self)
+	self:EmitSound("vj_cofr/aom/pills/pills_drop.wav", 70, math.random(95, 105))
 	if self.UseCD > CurTime() then return end
 	if SERVER then
 		self.UseCD = CurTime() + 1

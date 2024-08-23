@@ -67,7 +67,7 @@ function plyMeta:CreateRagdoll()
 				local bonepos, boneang = self:GetBonePosition(ent:TranslatePhysBoneToBone(i))
 				bone:SetPos(bonepos)
 				bone:SetAngles(boneang)
-				bone:SetVelocity(plyvel * 0.20)
+				bone:SetVelocity(plyvel * 0.6) --1.4 для расчлененки
 			end
 		end
 

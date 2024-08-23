@@ -23,6 +23,7 @@ function ENT:Initialize()
 	self:SetMoveType(MOVETYPE_VPHYSICS)
 	self:SetSolid(SOLID_VPHYSICS)
 	self:SetCollisionGroup(COLLISION_GROUP_WEAPON)
+	self:SetAngles(Angle(0, math.random(-360, 360), 0))
 	local phys = self:GetPhysicsObject()
 	if IsValid(phys) then
 		phys:SetContents(CONTENTS_SOLID)

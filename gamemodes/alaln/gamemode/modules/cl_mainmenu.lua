@@ -12,33 +12,34 @@ local MenuFonts = {
 
 -- format: multiline
 local MenuMusic = {
-	"in2/victorian_meltdown.mp3",
+	--[["in2/victorian_meltdown.mp3",
 	"in2/carnophage.mp3",
 	"in2/identity_theft.mp3",
-	"in2/maintenance_tunnels.mp3",
+	"in2/maintenance_tunnels.mp3",]]
 	"in2/waking.mp3",
 	"placenta/music/whitewaking2.ogg",
 	"placenta/music/thecoldflame.ogg",
 	"placenta/music/todayisworst.ogg",
-	"forsakened/brooms3.mp3"
+	"forsakened/brooms3.mp3",
+	"forsakened/taraxis.mp3"
 }
 
 local noisetex = Material("filmgrain/noise")
 local noisetex2 = Material("filmgrain/noiseadd")
 local muzon, Menu, rndtxt
 local DevConVar = GetConVar("developer")
-local randomstrings = {"RUN", "LIVER FAILURE FOREVER", "YOU'RE ALREADY DEAD", "KILL OR DIE"}
+local randomstrings = {"RUN", "LIVER FAILURE FOREVER", "YOU'RE ALREADY DEAD", "KILL OR DIE", "2056", "V1 o5 u2"}
 local randomoperstrings = {"I'm ready.", "Where am i?", "I need to escape this place...", "Where is my team?...", "For what we fighting?", "Why..."}
 local textactive = true
 local sndvolume = GetConVar("snd_musicvolume")
+local MenuClrs = {
+	bg = Color(15, 0, 0, 200),
+	white = Color(165, 5, 5, 0)
+}
+
 local function DrawMenu()
 	if DevConVar:GetInt() >= 1 then return end
 	textactive = true
-	local MenuClrs = {
-		bg = Color(15, 0, 0, 200),
-		white = Color(165, 5, 5, 0)
-	}
-
 	local ply = LocalPlayer()
 	local class = IsValid(ply) and ply:GetAlalnState("class") or "Psychopath"
 	if IsValid(ply) then
@@ -110,6 +111,7 @@ local function DrawMenu()
 		draw.SimpleText(rndtxt, MenuFonts.button, w / 2, h / 1.1, MenuClrs.white, TEXT_ALIGN_CENTER, TEXT_ALIGN_TOP)
 	end
 
+	---------------------------- Music
 	timer.Simple(.5, function()
 		if not IsValid(ply) then return end
 		if not IsValid(DFrame) or DFrame == nil or DFrame.GoClose then return end

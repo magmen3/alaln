@@ -25,7 +25,7 @@ DATA.Translations[ ACT_MP_ATTACK_CROUCH_PRIMARYFIRE ] = {
 }
 
 DATA.Translations[ ACT_MP_CROUCHWALK ] = {
-	{ Sequence = "wos_aoc_cwalk_pistol", Weight = 1 }, --c_crouchwalkaim_pistol
+	{ Sequence = "cwalk_pistol", Weight = 1 }, --c_crouchwalkaim_pistol
 }
 
 DATA.Translations[ ACT_MP_WALK ] = {

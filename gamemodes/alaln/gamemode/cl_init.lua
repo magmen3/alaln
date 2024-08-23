@@ -23,7 +23,7 @@ hook_Add("PlayerStartVoice", "alaln-hideimageonvoice", function() return true en
 gameevent.Listen("player_spawn")
 hook_Add("player_spawn", "alaln-networkplyhull", function(data)
 	local ply = Player(data.userid)
-	if ply:GetAlalnState("class") == "Operative" then
+	if IsValid(ply) and ply:GetAlalnState("class") == "Operative" then
 		if math.random(1, 2) == 2 then
 			surface.PlaySound("in3_l7_feedback_01.mp3")
 		else

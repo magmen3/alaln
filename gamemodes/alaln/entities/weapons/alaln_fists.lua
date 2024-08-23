@@ -6,7 +6,8 @@ SWEP.UseHands = true
 SWEP.PrintName = "Fists"
 SWEP.Category = "! Forsakened"
 SWEP.Purpose = "These are your hands. They're no energy sword, but they still pack a wallop, and can kick someone ass."
-SWEP.Instructions = "R to upper/lower fists,\nLMB with uppered fists to swing,\nRMB with uppered fists to block,\nRMB with lowered fists to grab."
+SWEP.Instructions = "R to upper/lower fists,\nLMB with uppered fists to swing,\nRMB with uppered fists to block."
+--"R to upper/lower fists,\nLMB with uppered fists to swing,\nRMB with uppered fists to block,\nRMB with lowered fists to grab."
 SWEP.ViewModel = Model("models/weapons/v_fist.mdl")
 SWEP.WorldModel = ""
 SWEP.DrawWorldModel = false

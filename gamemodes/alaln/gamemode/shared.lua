@@ -60,11 +60,12 @@ if SERVER then
 		net.Send(ply)
 	end
 else
-	function BetterChatPrint(msg, color)
+	function BetterChatPrint(ply, msg, color)
 		if not (msg or color) then
 			DebugPrint("Error! Calling BetterChatPrint() without args")
 			return
 		end
+		ply = ""
 
 		chat.AddText(color, msg)
 	end

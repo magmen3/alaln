@@ -11,6 +11,5 @@ ENT.Spawnable = true
 ENT.EntMass = 25
 ENT.AmmoAmt = 6
 ENT.AmmoType = "357"
-ENT.RSound = "items/ammo_pickup.wav"
 ENT.RSoundPitch = math.random(85, 95)
 ENT.IconOverride = "editor/ai_goal_standoff"

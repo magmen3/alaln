@@ -95,7 +95,7 @@ hook_Add("RenderScreenspaceEffects", "alaln-screffects", function()
 	end
 
 	DrawSharpen(0.75, 0.75)
-	DrawMaterialOverlay("fisheyelens", -0.05)
+	DrawMaterialOverlay("fisheyelens", -0.06)
 	if class == "Operative" then
 		surface.SetMaterial(operoverlay)
 		surface.SetDrawColor(150, 150, 200, 100)

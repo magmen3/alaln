@@ -1,12 +1,11 @@
 local render, Material, hook, hook_Add, LocalPlayer, ScrW, ScrH, table, draw, surface, Color, Vector, timer, timer_Create, math, util, net = render, Material, hook, hook.Add, LocalPlayer, ScrW, ScrH, table, draw, surface, Color, Vector, timer, timer.Create, math, util, net
 timer.Simple(5, function()
-	local ply = LocalPlayer()
-	if not IsValid(ply) then print("FUCK") end
-	local Wind = CreateSound(ply, Sound("ambient/levels/canals/windmill_wind_loop1.wav"))
+	if not IsValid(LocalPlayer()) then print("FUCK") end
+	local Wind = CreateSound(LocalPlayer(), Sound("ambient/levels/canals/windmill_wind_loop1.wav"))
 	Wind:PlayEx(0, 0)
-	local WindHit1 = CreateSound(ply, Sound("ambient/wind/wind_hit1.wav"))
-	local WindHit2 = CreateSound(ply, Sound("ambient/wind/wind_hit2.wav"))
-	local WindHit3 = CreateSound(ply, Sound("ambient/wind/wind_hit3.wav"))
+	local WindHit1 = CreateSound(LocalPlayer(), Sound("ambient/wind/wind_hit1.wav"))
+	local WindHit2 = CreateSound(LocalPlayer(), Sound("ambient/wind/wind_hit2.wav"))
+	local WindHit3 = CreateSound(LocalPlayer(), Sound("ambient/wind/wind_hit3.wav"))
 	hook_Add("Tick", "alaln-windtick", function()
 		local PlyLocal = LocalPlayer()
 		if IsValid(PlyLocal) and PlyLocal:GetMoveType() ~= MOVETYPE_NOCLIP and PlyLocal:WaterLevel() <= 2 then

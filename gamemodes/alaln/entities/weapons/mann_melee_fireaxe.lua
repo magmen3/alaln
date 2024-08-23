@@ -7,9 +7,9 @@ SWEP.Category = "! Forsakened"
 SWEP.Spawnable = true
 SWEP.ViewModel = Model("models/weapons/tfa_nmrih/v_me_axe_fire.mdl")
 SWEP.WorldModel = Model("models/weapons/tfa_nmrih/w_me_axe_fire.mdl")
-SWEP.ViewModelFOV = 130
+SWEP.ViewModelFOV = 140
 SWEP.ViewModelPositionOffset = Vector(-12, 0, 0)
-SWEP.ViewModelAngleOffset = Angle(-10, 0, -4)
+SWEP.ViewModelAngleOffset = Angle(-15, 0, -5)
 SWEP.ViewModelFlip = false
 SWEP.UseHands = true
 SWEP.HoldType = "melee2"
@@ -58,7 +58,7 @@ SWEP.IconOverride = "editor/ai_goal_police"
 SWEP.MaxHP = 80
 SWEP.HP = 80
 if CLIENT then
-	local Crouched = 0
+	--local Crouched = 0
 	-- tried to make viewmodel like in The Forest
 	--[[function SWEP:CalcViewModelView(ViewModel, OldEyePos, OldEyeAng, EyePos, EyeAng)
 		local ply = LocalPlayer()

@@ -8,7 +8,7 @@ DATA.Translations[ ACT_MP_SWIM ] = {
 	{ Sequence = "sw_swimaim_bandages", Weight = 1 },
 }
 
-DATA.Translations[ ACT_MP_JUMP ] = nil --[[{
+DATA.Translations[ ACT_MP_JUMP ] = "deliver_1handed_grab_jump" --[[{ nil
 	{ Sequence = "jump_gren_frag", Weight = 1 },
 	{ Sequence = "jump_gren_frag1", Weight = 1 },
 }]]

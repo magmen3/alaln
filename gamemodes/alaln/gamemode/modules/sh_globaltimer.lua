@@ -1,29 +1,28 @@
 local render, Material, hook, hook_Add, LocalPlayer, ScrW, ScrH, table, draw, surface, Color, Vector, timer, timer_Create, math, util, net = render, Material, hook, hook.Add, LocalPlayer, ScrW, ScrH, table, draw, surface, Color, Vector, timer, timer.Create, math, util, net
 local crazyeffectcd = 0
-local color_red = Color(185, 15, 15)
-local color_yellow = Color(210, 210, 110)
+local color_red, color_yellow = Color(185, 15, 15), Color(210, 210, 110)
 local agonysounds = {"vo/npc/male01/runforyourlife02.wav", "vo/npc/male01/pain07.wav", "vo/npc/male01/pain09.wav", "vo/npc/male01/no02.wav", "vo/npc/male01/strider_run.wav"}
 local panicsounds = {"vo/npc/male01/runforyourlife02.wav", "vo/npc/male01/no02.wav", "vo/npc/male01/strider_run.wav"}
 local randagonystrings = {"OH SHIT", "IM HURT", "FUUUUUCK", "SOMEONE HELP ME", "PLEASE HELP ME"}
-local charplemat = "models/charple/charple2_sheet"
-local berserkmat = "models/in/other/corpse1_player_charple"
-local cannibalmat = "models/screamer/corpse9"
--- good alternative for stuff that needs think hook
+local charplemat, berserkmat, cannibalmat = "models/charple/charple2_sheet", "models/in/other/corpse1_player_charple", "models/screamer/corpse9"
+-- Good (no) alternative for stuff that needs think hook
 timer_Create("alaln-globalenttimer", 0.5, 0, function()
 	for _, ply in player.Iterator() do
 		if IsValid(ply) and ply:Alive() then
 			local hunger, crazyness = ply:GetAlalnState("hunger"), ply:GetAlalnState("crazyness")
 			-------- Hunger --------
 			if SBOXMode:GetBool() == false then
-				if hunger < 50 and hunger > 49.95 then
-					BetterChatPrint(ply, "You are starving.", color_yellow)
-					if CLIENT and ply == LocalPlayer() then surface.PlaySound("common/warning.wav") end
-				elseif hunger < 30 and hunger > 29.95 then
-					BetterChatPrint(ply, "You are starving.", color_yellow)
-					if CLIENT and ply == LocalPlayer() then surface.PlaySound("common/warning.wav") end
-				elseif hunger < 1 and hunger > 0.95 then
-					BetterChatPrint(ply, "You started starving to death.", color_red)
-					if CLIENT and ply == LocalPlayer() then surface.PlaySound("common/warning.wav") end
+				if CLIENT and ply == LocalPlayer() then
+					if hunger < 50 and hunger > 49.95 then
+						BetterChatPrint(ply, "You are starving.", color_yellow)
+						surface.PlaySound("common/warning.wav")
+					elseif hunger < 30 and hunger > 29.95 then
+						BetterChatPrint(ply, "You are starving.", color_yellow)
+						surface.PlaySound("common/warning.wav")
+					elseif hunger < 1 and hunger > 0.95 then
+						BetterChatPrint(ply, "You started starving to death.", color_red)
+						surface.PlaySound("common/warning.wav")
+					end
 				end
 
 				if SERVER then
@@ -47,7 +46,7 @@ timer_Create("alaln-globalenttimer", 0.5, 0, function()
 
 				-------- Crazyness --------
 				if crazyness >= 0 then ply:AddAlalnState("crazyness", -0.005) end
-				if crazyness == 10 then BetterChatPrint(ply, "You are feeling yourself strange...", color_red) end
+				if CLIENT and ply == LocalPlayer() and crazyness == 10 then BetterChatPrint(ply, "You are feeling yourself strange...", color_red) end
 				if crazyness >= 50 and math.random(1, 4) == 2 then ply:EmitSound("kidneydagger/scramble" .. math.random(1, 10) .. ".wav") end
 			elseif SBOXMode:GetBool() == true and crazyness >= 1 then
 				ply:SetAlalnState("crazyness", 0)
@@ -125,7 +124,7 @@ timer_Create("alaln-globalenttimer", 0.5, 0, function()
 			end
 
 			-------- Passive score add --------
-			ply:AddAlalnState("score", 0.01)
+			ply:AddAlalnState("score", 0.015)
 			
 			-------- Extinguish in water --------
 			if ply:WaterLevel() >= 2 and ply:IsOnFire() and SERVER then ply:Extinguish() end
@@ -145,7 +144,6 @@ timer_Create("alaln-globalenttimer", 0.5, 0, function()
 				ply:BetterViewPunch(Angle(0, 0, math.random(-50, 50)))
 				ply:SetEyeAngles(viewang)
 				BetterChatPrint("You hear some strange sound...", color_red)
-				if SERVER then util.ScreenShake(ply:GetPos(), 1, 2, 1, 0) end
 				crazyeffectcd = CurTime() + 60
 			end
 		end

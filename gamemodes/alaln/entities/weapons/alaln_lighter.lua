@@ -169,6 +169,7 @@ function SWEP:CanSecondaryAttack()
 	return self:CanPrimaryAttack() and not self:GetOwner():IsSprinting()
 end
 
+local allowedmats = {MAT_ANTLION, MAT_BLOODYFLESH, MAT_FLESH, MAT_ALIENFLESH, MAT_FOLIAGE, MAT_GRASS, MAT_WOOD, MAT_CARDBOARD, MAT_PAPER}
 function SWEP:SecondaryAttack()
 	if not self:CanSecondaryAttack() or not self:IsLit() then return end
 	local ply = self:GetOwner()
@@ -180,7 +181,6 @@ function SWEP:SecondaryAttack()
 		filter = ply
 	})
 
-	local allowedmats = {MAT_ANTLION, MAT_BLOODYFLESH, MAT_FLESH, MAT_ALIENFLESH, MAT_FOLIAGE, MAT_GRASS, MAT_WOOD}
 	-- ignite props/npcs
 	if trace.Hit and IsValid(trace.Entity) and not trace.Entity:IsWorld() and table.HasValue(allowedmats, trace.MatType) and not trace.Entity:IsOnFire() and trace.Entity:WaterLevel() < 1 then -- table.HasValue(allowedmats, trace.MatType)
 		local vm = ply:GetViewModel()

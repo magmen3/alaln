@@ -38,6 +38,7 @@ function ENT:Initialize()
 	self:SetRenderMode(RENDERMODE_GLOW)
 	self:SetColor(clr_distort)
 	self:DrawShadow(false)
+	self:SetModelScale(1.2, 0)
 	local phys = self:GetPhysicsObject()
 	if IsValid(phys) then
 		phys:SetContents(CONTENTS_SOLID)

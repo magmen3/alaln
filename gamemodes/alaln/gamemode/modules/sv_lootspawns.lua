@@ -2,11 +2,12 @@ local render, Material, hook, hook_Add, LocalPlayer, ScrW, ScrH, table, draw, su
 ALALN_LootTable = {
 	-- Items
 	{"alaln_food", 85},
-	{"alaln_tranquilizator", 55},
-	{"alaln_garbage", 35},
-	{"alaln_armor", 25},
+	{"alaln_tranquilizator", 45},
+	{"alaln_garbage", 25},
+	{"alaln_armor", 8},
 	{"alaln_strangepills", 35},
-	{"alaln_phantomloot", 10},
+	{"alaln_phantomloot", 15},
+	{"alaln_radio", 2},
 	-- Weapons
 	{"mann_ent_akm", 3},
 	{"mann_ent_pps43", 4},
@@ -21,14 +22,14 @@ ALALN_LootTable = {
 	{"mann_ent_fireaxe", 10},
 	{"mann_ent_sw686", 7},
 	{"mann_ent_mosin", 6},
-	{"mann_wep_flaregun", 4}
+	{"mann_ent_flaregun", 4}
 }
 
 local SBOXMode = GetConVar("alaln_sboxmode")
-local lootCount = 0
+lootCount = 0
 local function spawnLoot()
 	if SBOXMode:GetBool() then return end
-	if lootCount >= 80 then return end
+	if lootCount >= 92 then return end
 	if not navmesh.IsLoaded() then return end
 	local loot = table.Random(ALALN_LootTable)
 	if math.random(100) <= loot[2] then
@@ -49,7 +50,7 @@ local function spawnLoot()
 		item.IsLoot = true
 		print(item.PrintName or "none", item:GetClass() or "none")
 		lootCount = lootCount + 1
-		timer.Create("alaln-lootremove-" .. item:EntIndex(), 95, 1, function()
+		timer.Create("alaln-lootremove-" .. item:EntIndex(), 100, 1, function()
 			if not IsValid(item) or item:GetClass() == "alaln_garbage" then return end
 			item:Remove()
 		end)
@@ -65,12 +66,12 @@ hook_Add("EntityRemoved", "alaln-lootremove", function(ent, fullUpdate)
 end)
 
 local function spawnLootTimer()
-	for i = 1, 24 do
+	for i = 1, 32 do
 		spawnLoot()
 	end
 
-	if lootCount >= 80 then
-		timer.Create("alaln-lootspawn", 64, 0, spawnLootTimer)
+	if lootCount >= 92 then
+		timer.Create("alaln-lootspawn", 54, 0, spawnLootTimer)
 	else
 		timer.Create("alaln-lootspawn", math.random(12, 32), 0, spawnLootTimer)
 	end

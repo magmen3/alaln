@@ -19,7 +19,7 @@ ENT.Spawnable = false
 ENT.EntMass = 35
 ENT.AmmoAmt = 13
 ENT.AmmoType = "Pistol"
-ENT.RSound = "items/ammo_pickup.wav"
+ENT.RSound = "snd_jack_hmcd_ammotake.wav"
 ENT.RSoundPitch = math.random(95, 105)
 ENT.IconOverride = "editor/ai_goal_standoff"
 if SERVER then
@@ -71,17 +71,16 @@ if SERVER then
 		if not SWEP then ply:PickupObject(self) end
 		if not self.RoundsInMag then self.RoundsInMag = self.AmmoAmt end
 		if ply:HasWeapon(self.SWEP) then
+			ply:PickupObject(self)
+			self:EmitSound(self.ImpactSound, 70, math.random(95, 105))
 			if self.RoundsInMag > 0 then
 				if not self.Melee then
-					ply:GiveAmmo(self.RoundsInMag, self.AmmoType, true)
-					self:EmitSound(self.RSound, 75, self.RSoundPitch)
+					ply:GiveAmmo(self.RoundsInMag, self.AmmoType, false)
+					--self:EmitSound(self.RSound, 75, self.RSoundPitch)
 					self.RoundsInMag = 0
 				end
 
-				ply:PickupObject(self)
 				ply:SelectWeapon(SWEP)
-			else
-				ply:PickupObject(self)
 			end
 		else
 			ply:Give(self.SWEP)

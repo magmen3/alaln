@@ -14,9 +14,9 @@ SWEP.Spawnable = true
 SWEP.ViewModel = Model("models/weapons/v_models/v_demhands.mdl")
 SWEP.WorldModel = ""
 SWEP.DrawWorldModel = false
-SWEP.ViewModelPositionOffset = Vector(-12, -1, 1)
-SWEP.ViewModelAngleOffset = Angle(-1, 0, 0)
-SWEP.ViewModelFOV = 120
+SWEP.ViewModelPositionOffset = Vector(-11, -1, 6)
+SWEP.ViewModelAngleOffset = Angle(-1, 0, -15)
+SWEP.ViewModelFOV = 140
 SWEP.UseHands = true
 SWEP.Primary.ClipSize = -1
 SWEP.Primary.DefaultClip = -1
@@ -27,7 +27,7 @@ SWEP.Secondary.ClipSize = -1
 SWEP.Secondary.DefaultClip = -1
 SWEP.Secondary.Automatic = false
 SWEP.Secondary.Ammo = "none"
-SWEP.Damage = math.random(24, 32)
+SWEP.Damage = math.random(15, 22)
 SWEP.DamageType = DMG_SLASH
 SWEP.ReachDistance = 100
 SWEP.HitRate = 0.45
@@ -127,16 +127,38 @@ local mattypes = {
 
 local color_red = Color(185, 15, 15)
 local fleshmat = "models/zombie_fast/fast_zombie_sheet"
-function SWEP:HitEffect()
-	local owner = self:GetOwner()
-	local tr2 = util.QuickTrace(owner:GetShootPos(), owner:GetAimVector() * self.ReachDistance, {owner})
-	local pos1 = tr2.HitPos + tr2.HitNormal
-	local pos2 = tr2.HitPos - tr2.HitNormal
-	util.Decal("Blood", pos1, pos2)
-	local vPoint = tr2.HitPos
-	local effectdata = EffectData()
-	effectdata:SetOrigin(vPoint)
-	util.Effect("BloodImpact", effectdata)
+function SWEP:HitEffect(ent)
+	for i = 0, 2 do
+		local owner = self:GetOwner()
+		local tr2 = util.QuickTrace(owner:GetShootPos(), owner:GetAimVector() * self.ReachDistance, {owner})
+		local pos1 = tr2.HitPos + tr2.HitNormal
+		local pos2 = tr2.HitPos - tr2.HitNormal
+		util.Decal("Blood", pos1, pos2)
+		local vPoint = tr2.HitPos
+		local effectdata = EffectData()
+		effectdata:SetOrigin(vPoint)
+		util.Effect("BloodImpact", effectdata)
+	end
+
+	if ent and IsValid(ent) then
+		ent:EmitSound("physics/flesh/flesh_squishy_impact_hard" .. math.random(2, 4) .. ".wav", 60, math.random(95, 105))
+		ent:EmitSound("physics/body/body_medium_break3.wav", 60, math.random(95, 105))
+		ent:EmitSound("physics/flesh/flesh_bloody_break.wav", 60, math.random(95, 105))
+		if math.random(1, 2) ~= 2 then return end
+		for i = 0, 1 do
+			timer.Simple(0.1, function()
+				local gib = ents.Create("alaln_food")
+				if not IsValid(gib) or not IsValid(ent) then return end
+				gib:SetPos(ent:GetPos())
+				gib.CannibalOnly = true
+				gib:Spawn()
+				gib:Activate()
+				local randomVelocity = Vector(math.random(-150, 150), math.random(-500, 500), math.random(-150, 150)) / 2
+				gib:GetPhysicsObject():SetVelocity(randomVelocity)
+				SafeRemoveEntityDelayed(gib, 60)
+			end)
+		end
+	end
 end
 
 function SWEP.HitWait(self)
@@ -212,15 +234,15 @@ function SWEP.HitWait(self)
 							owner:SetHealth(owner:Health() + trent:GetPhysicsObject():GetMass() * 1.5)
 						end
 
-						self:SetNextPrimaryFire(CurTime() + self.HitRate * 2.2)
-						self:SetNextSecondaryFire(CurTime() + self.HitRate * 2.2)
+						self:SetNextPrimaryFire(CurTime() + self.HitRate * 2.4)
+						self:SetNextSecondaryFire(CurTime() + self.HitRate * 2.4)
 						owner:AddAlalnState("score", math.random(1, 4))
 						owner:AddAlalnState("crazyness", -math.random(1, 5))
 						trent:Remove()
 						if math.random(2, 6) == 4 then BetterChatPrint(owner, "You feel satisfied.", color_red) end
 					end
 
-					self:HitEffect()
+					self:HitEffect(trent)
 				end
 			end
 		end

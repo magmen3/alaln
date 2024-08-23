@@ -34,13 +34,14 @@ local berserkmat, cannibalmat = "models/in/other/corpse1_player_charple", "model
 util.AddNetworkString("alaln-sethull")
 function GM:PlayerLoadout(ply)
 	local class = ply:GetAlalnState("class")
-	if math.random(1, 1000) == 999 and class ~= "Operative" then
+	--if math.random(1, 1000) == 999 and class ~= "Operative" then
+	if ply:GetNWString("ChoosenOne", false) and class ~= "Operative" then
 		ply:SetAlalnState("class", "Operative")
-		timer.Simple(1, function()
-			for _, iply in player.Iterator() do
-				if iply:GetAlalnState("class") ~= "Operative" then BetterChatPrint(iply, "HE is here. Do not give chance to HIM.", color_red) end
+		for _, iply in player.Iterator() do
+			if iply ~= ply and iply:GetAlalnState("class") ~= "Operative" then
+				BetterChatPrint(iply, "HE is here. Do not give chance to HIM.", color_red) --!! Need to test
 			end
-		end)
+		end
 	end
 
 	ply:SetAlalnState("hunger", 100)
@@ -97,6 +98,7 @@ function GM:PlayerLoadout(ply)
 			BetterChatPrint(ply, "Before the madness outbreak, you were an athlete, and you ran well. Now you're gonna need that while you're still alive.", color_yellow)
 		elseif class == "Gunslinger" then
 			ply:Give("alaln_hands")
+			ply:Give("mann_wep_m1911")
 			ply:SetMaxHealth(101)
 			ply:SetHealth(101)
 			--ply:SetArmor(10)
@@ -104,6 +106,7 @@ function GM:PlayerLoadout(ply)
 			ply:SetAlalnState("crazyness", math.random(8, 12))
 			BetterChatPrint(ply, "Before the madness outbreak, you were fascinated with guns, how they work, and how to shoot with them. This knowledge will save your life in this rotten world.", color_yellow)
 		elseif class == "Berserker" then
+			ply:Give("alaln_hands")
 			ply:Give("alaln_fists")
 			ply:SetMaxHealth(120)
 			ply:SetHealth(120)
@@ -162,6 +165,7 @@ function GM:PlayerLoadout(ply)
 	if phys:IsValid() then phys:SetMass(95) end
 	ply:ScreenFade(SCREENFADE.IN, color_black, 3, 0)
 	ply:SetupHands()
+	ply:SetNWString("ChoosenOne", false)
 end
 
 do
@@ -190,9 +194,7 @@ end
 
 hook_Add("PlayerSay", "alaln-chatvoice", function(ply, text)
 	if not ply:Alive() then return false end
-	if string.find(text, "@") then return end
-	if string.find(text, "*") then return end
-	if text == " " then return false end
+	if string.find(text, "@") or string.find(text, "*") or string.find(text, "/") or text == " " then return end
 	local voice
 	local class = ply:GetAlalnState("class")
 	if class == "Operative" then
@@ -264,9 +266,16 @@ do
 					if IsValid(Ent:GetPhysicsObject()) then Ent:GetPhysicsObject():SetVelocity(victim:GetVelocity() / 2) end
 				end
 			end
-
+			--[[local Ent = ents.Create("alaln_survivorkit")
+			if IsValid(Ent) then
+				Ent:SetPos(victimpos)
+				Ent:SetAngles(AngleRand(-90, 90))
+				Ent:Spawn()
+				Ent:Activate()
+				if IsValid(Ent:GetPhysicsObject()) then Ent:GetPhysicsObject():SetVelocity(victim:GetVelocity() / 2) end
+			end]]
 			victim:SetAlalnState("score", 0)
-			--timer.Simple(.5, function() victim:SetAlalnState("class", "Psychopath") end)
+			timer.Simple(.5, function() victim:SetAlalnState("class", "Psychopath") end)
 		end
 	end)
 
@@ -382,7 +391,7 @@ do
 		local wep = ply:GetActiveWeapon()
 		if IsValid(ply) and ply:Alive() and wep ~= nil and wep ~= NULL and wep.Droppable then
 			ply:DoAnimationEvent(ACT_GMOD_GESTURE_MELEE_SHOVE_1HAND)
-			ply:BetterViewPunch(AngleRand(-3, 3))
+			ply:BetterViewPunch(AngleRand(-32, 32))
 			ply:DropWeapon(wep)
 		end
 	end

@@ -159,7 +159,7 @@ if CLIENT then
 	local stuncd = 0
 	function SWEP:Stun()
 		DrawToyTown(2, 110 * ScrH() / 200)
-		if math.random(1, 60) == 20 and not self.Primary.Automatic then
+		if math.random(5, 50) == 20 and not self.Primary.Automatic then
 			if stuncd < CurTime() then
 				DebugPrint("stunned semi-auto")
 				surface.PlaySound("mann/tinnitus.wav")
@@ -174,7 +174,7 @@ if CLIENT then
 
 				stuncd = CurTime() + 15
 			end
-		elseif math.random(1, 80) == 30 and self.Primary.Automatic then
+		elseif math.random(5, 70) == 30 and self.Primary.Automatic then
 			DebugPrint("stunned semi-auto")
 			surface.PlaySound("mann/tinnitus.wav")
 			DrawToyTown(3, 200 * ScrH() / 200)
@@ -323,7 +323,7 @@ end
 function SWEP:SecondaryAttack()
 	local owner = self:GetOwner()
 	if self:GetReady() and self:GetAiming() <= 50 and not owner:IsSprinting() and owner:OnGround() then
-		self:EmitSound("weapons/ins2/uni/uni_ads_in_0" .. math.random(1, 6) .. ".wav", 45, math.random(95, 105))
+		self:EmitSound("weapons/ins2/uni/uni_ads_in_0" .. math.random(1, 6) .. ".wav", 40, math.random(95, 105))
 		self:SetNextSecondaryFire(CurTime() + 0.4)
 	end
 end
@@ -453,7 +453,7 @@ function SWEP:Deploy()
 		owner:GetViewModel():SetPlaybackRate(.5)
 		self:SetReady(false)
 		owner:DoAnimationEvent(ACT_GMOD_GESTURE_ITEM_PLACE)
-		self:EmitSound("weapons/firearms/holster_out" .. math.random(1, 5) .. ".wav", 70, self.HandlingPitch or 100)
+		self:EmitSound("weapons/firearms/holster_out" .. math.random(1, 5) .. ".wav", 40, self.HandlingPitch or 100)
 		self:EnforceHolsterRules(self)
 		owner:GetViewModel():StopParticles()
 		timer.Simple(1.5, function()
@@ -492,7 +492,7 @@ function SWEP:DoBFSAnimation(anim)
 end
 
 function SWEP:Holster(newWep)
-	self:EmitSound("weapons/firearms/holster_in" .. math.random(1, 4) .. ".wav", 70, self.HandlingPitch)
+	self:EmitSound("weapons/firearms/holster_in" .. math.random(1, 4) .. ".wav", 40, self.HandlingPitch)
 	self:EnforceHolsterRules(newWep)
 	self:SetReady(false)
 	if self:GetOwner():GetViewModel():IsValid() then self:GetOwner():GetViewModel():StopParticles() end
