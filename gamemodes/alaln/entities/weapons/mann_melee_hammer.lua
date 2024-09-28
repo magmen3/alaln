@@ -116,8 +116,8 @@ do
 						end
 
 						self.HP = self.HP - (self.Primary.Damage / 35)
-						self:SetNextSecondaryFire(CurTime() + 1)
-						self:SetNextPrimaryFire(CurTime() + 1)
+						self:SetNextSecondaryFire(CurTime() + 1.5)
+						self:SetNextPrimaryFire(CurTime() + 1.5)
 					end
 				end
 			end

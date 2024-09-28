@@ -49,11 +49,13 @@ if CLIENT then
 
 		local forward, right, up = self.ViewModelPositionOffset.x, self.ViewModelPositionOffset.y, self.ViewModelPositionOffset.z + Crouched
 		local angs = owner:EyeAngles()
+		local s, t = math.sin, CurTime()
+		local offset = Vector(s(t * 1.5) * 0.6, s(t * 1.4) * 0.4, s(t * 1.7) * 0.6)
 		--ang.pitch = -ang.pitch
 		ang:RotateAroundAxis(ang:Forward(), self.ViewModelAngleOffset.pitch)
 		ang:RotateAroundAxis(ang:Right(), self.ViewModelAngleOffset.roll)
 		ang:RotateAroundAxis(ang:Up(), self.ViewModelAngleOffset.yaw)
-		return pos + angs:Forward() * forward + angs:Right() * right + angs:Up() * up, ang
+		return pos + offset + angs:Forward() * forward + angs:Right() * right + angs:Up() * up, ang
 	end
 
 	local color_red = Color(185, 15, 15)
@@ -110,7 +112,7 @@ function SWEP:PrimaryAttack()
 	owner:EmitSound(self.SwingSound, 75, 100)
 	timer.Simple(0.1, function()
 		if not (IsValid(self) or IsValid(owner)) then return end
-		self.HitWait(self)
+		self:HitWait(self)
 	end)
 end
 
@@ -128,7 +130,7 @@ local mattypes = {
 local color_red = Color(185, 15, 15)
 local fleshmat = "models/zombie_fast/fast_zombie_sheet"
 function SWEP:HitEffect(ent)
-	for i = 0, 2 do
+	for i = 0, 4 do
 		local owner = self:GetOwner()
 		local tr2 = util.QuickTrace(owner:GetShootPos(), owner:GetAimVector() * self.ReachDistance, {owner})
 		local pos1 = tr2.HitPos + tr2.HitNormal
@@ -144,7 +146,7 @@ function SWEP:HitEffect(ent)
 		ent:EmitSound("physics/flesh/flesh_squishy_impact_hard" .. math.random(2, 4) .. ".wav", 60, math.random(95, 105))
 		ent:EmitSound("physics/body/body_medium_break3.wav", 60, math.random(95, 105))
 		ent:EmitSound("physics/flesh/flesh_bloody_break.wav", 60, math.random(95, 105))
-		if math.random(1, 2) ~= 2 then return end
+		--if math.random(1, 2) ~= 2 then return end
 		for i = 0, 1 do
 			timer.Simple(0.1, function()
 				local gib = ents.Create("alaln_food")
@@ -161,7 +163,7 @@ function SWEP:HitEffect(ent)
 	end
 end
 
-function SWEP.HitWait(self)
+function SWEP:HitWait(self)
 	local owner = self:GetOwner()
 	if not IsValid(owner) then return end
 	local tr = util.TraceHull({

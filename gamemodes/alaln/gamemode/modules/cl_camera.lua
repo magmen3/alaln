@@ -1,20 +1,5 @@
 local render, Material, hook, hook_Add, LocalPlayer, ScrW, ScrH, table, draw, surface, Color, Vector, timer, timer_Create, math, util, net, system_HasFocus = render, Material, hook, hook.Add, LocalPlayer, ScrW, ScrH, table, draw, surface, Color, Vector, timer, timer.Create, math, util, net, system.HasFocus
---[[function ScrShake(ply, amount)
-	if not (ply or amount) then
-		DebugPrint("Error! Calling ScrShake() without args")
-		return
-	end
-
-	ply:SetNWVector("ScrShake", ply:GetNWVector("ScrShake") + VectorRand(-amount, amount))
-end
-
-function GetScrShake(ply)
-	if not ply then
-		DebugPrint("Error! Calling GetScrShake() without args")
-		return
-	end
-	return ply:GetNWVector("ScrShake")
-end]]
+--!! TODO: Надо где-нибудь взять нормальный код на тряску экрана..
 ThirdPerson = CreateClientConVar("alaln_thirdperson", 1, true, false, "Enable thirdperson?", 0, 1)
 local wepblacklist = {
 	["weapon_physgun"] = true,

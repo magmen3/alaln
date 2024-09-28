@@ -53,12 +53,13 @@ SWEP.DeploySound = Sound("player/weapon_draw_0" .. math.random(1, 5) .. ".wav")
 SWEP.PitchMul = 0.96
 -- SWEP.WMPos 				= Vector(3.5, -1.5, -2.5)
 -- SWEP.WMAng 				= Angle(-80, 180, 180)
-SWEP.ENT = "mann_ent_metalbat"
+SWEP.ENT = "mann_ent_crowbar"
 SWEP.Droppable = true
 SWEP.NoHolster = true
 SWEP.IconOverride = "editor/ai_goal_police"
-SWEP.MaxHP = 80
-SWEP.HP = 80
+SWEP.MaxHP = 90
+SWEP.HP = 90
+SWEP.CanUnConstrain = true
 if CLIENT then
 	local Crouched = 0
 	-- tried to make viewmodel like in The Forest

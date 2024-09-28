@@ -3,7 +3,7 @@ if SERVER then
 	AddCSLuaFile()
 else
 	SWEP.IconOverride = "editor/env_fire"
-	SWEP.ViewModelPositionOffset = Vector(-22, -6, -10)
+	SWEP.ViewModelPositionOffset = Vector(-22, -7, -12)
 	SWEP.ViewModelAngleOffset = Angle(5, 0, 0)
 	SWEP.DrawCrosshair = false
 	SWEP.DrawAmmo = false
@@ -76,19 +76,17 @@ else
 
 		local forward, right, up = self.ViewModelPositionOffset.x, self.ViewModelPositionOffset.y, self.ViewModelPositionOffset.z + Crouched
 		local angs = owner:EyeAngles()
+		local s, t = math.sin, CurTime()
+		local offset = Vector(s(t * 1.5) * 0.5, s(t * 1.6) * 0.6, s(t * 1.7) * 0.8)
 		--ang.pitch = -ang.pitch
 		ang:RotateAroundAxis(ang:Forward(), self.ViewModelAngleOffset.pitch)
 		ang:RotateAroundAxis(ang:Right(), self.ViewModelAngleOffset.roll)
 		ang:RotateAroundAxis(ang:Up(), self.ViewModelAngleOffset.yaw)
-		return pos + angs:Forward() * forward + angs:Right() * right + angs:Up() * up, ang
+		return pos + offset + angs:Forward() * forward + angs:Right() * right + angs:Up() * up, ang
 	end
 end
 
 SWEP.Base = "alaln_base"
-game.AddAmmoType({
-	name = "hydrogen_peroxide",
-	maxcarry = 300
-})
 
 SWEP.PrintName = "Flamethrower"
 SWEP.Category = "! Forsakened"

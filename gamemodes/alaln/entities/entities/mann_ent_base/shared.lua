@@ -63,12 +63,27 @@ if SERVER then
 			self:EmitSound(self.ImpactSound, math.Clamp(data.Speed / 3, 20, 85), math.random(95, 105))
 			if self.SecondSound then sound.Play(self.SecondSound, self:GetPos(), math.Clamp(data.Speed / 3, 20, 85), math.random(95, 105)) end
 			self:GetPhysicsObject():SetVelocity(self:GetPhysicsObject():GetVelocity() * .6)
+			if data.Speed >= 1200 then
+				self:Break()
+			end
 		end
+	end
+	
+	function ENT:OnTakeDamage(dmg)
+		if dmg:GetDamage() >= 50 then
+			self:Break()
+		end
+	end
+	
+	function ENT:Break()
+		CreateGibs(self, "metal", 2)
+		self:EmitSound("physics/metal/metal_box_break" .. math.random(1, 2) .. ".wav", 65)
+		self:Remove()
 	end
 
 	function ENT:PickUp(ply)
 		local SWEP = self.SWEP
-		if not SWEP then ply:PickupObject(self) end
+		if not SWEP or self:IsConstrained() then ply:PickupObject(self) return end
 		if not self.RoundsInMag then self.RoundsInMag = self.AmmoAmt end
 		if ply:HasWeapon(self.SWEP) then
 			ply:PickupObject(self)

@@ -38,15 +38,17 @@ ENT.PartialUses = {
 }
 
 local math, table, Color, Vector, Angle, IsValid = math, table, Color, Vector, Angle, IsValid
+local clr_bag = Color(95, 95, 180)
 function ENT:Initialize()
 	if not SERVER then return end
-	self:SetModel(Model("models/weapon_case/briefcase.mdl"))
+	self:SetModel(Model("models/vj_props/duffle_bag.mdl"))--models/props_c17/SuitCase_Passenger_Physics.mdl
 	self:PhysicsInit(SOLID_VPHYSICS)
 	self:SetMoveType(MOVETYPE_VPHYSICS)
 	self:SetSolid(SOLID_VPHYSICS)
 	self:SetCollisionGroup(COLLISION_GROUP_WEAPON)
-
-	self:SetModelScale(0.9, 0)
+	self:SetAngles(AngleRand(-90, 90))
+	self:SetModelScale(0.85, 0)
+	self:SetColor(clr_bag)
 	local phys = self:GetPhysicsObject()
 	if IsValid(phys) then
 		phys:SetContents(CONTENTS_SOLID)

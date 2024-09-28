@@ -706,7 +706,9 @@ if CLIENT then
 		end
 
 		Crouched = Crouched * (1 - (Aim / 100))
-		pos = pos + Up * Crouched
+		local s, t = math.sin, CurTime()
+		local offset = Vector(s(t * 1.5) * 0.2, s(t * 1.4) * 0.2, s(t * 1.6) * 0.3)
+		pos = pos + offset + Up * Crouched
 		return pos, ang
 	end
 

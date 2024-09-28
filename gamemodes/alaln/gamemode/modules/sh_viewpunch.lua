@@ -1,3 +1,4 @@
+-- Taken from relaxtakenotes addon
 local render, Material, hook, hook_Add, LocalPlayer, ScrW, ScrH, table, draw, surface, Color, Vector, timer, timer_Create, math, util, net = render, Material, hook, hook.Add, LocalPlayer, ScrW, ScrH, table, draw, surface, Color, Vector, timer, timer.Create, math, util, net
 if SERVER then
 	util.AddNetworkString("alaln-viewpunch")
@@ -57,8 +58,8 @@ if CLIENT then
 
 	local function Viewpunch(angle)
 		if not angle then return end
-		if ThirdPerson:GetBool() then return end
-		vp_punch_angle_velocity = vp_punch_angle_velocity + angle * 5
+		--if ThirdPerson:GetBool() then return end
+		vp_punch_angle_velocity = vp_punch_angle_velocity + angle * (ThirdPerson:GetBool() and 0.8 or 5)
 	end
 
 	local plyMeta = FindMetaTable("Player")

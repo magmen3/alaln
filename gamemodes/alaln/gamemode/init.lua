@@ -25,7 +25,7 @@ function GM:Initialize()
 	end)
 end
 
--- needful commands
+-- Needful commands
 RunConsoleCommand("sv_defaultdeployspeed", "1")
 RunConsoleCommand("sv_rollangle", "-4")
 RunConsoleCommand("sbox_maxnpcs", "128")

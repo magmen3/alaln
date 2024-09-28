@@ -4,7 +4,8 @@ GM.Name = "Forsakened"
 GM.Author = "Mannytko, Deka, and others listed on WS page"
 GM.Email = "loh"
 GM.Website = "https://discord.gg/gQ7Pp96ZHj"
---[[ --!! TODO: (теперь в дискорде) (уже нет) (Баги всякие непофикшенные искать через CTRL + F и --!! в поиск)
+GM.Stage = 1
+--[[ --!! TODO: (Баги всякие непофикшенные искать через CTRL + F и --!! в поиск)
 	1. Добавить различные препараты временно дающие баффы
 	2. Переделать еду и транквилизаторы на базе свепов
 	3. Добавить алтари, из которых можно получить рандомный бафф/вещь за очки
@@ -60,15 +61,14 @@ if SERVER then
 		net.Send(ply)
 	end
 else
-	function BetterChatPrint(ply, msg, color)
+	--[[function BetterChatPrint(ply, msg, color) --!! чтоб ты падла здох
 		if not (msg or color) then
 			DebugPrint("Error! Calling BetterChatPrint() without args")
 			return
 		end
-		ply = ""
 
-		chat.AddText(color, msg)
-	end
+		chat.AddText(color, msg) -- скотина тупая
+	end]]
 
 	net.Receive("alaln-chatprint", function() chat.AddText(net.ReadColor(), net.ReadString()) end)
 end

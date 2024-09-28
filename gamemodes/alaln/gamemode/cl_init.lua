@@ -65,7 +65,8 @@ concommand.Add("checkammo", function()
 		text = "Empty magazine."
 	end
 
-	BetterChatPrint(text, color_yellow)
+	--BetterChatPrint(text, color_yellow)
+	chat.AddText(color_yellow, text)
 end, nil, "Check your current gun ammo", FCVAR_NONE)
 
 local color_button = Color(165, 0, 0, 180)
@@ -114,7 +115,7 @@ net.Receive("alaln-flinch", function(len)
 	if not IsValid(ply) then return end
 	ply:AnimRestartGesture(GESTURE_SLOT_FLINCH, gest, true)
 end)
---[[ --!! Надо либо сделать альтернативу этой херне хомиградовской либо чет свое чтобы при каждом спавне появлялось
+--[[ --!! TODO: Надо либо сделать альтернативу этой херне хомиградовской либо чет свое чтобы при каждом спавне появлялось
 local roundTimeStart = CurTime()
 -- format: multiline
 local rndsound = {

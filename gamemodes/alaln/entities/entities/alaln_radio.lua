@@ -30,6 +30,9 @@ function ENT:PhysicsCollide(data, ent)
 	if data.DeltaTime > .1 then
 		self:EmitSound("physics/metal/metal_computer_impact_hard" .. math.random(1, 3) .. ".wav", math.Clamp(data.Speed / 3, 20, 65), math.random(95, 105))
 		self:GetPhysicsObject():SetVelocity(self:GetPhysicsObject():GetVelocity() * .6)
+		if data.Speed >= 1000 then
+			self:Remove()
+		end
 	end
 end
 
@@ -39,16 +42,44 @@ function ENT:Use(ply)
 	ply:PickupObject(self)
 	self:EmitSound("physics/metal/metal_computer_impact_soft" .. math.random(1, 3) .. ".wav", 70, math.random(95, 105))
 	if CLIENT or self.UseCD > CurTime() then return end
-	self:EmitSound("forsakened/radio.mp3", 80, math.random(95, 105))
+	if math.random(1, 2) == 2 then
+		self:EmitSound("forsakened/radio.mp3", 85, math.random(95, 105))
+	else
+		self:EmitSound("vj_cofr/aom/player_da/helpyou.wav", 70, math.random(95, 105))
+	end
 	if not self.Used then
 		ply:SetNWString("ChoosenOne", true)
 		self.Used = true
 	end
 	self.UseCD = CurTime() + 85
+	SafeRemoveEntityDelayed(self, 85)
 end
 
+function ENT:OnTakeDamage(dmg)
+	if dmg:GetDamage() >= 40 then
+		self:Remove()
+	end
+end
+
+--local vecup = Vector(0, 0, 15)
 function ENT:OnRemove()
 	self:StopSound("forsakened/radio.mp3")
+	if CLIENT then return end
+	self:EmitSound("physics/metal/metal_box_break" .. math.random(1, 2) .. ".wav", 70)
+	CreateGibs(self, "metal", 6)
+	--[[local gib = ents.Create("env_shooter")
+	gib:SetPos(self:GetPos() + vecup)
+	gib:SetKeyValue("model", "models/gibs/metal_gib5.mdl")
+	gib:SetKeyValue("shootsounds", 2)
+	gib:SetKeyValue("m_iGibs", "8")
+	gib:SetKeyValue("delay", "0")
+	gib:SetKeyValue("m_flVelocity", "200")
+	gib:SetKeyValue("m_flVariance", "100")
+	gib:SetKeyValue("m_flGibLife", "10")
+	gib:SetKeyValue("nogibshadows", "1")
+	gib:SetKeyValue("spawnflags", bit.bor(4))
+	gib:Spawn()
+	gib:Fire("Shoot")]]
 end
 
 if CLIENT then

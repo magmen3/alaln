@@ -1,3 +1,4 @@
+-- Taken from stealth doors addon by SweptThrone, edited by Mannytko
 local render, Material, hook, hook_Add, LocalPlayer, ScrW, ScrH, table, draw, surface, Color, Vector, timer, timer_Create, math, util, net = render, Material, hook, hook.Add, LocalPlayer, ScrW, ScrH, table, draw, surface, Color, Vector, timer, timer.Create, math, util, net
 local entMeta = FindMetaTable("Entity")
 local DoorClass = {"prop_door", "prop_door_rotating", "func_door", "func_door_rotating", "door", "func_breakable"}

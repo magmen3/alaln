@@ -20,6 +20,7 @@ ALALN_LootTable = {
 	{"mann_ent_pm", 9},
 	{"mann_ent_metalbat", 18},
 	{"mann_ent_fireaxe", 10},
+	{"mann_ent_crowbar", 12},
 	{"mann_ent_sw686", 7},
 	{"mann_ent_mosin", 6},
 	{"mann_ent_flaregun", 4}
@@ -29,8 +30,7 @@ local SBOXMode = GetConVar("alaln_sboxmode")
 lootCount = 0
 local function spawnLoot()
 	if SBOXMode:GetBool() then return end
-	if lootCount >= 92 then return end
-	if not navmesh.IsLoaded() then return end
+	if not navmesh.IsLoaded() or lootCount >= 92 then return end
 	local loot = table.Random(ALALN_LootTable)
 	if math.random(100) <= loot[2] then
 		local item = ents.Create(loot[1])

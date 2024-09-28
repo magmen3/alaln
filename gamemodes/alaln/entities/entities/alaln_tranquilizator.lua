@@ -45,7 +45,7 @@ local color_yellow = Color(210, 210, 110)
 function ENT:Use(ply)
 	ply:PickupObject(self)
 	self:EmitSound("vj_cofr/aom/pills/pills_drop.wav", 70, math.random(95, 105))
-	if self.UseCD > CurTime() then return end
+	if self.UseCD > CurTime() or self:IsConstrained() then return end
 	if SERVER then
 		self.UseCD = CurTime() + 1
 		if ply:GetAlalnState("class") == "Cannibal" then

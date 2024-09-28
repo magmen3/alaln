@@ -37,6 +37,15 @@ function ENT:PhysicsCollide(data, ent)
 	if data.DeltaTime > .1 then
 		self:EmitSound("physics/metal/metal_canister_impact_soft" .. math.random(1, 3) .. ".wav", math.Clamp(data.Speed / 3, 20, 85), math.random(95, 105))
 		self:GetPhysicsObject():SetVelocity(self:GetPhysicsObject():GetVelocity() * .6)
+		if data.Speed >= 1600 then
+			self:Break()
+		end
+	end
+end
+
+function ENT:OnTakeDamage(dmg)
+	if dmg:GetDamage() >= 60 then
+		self:Break()
 	end
 end
 
@@ -90,6 +99,12 @@ function ENT:Use(ply)
 	end
 
 	ply:SetupHands()
+end
+
+function ENT:Break()
+	CreateGibs(self, "metal", 6)
+	self:EmitSound("physics/metal/metal_box_break" .. math.random(1, 2) .. ".wav", 70)
+	self:Remove()
 end
 
 if CLIENT then

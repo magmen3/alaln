@@ -5,7 +5,7 @@ local agonysounds = {"vo/npc/male01/runforyourlife02.wav", "vo/npc/male01/pain07
 local panicsounds = {"vo/npc/male01/runforyourlife02.wav", "vo/npc/male01/no02.wav", "vo/npc/male01/strider_run.wav"}
 local randagonystrings = {"OH SHIT", "IM HURT", "FUUUUUCK", "SOMEONE HELP ME", "PLEASE HELP ME"}
 local charplemat, berserkmat, cannibalmat = "models/charple/charple2_sheet", "models/in/other/corpse1_player_charple", "models/screamer/corpse9"
--- Good (no) alternative for stuff that needs think hook
+-- Good (actually no) alternative for stuff that needs think hook
 timer_Create("alaln-globalenttimer", 0.5, 0, function()
 	for _, ply in player.Iterator() do
 		if IsValid(ply) and ply:Alive() then

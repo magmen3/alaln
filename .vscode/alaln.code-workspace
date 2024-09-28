@@ -1,0 +1,14 @@
+{
+	"folders": [
+		{
+			"path": ".."
+		}
+	],
+	"settings": {},
+	"extensions": {
+		"recommendations": [
+			"goz3rr.vscode-glualint",
+			"venner.vscode-glua-enhanced"
+		]
+	}
+}

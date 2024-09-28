@@ -85,6 +85,7 @@ SWEP.ENT = "mann_ent_base"
 SWEP.Droppable = true
 SWEP.MaxHP = 70
 SWEP.HP = 70
+SWEP.CanUnConstrain = false
 function SWEP:Initialize()
 	self:SetNextIdle(CurTime() + 1.5)
 	self:SetHoldType(self.HoldType)
@@ -325,6 +326,10 @@ function SWEP:SlashAttack()
 			end
 
 			tr.Entity:TakeDamageInfo(dmginfo)
+
+			if self.CanUnConstrain and tr.Entity:IsConstrained() and math.random(1, 2) == 2 then
+				constraint.RemoveAll(tr.Entity)
+			end
 		end
 
 		if SERVER and (tr.HitWorld or IsValid(tr.Entity)) then self.HP = self.HP - (self.Primary.Damage / 30) end
@@ -413,6 +418,10 @@ function SWEP:StabAttack()
 			end
 
 			tr.Entity:TakeDamageInfo(secdmginfo)
+
+			if self.CanUnConstrain and tr.Entity:IsConstrained() then
+				constraint.RemoveAll(tr.Entity)
+			end
 		end
 
 		if SERVER and (tr.HitWorld or IsValid(tr.Entity)) then self.HP = self.HP - (self.Secondary.Damage / 35) end

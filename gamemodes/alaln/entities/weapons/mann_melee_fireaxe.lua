@@ -55,8 +55,8 @@ SWEP.ENT = "mann_ent_fireaxe"
 SWEP.Droppable = true
 SWEP.NoHolster = true
 SWEP.IconOverride = "editor/ai_goal_police"
-SWEP.MaxHP = 80
-SWEP.HP = 80
+SWEP.MaxHP = 85
+SWEP.HP = 85
 if CLIENT then
 	--local Crouched = 0
 	-- tried to make viewmodel like in The Forest

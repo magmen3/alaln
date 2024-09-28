@@ -35,10 +35,10 @@ util.AddNetworkString("alaln-sethull")
 function GM:PlayerLoadout(ply)
 	local class = ply:GetAlalnState("class")
 	--if math.random(1, 1000) == 999 and class ~= "Operative" then
-	if ply:GetNWString("ChoosenOne", false) and class ~= "Operative" then
+	if ply:GetNWString("ChoosenOne", false) == true and class ~= "Operative" then
 		ply:SetAlalnState("class", "Operative")
 		for _, iply in player.Iterator() do
-			if iply ~= ply and iply:GetAlalnState("class") ~= "Operative" then
+			if iply:GetAlalnState("class") ~= "Operative" then
 				BetterChatPrint(iply, "HE is here. Do not give chance to HIM.", color_red) --!! Need to test
 			end
 		end
@@ -59,7 +59,6 @@ function GM:PlayerLoadout(ply)
 	ply:Flashlight(false)
 	ply:SetCanZoom(false)
 	ply:StopZooming()
-	--ply:SetNWVector("ScrShake", vector_origin)
 	ply:GodDisable()
 	ply:SetTeam(1)
 	ply:SetMaterial()
@@ -277,6 +276,12 @@ do
 			victim:SetAlalnState("score", 0)
 			timer.Simple(.5, function() victim:SetAlalnState("class", "Psychopath") end)
 		end
+
+		timer.Simple(.5, function()
+			if IsValid(victim) and victim:GetNWString("ChoosenOne", false) == true and class ~= "Operative" then
+				victim:SetAlalnState("class", "Operative")
+			end
+		end)
 	end)
 
 	hook_Add("OnNPCKilled", "alaln-npcdeath", function(npc, attacker, inflictor)

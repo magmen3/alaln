@@ -96,14 +96,13 @@ hook_Add("RenderScreenspaceEffects", "alaln-screffects", function()
 
 	DrawSharpen(0.75, 0.75)
 	DrawMaterialOverlay("fisheyelens", -0.06)
-	if class == "Operative" then
-		surface.SetMaterial(operoverlay)
-		surface.SetDrawColor(150, 150, 200, 100)
-		surface.DrawTexturedRect(0, 0, Widgth, Height)
-	end
-
 	DrawColorModify(clrmod)
 	if ply:Alive() then
+		if class == "Operative" then
+			surface.SetMaterial(operoverlay)
+			surface.SetDrawColor(150, 150, 200, 100)
+			surface.DrawTexturedRect(0, 0, Widgth, Height)
+		end
 		DrawToyTown(1, Height / 4 * frac)
 		if ply:WaterLevel() == 3 and not PotatoMode:GetBool() then DrawToyTown(15, ScrH() / 1.5) end
 		if ply:Health() <= 40 or ply:WaterLevel() == 3 then DrawMotionBlur(0.6 - 0.2 * frac, 0.8, 0.01) end

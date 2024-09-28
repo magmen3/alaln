@@ -65,10 +65,12 @@ if CLIENT then
 		local forward, right, up = self.ViewModelPositionOffset.x, self.ViewModelPositionOffset.y, self.ViewModelPositionOffset.z + Crouched
 		local angs = owner:EyeAngles()
 		--ang.pitch = -ang.pitch
+		local s, t = math.sin, CurTime()
+		local offset = Vector(s(t * 1.5) * 0.5, s(t * 1.6) * 0.6, s(t * 1.7) * 0.8)
 		ang:RotateAroundAxis(ang:Forward(), self.ViewModelAngleOffset.pitch)
 		ang:RotateAroundAxis(ang:Right(), self.ViewModelAngleOffset.roll)
 		ang:RotateAroundAxis(ang:Up(), self.ViewModelAngleOffset.yaw)
-		return pos + angs:Forward() * forward + angs:Right() * right + angs:Up() * up, ang
+		return pos + offset + angs:Forward() * forward + angs:Right() * right + angs:Up() * up, ang
 	end
 
 	function SWEP:DrawWorldModel()

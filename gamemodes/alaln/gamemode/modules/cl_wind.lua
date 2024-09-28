@@ -1,5 +1,4 @@
 local render, Material, hook, hook_Add, LocalPlayer, ScrW, ScrH, table, draw, surface, Color, Vector, timer, timer_Create, math, util, net = render, Material, hook, hook.Add, LocalPlayer, ScrW, ScrH, table, draw, surface, Color, Vector, timer, timer.Create, math, util, net
-timer.Simple(5, function()
 	if not IsValid(LocalPlayer()) then print("FUCK") end
 	local Wind = CreateSound(LocalPlayer(), Sound("ambient/levels/canals/windmill_wind_loop1.wav"))
 	Wind:PlayEx(0, 0)
@@ -37,4 +36,3 @@ timer.Simple(5, function()
 			Wind:ChangePitch(0, 0)
 		end
 	end)
-end)

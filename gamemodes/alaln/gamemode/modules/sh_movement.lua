@@ -1,5 +1,5 @@
 local render, Material, hook, hook_Add, LocalPlayer, ScrW, ScrH, table, draw, surface, Color, Vector, timer, timer_Create, math, util, net = render, Material, hook, hook.Add, LocalPlayer, ScrW, ScrH, table, draw, surface, Color, Vector, timer, timer.Create, math, util, net
--- Player's hull vectors, made it global to easy use
+-- Player's hull vectors, made it global for easier use
 HullVector = {
 	Min = Vector(-12, -12, 0),
 	Max = Vector(12, 12, 64),
@@ -8,16 +8,18 @@ HullVector = {
 	DuckOffset = Vector(0, 0, 42)
 }
 
--- antibhop
+-- Antibhop
 hook_Add("OnPlayerHitGround", "alaln-antibhop", function(ply, water, floater, speed)
-	if not IsValid(ply) or not ply:Alive() then return end
+	--[[if not IsValid(ply) or not ply:Alive() then return end
 	local vel = ply:GetVelocity()
 	vel.z = 100
-	ply:SetVelocity(-vel * 1.5)
+	ply:SetVelocity(-vel * 1.5)]]
 	--if ply:GetAlalnState("stamina") > 25 then ply:AddAlalnState("stamina", -5) end
+	local vel = ply:GetVelocity() -- NEW METHOD 🔥🔥🔥
+	ply:SetVelocity(Vector(-(vel.x / 1.5), -(vel.y / 1.5), 0))
 end)
 
--- movement speed calculations
+-- Movement speed calculations
 hook_Add("Move", "alaln-sprint", function(ply, mv)
 	if not IsValid(ply) or not ply:Alive() then return end
 	if not ply.CurrentWalk then ply.CurrentWalk = 1 end
@@ -46,7 +48,7 @@ hook_Add("Move", "alaln-sprint", function(ply, mv)
 	ply:SetRunSpeed(ply.CurrentSprint)
 end)
 
--- toggle crouch
+-- Toggle crouch
 if CLIENT then
 	local induck = false
 	hook_Add("PlayerBindPress", "alaln-toggleduck", function(ply, bind, pressed) if string.find(bind, "duck") then return true end end)
@@ -112,7 +114,7 @@ hook_Add("SetupMove", "alaln-overridemovement", function(ply, mv, cmd)
 	end
 end)
 
--- player animations
+-- Custom player animations
 hook_Add("CalcMainActivity", "alaln-playeranims", function(ply, vel)
 	local plyvel, wep = vel:Length2D(), ply:GetActiveWeapon()
 	local unarmed = (IsValid(wep) and wep:GetHoldType() == "normal") or not IsValid(wep)
@@ -154,7 +156,7 @@ function GM:PlayerStepSoundTime(ply, iType, bWalking)
 	return fStepTime
 end
 
--- footsteps
+-- Footsteps
 hook_Add("PlayerFootstep", "alaln-plyfootstep", function(ply, pos, foot, sound, volume, rf)
 	if not (IsValid(ply) or ply:Alive()) then return true end
 	if CLIENT and ply == LocalPlayer() then
@@ -167,7 +169,7 @@ hook_Add("PlayerFootstep", "alaln-plyfootstep", function(ply, pos, foot, sound, 
 	end
 
 	if (CLIENT and ply == LocalPlayer()) or not IsValid(ply) then return end
-	-- server only part
+	-- Server only part
 	if ply:Armor() < 1 then
 		if ply:GetAlalnState("class") ~= "Human" and ply:GetAlalnState("class") ~= "Operative" then
 			ply:EmitSound("npc/footsteps/hardboot_generic" .. math.random(1, 6) .. ".wav", (ply:KeyDown(IN_DUCK) or ply:KeyDown(IN_WALK)) and 40 or 60, math.random(90, 110))
@@ -186,6 +188,7 @@ hook_Add("PlayerFootstep", "alaln-plyfootstep", function(ply, pos, foot, sound, 
 	return true
 end)
 
+local ang_land = Angle(15, 0, 0)
 hook_Add("OnPlayerJump", "alaln-playerjump", function(ply, speed)
 	if not ply:Alive() then return end
 	local class = ply:GetAlalnState("class")
@@ -194,6 +197,7 @@ hook_Add("OnPlayerJump", "alaln-playerjump", function(ply, speed)
 	if SERVER and class ~= "Operative" and class ~= "Human" then
 		ply:EmitSound("placenta/speech/jump.wav", 60, math.random(95, 105))
 	end
+	ply:BetterViewPunch(-ang_land)
 end)
 
 function GM:HandlePlayerLanding(ply, velocity, WasOnGround)
@@ -202,8 +206,8 @@ function GM:HandlePlayerLanding(ply, velocity, WasOnGround)
 		ply:AnimRestartGesture(GESTURE_SLOT_JUMP, ACT_LAND, true)
 		local class = ply:GetAlalnState("class")
 		if SERVER and ply:Alive() and class ~= "Operative" and class ~= "Human" then
-			--print(1)
 			ply:EmitSound("placenta/speech/land.wav", 60, math.random(95, 105))
 		end
+		ply:BetterViewPunch(ang_land)
 	end
 end

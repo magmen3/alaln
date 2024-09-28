@@ -106,4 +106,46 @@ hook_Add("ScalePlayerDamage", "alaln-flinchplayers", function(ply, grp)
 	end
 end)
 
-hook_Add("GetFallDamage", "alaln-falldamage", function(ply, speed) return math.max(0, math.ceil(0.2418 * speed - 141.75)) end)
+hook_Add("GetFallDamage", "alaln-falldamage", function(ply, speed) 
+	return math.max(0, math.ceil(0.2418 * speed - 141.75)) 
+end)
+
+function CreateGibs(ent, name, amt)
+	local gib = ents.Create("env_shooter")
+	local sound, model = -1, ""
+	if name == "glass" then
+		sound = 0
+	elseif name == "wood" then
+		sound = 1
+	elseif name == "metal" then
+		sound = 2
+	elseif name == "flesh" then
+		sound = 3
+	elseif name == "concrete" then
+		sound = 4
+	end
+	if name == "glass" then
+		model = "models/gibs/glass_shard.mdl"
+	elseif name == "wood" then
+		model = "models/gibs/furniture_gibs/furnituretable001a_chunk06.mdl"
+	elseif name == "metal" then
+		model = "models/gibs/metal_gib5.mdl"
+	elseif name == "flesh" then
+		model = "models/gibs/humans/sgib_0"..math.random(2, 3)..".mdl"
+	elseif name == "concrete" then
+		model = "models/props_debris/concrete_spawnchunk001h.mdl"
+	end
+
+	gib:SetPos(ent:GetPos() + Vector(0, 0, ent:OBBMaxs():ToTable()[3]))
+	gib:SetKeyValue("model", model) 
+	gib:SetKeyValue("shootsounds", sound) 
+	gib:SetKeyValue("m_iGibs", amt or 8)
+	gib:SetKeyValue("delay", 0)
+	gib:SetKeyValue("m_flVelocity", 200)
+	gib:SetKeyValue("m_flVariance", 100)
+	gib:SetKeyValue("m_flGibLife", 10)
+	gib:SetKeyValue("nogibshadows", 1)
+	gib:SetKeyValue("spawnflags", bit.bor(4))
+	gib:Spawn()
+	gib:Fire("Shoot")
+end

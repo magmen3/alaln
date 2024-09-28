@@ -28,8 +28,8 @@ local noisetex = Material("filmgrain/noise")
 local noisetex2 = Material("filmgrain/noiseadd")
 local muzon, Menu, rndtxt
 local DevConVar = GetConVar("developer")
-local randomstrings = {"RUN", "LIVER FAILURE FOREVER", "YOU'RE ALREADY DEAD", "KILL OR DIE", "2056", "V1 o5 u2"}
-local randomoperstrings = {"I'm ready.", "Where am i?", "I need to escape this place...", "Where is my team?...", "For what we fighting?", "Why..."}
+local randomstrings = {"RUN", "LIVER FAILURE FOREVER", "YOU'RE ALREADY DEAD", "KILL OR DIE", "2012", "??.09.2012", "V1 o5 u2"}
+local randomoperstrings = {"I'm ready.", "Where am i?", "I need to escape this place...", "Where is my squad?...", "For what we are fighting?", "How did we get to this.."}
 local textactive = true
 local sndvolume = GetConVar("snd_musicvolume")
 local MenuClrs = {

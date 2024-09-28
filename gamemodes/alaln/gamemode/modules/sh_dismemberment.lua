@@ -1,4 +1,5 @@
---[[local render, Material, hook, hook_Add, LocalPlayer, ScrW, ScrH, table, draw, surface, Color, Vector, timer, timer_Create, math, util, net = render, Material, hook, hook.Add, LocalPlayer, ScrW, ScrH, table, draw, surface, Color, Vector, timer, timer.Create, math, util, net
+--!! Need to rewrite
+local render, Material, hook, hook_Add, LocalPlayer, ScrW, ScrH, table, draw, surface, Color, Vector, timer, timer_Create, math, util, net = render, Material, hook, hook.Add, LocalPlayer, ScrW, ScrH, table, draw, surface, Color, Vector, timer, timer.Create, math, util, net
 local vecZero = Vector(0, 0, 0)
 bonetohitgroup = {
 	["ValveBiped.Bip01_Head1"] = 1,
@@ -78,20 +79,12 @@ local function BodyExplode(pos)
 	local propModels = {
 		"models/mosi/fnv/props/gore/gorehead03.mdl",
 		"models/mosi/fnv/props/gore/gorehead02.mdl",
-		"models/mosi/fnv/props/gore/gorehead06.mdl",
-		"models/mosi/fnv/props/gore/gorehead05.mdl",
 		"models/mosi/fnv/props/gore/gorehead04.mdl",
 		"models/mosi/fnv/props/gore/gorearm03.mdl",
 		"models/mosi/fnv/props/gore/gorearm.mdl",
-		"models/mosi/fnv/props/gore/gorearm01.mdl",
 		"models/mosi/fnv/props/gore/gorearm02.mdl",
-		"models/mosi/fnv/props/gore/goreleg03.mdl",
 		"models/mosi/fnv/props/gore/gorelegb01.mdl",
-		"models/mosi/fnv/props/gore/gorelegb03.mdl",
-		"models/mosi/fnv/props/gore/gorelegb02.mdl",
 		"models/mosi/fnv/props/gore/goretorso02.mdl",
-		"models/mosi/fnv/props/gore/goretorso05.mdl",
-		"models/Gibs/HGIBS_rib.mdl",
 		"models/Gibs/HGIBS_rib.mdl",
 		"models/mosi/fnv/props/gore/goretorso03.mdl"
 	}
@@ -105,6 +98,20 @@ local function BodyExplode(pos)
 			prop:Spawn()
 			local randomVelocity = Vector(math.random(-500, 500), math.random(-500, 500), math.random(-500, 500))
 			prop:GetPhysicsObject():SetVelocity(randomVelocity)
+			SafeRemoveEntityDelayed(prop, 45)
+		end)
+	end
+	for i = 0, 6 do
+		timer.Simple(0.1, function()
+			local gib = ents.Create("alaln_food")
+			if not IsValid(gib) then return end
+			gib:SetPos(pos)
+			gib.CannibalOnly = true
+			gib:Spawn()
+			gib:Activate()
+			local randomVelocity = Vector(math.random(-150, 150), math.random(-500, 500), math.random(-150, 150)) / 2
+			gib:GetPhysicsObject():SetVelocity(randomVelocity)
+			SafeRemoveEntityDelayed(gib, 60)
 		end)
 	end
 end
@@ -128,6 +135,7 @@ local function HeadExplode(pos)
 			prop:Spawn()
 			local randomVelocity = Vector(math.random(-150, 150), math.random(-500, 500), math.random(-150, 150))
 			prop:GetPhysicsObject():SetVelocity(randomVelocity)
+			SafeRemoveEntityDelayed(prop, 45)
 		end
 	end)
 end
@@ -150,6 +158,7 @@ function Gib_Input(rag, bone, dmgInfo, player)
 			rag:EmitSound("physics/flesh/flesh_squishy_impact_hard" .. math.random(2, 4) .. ".wav")
 			rag:EmitSound("physics/body/body_medium_break3.wav")
 			rag:EmitSound("physics/flesh/flesh_bloody_break.wav", 75)
+			rag:EmitSound("vj_cofr/fx/bodysplat.wav", 80)
 			rag:Remove()
 			return
 		end
@@ -229,6 +238,7 @@ hook.Add("EntityTakeDamage", "Gib", function(ent, dmgInfo)
 	local bonename = ent:GetBoneName(ent:TranslatePhysBoneToBone(phys_bone))
 	if bonetohitgroup[bonename] then hitgroup = bonetohitgroup[bonename] end
 	local mul = RagdollDamageBoneMul[hitgroup]
+	if not mul then return end
 	if dmgInfo:GetDamage() * mul < 350 then return end
 	Gib_Input(ent, ent:TranslatePhysBoneToBone(phys_bone), dmgInfo)
-end)]]
+end)

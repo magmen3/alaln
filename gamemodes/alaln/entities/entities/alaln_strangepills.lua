@@ -39,7 +39,7 @@ local color_red = Color(185, 15, 15)
 function ENT:Use(ply)
 	ply:PickupObject(self)
 	self:EmitSound("vj_cofr/aom/pills/pills_drop.wav", 70, math.random(95, 105))
-	if self.UseCD > CurTime() then return end
+	if self.UseCD > CurTime() or self:IsConstrained() then return end
 	if SERVER then
 		self.UseCD = CurTime() + 1
 		local rnd = math.random(1, 2)
