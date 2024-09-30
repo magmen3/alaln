@@ -3,12 +3,40 @@ if SERVER then
 end
 
 if CLIENT then 
-    SWEP.WepSelectIcon = surface.GetTextureID( "vgui/hud/item_gene_therapy" )
-	SWEP.BounceWeaponIcon = true 
-    SWEP.DrawWeaponInfoBox = true
+	function SWEP:DrawWeaponSelection(x, y, wide, tall, alpha)
+		--if not PotatoMode:GetBool() then
+		if not IsValid(DrawModel) then
+			DrawModel = ClientsideModel(self.WorldModel, RENDER_GROUP_OPAQUE_ENTITY)
+			DrawModel:SetNoDraw(true)
+		else
+			DrawModel:SetModel(self.WorldModel)
+			local vec = Vector(55, 55, 55)
+			local ang = Vector(-48, -48, -48):Angle()
+			cam.Start3D(vec, ang, 20, x, y + 35, wide, tall, 5, 4096)
+			cam.IgnoreZ(true)
+			render.SuppressEngineLighting(true)
+			render.SetLightingOrigin(self:GetPos())
+			render.ResetModelLighting(50 / 255, 50 / 255, 50 / 255)
+			render.SetColorModulation(1, 1, 1)
+			render.SetBlend(255)
+			render.SetModelLighting(4, 1, 1, 1)
+			DrawModel:SetRenderAngles(Angle(0, RealTime() * 30 % 360, 0))
+			DrawModel:DrawModel()
+			DrawModel:SetRenderAngles()
+			render.SetColorModulation(1, 1, 1)
+			render.SetBlend(1)
+			render.SuppressEngineLighting(false)
+			cam.IgnoreZ(false)
+			cam.End3D()
+		end
+
+		--end
+		self:PrintWeaponInfo(x + wide + 20, y + tall * 0.95, alpha)
+	end
 end
 
-SWEP.PrintName = "Genetherapy"
+SWEP.Base = "alaln_base"
+SWEP.PrintName = "Rage Dose"
 SWEP.Purpose = "Adds 50 armor"
 SWEP.Instructions = "LMB to use,\nRMB to push."
 SWEP.Category = "! Forsakened"
@@ -35,6 +63,7 @@ SWEP.Secondary.DefaultClip = -1
 SWEP.Secondary.Automatic = false
 SWEP.IdleTimer = 0
 SWEP.HitDistance = 45
+SWEP.IconOverride = "editor/obsolete"
 
 local HealAmount = 0
 local ArmorAmount = 50
@@ -65,13 +94,7 @@ function SWEP:CalcViewModelView(vm, oldpos, oldang, pos, ang)
 end
 
 function SWEP:Initialize()
-    self:SetHoldType("pistol")
-	
-	IsInfectiousZombieAddonMounted = false
-	
-	if xdeif_Cure then
-	    IsInfectiousZombieAddonMounted = true
-	end
+    self:SetHoldType("slam")
 end  
 
 function SWEP:Deploy()
@@ -80,7 +103,7 @@ function SWEP:Deploy()
     self:SendWeaponAnim(ACT_VM_DRAW)
 	self:SetNextPrimaryFire(CurTime() + 0)
 	if owner:GetAmmoCount(self.Primary.Ammo) == 0 then
-        owner:StripWeapon("nmrih_genetherapy_consumable")
+        owner:StripWeapon("alaln_ragedose")
 	end
 	
 	if owner:GetAmmoCount(self.Primary.Ammo) == 0 then return end
@@ -159,17 +182,11 @@ function HealGeneNMRIH(ent, self)
     local activeWeapon = ent:GetActiveWeapon()
 	
 	if IsValid(self) then
-        if ( IsValid( ent ) && SERVER ) and activeWeapon:GetClass() == "nmrih_genetherapy_consumable" then
+        if ( IsValid( ent ) && SERVER ) and activeWeapon:GetClass() == "alaln_ragedose" then
 		    if GetConVar("convar_consumablesnmrih_earmor"):GetBool() then
 		        ent:SetHealth(math.min(ent:GetMaxHealth(), ent:Health() + HealAmount))
 		        ent:SetArmor(math.min(ent:GetMaxArmor(), ent:Armor() + ArmorAmount))
 			    ent:RemoveAmmo(1, "nmrih_genetherapy")
-			end
-			
-			if IsInfectiousZombieAddonMounted == true and GetConVar("convar_consumablesnmrih_ecureinf"):GetBool() then
-			    vacc = 1
-			    xdeif_NeedleHit( ent, vial, self )
-			    xdeif_Cure( ent, vacc, incu )
 			end
 		
 		    self:Deploy()

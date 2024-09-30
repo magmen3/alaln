@@ -30,7 +30,7 @@ local SBOXMode = GetConVar("alaln_sboxmode")
 lootCount = 0
 local function spawnLoot()
 	if SBOXMode:GetBool() then return end
-	if not navmesh.IsLoaded() or lootCount >= 92 then return end
+	if not navmesh.IsLoaded() or lootCount >= 100 then return end
 	local loot = table.Random(ALALN_LootTable)
 	if math.random(100) <= loot[2] then
 		local item = ents.Create(loot[1])
@@ -70,10 +70,10 @@ local function spawnLootTimer()
 		spawnLoot()
 	end
 
-	if lootCount >= 92 then
-		timer.Create("alaln-lootspawn", 54, 0, spawnLootTimer)
+	if lootCount >= 100 then
+		timer.Create("alaln-lootspawn", 35, 0, spawnLootTimer)
 	else
-		timer.Create("alaln-lootspawn", math.random(12, 32), 0, spawnLootTimer)
+		timer.Create("alaln-lootspawn", math.random(15, 25), 0, spawnLootTimer)
 	end
 end
 
