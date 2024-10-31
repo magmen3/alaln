@@ -43,7 +43,7 @@ local SBOXMode = GetConVar("alaln_sboxmode")
 npcCount = 0
 local function spawnNPC()
 	if SBOXMode:GetBool() or NPCConVar:GetBool() then return end
-	if not navmesh.IsLoaded() or npcCount >= 28 then return end
+	if not navmesh.IsLoaded() or npcCount >= 35 then return end
 	local npc = GAMEMODE.Stage == 2 and table.Random(ALALN_NPCTable_Stage2) or table.Random(ALALN_NPCTable)
 	if math.random(100) <= npc[2] then
 		local snpc = ents.Create(npc[1])
@@ -85,10 +85,10 @@ local function spawnNPCTimer()
 		spawnNPC()
 	end
 
-	if npcCount >= 28 then
-		timer.Create("alaln-npcspawn", 42, 0, spawnNPCTimer)
+	if npcCount >= 35 then
+		timer.Create("alaln-npcspawn", 35, 0, spawnNPCTimer)
 	else
-		timer.Create("alaln-npcspawn", math.random(12, 32), 0, spawnNPCTimer)
+		timer.Create("alaln-npcspawn", math.random(15, 25), 0, spawnNPCTimer)
 	end
 end
 

@@ -164,7 +164,7 @@ function Gib_Input(rag, bone, dmgInfo, player)
 		end
 	end
 
-	if hitgroup == HITGROUP_HEAD and not dmgInfo:IsDamageType(DMG_CRUSH) and not gibRemove[phys_bone] then
+	if hitgroup == HITGROUP_HEAD and not gibRemove[phys_bone] then
 		rag:EmitSound("player/headshot" .. math.random(1, 2) .. ".wav")
 		rag:EmitSound("physics/flesh/flesh_squishy_impact_hard" .. math.random(2, 4) .. ".wav")
 		rag:EmitSound("physics/body/body_medium_break3.wav")
